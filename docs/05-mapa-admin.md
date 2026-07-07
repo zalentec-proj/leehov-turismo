@@ -29,6 +29,7 @@ Evitar “Pacotes” como termo principal, pois o foco real do negócio é viage
 13. `/admin/midia`
 14. `/admin/configuracoes`
 15. `/admin/usuarios`
+16. `/admin/webhooks`
 
 ## Menu lateral
 
@@ -42,6 +43,7 @@ Evitar “Pacotes” como termo principal, pois o foco real do negócio é viage
 8. Mídia.
 9. Configurações.
 10. Usuários.
+11. Webhooks.
 
 ## Dashboard
 
@@ -235,6 +237,21 @@ Campos:
 7. Tipo.
 8. Local de exibição.
 9. Frequência.
+
+## Webhooks
+
+Aba para configurar disparos de eventos do sistema para automações externas.
+
+Funcionalidades:
+
+1. Criar configuração.
+2. Editar configuração.
+3. Ativar/desativar.
+4. Selecionar evento.
+5. Configurar destino.
+6. Testar envio.
+7. Ver histórico.
+8. Reenviar falhas.
 
 ## Mídia
 

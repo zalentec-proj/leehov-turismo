@@ -23,12 +23,47 @@ O projeto será construído de forma modular para permitir uma primeira entrega 
 
 Criar uma plataforma moderna e administrável, substituindo a estrutura atual em WordPress por um site público mais limpo, responsivo e orientado à conversão, além de um painel administrativo para gestão de caravanas, blog, leads, newsletter, pop-ups, depoimentos e configurações gerais.
 
-## Regra operacional
+## Fluxo de trabalho com agentes e IDE
 
-Nenhuma alteração deve ser feita no repositório sem aprovação explícita do responsável pelo projeto.
+A IDE/agente pode trabalhar localmente dentro do escopo de uma tarefa solicitada, sem precisar pedir aprovação para cada pequena ação.
 
-Isso inclui criação de arquivos, alteração de arquivos, exclusão de arquivos, commits, branches, pull requests, instalação de dependências e qualquer envio de código ou documentação.
+Dentro de uma tarefa combinada, a IDE pode:
 
+1. criar arquivos localmente;
+2. alterar arquivos localmente;
+3. organizar pastas;
+4. gerar documentos;
+5. criar componentes;
+6. instalar dependências locais necessárias ao setup ou à tarefa;
+7. rodar comandos de desenvolvimento, lint, build e testes;
+8. refatorar arquivos relacionados à tarefa;
+9. mostrar diff ou resumo para revisão.
+
+Essas alterações locais devem passar pelo fluxo de revisão da IDE antes de qualquer commit, push ou deploy.
+
+## Ações que ainda precisam de confirmação
+
+Antes das ações abaixo, deve haver confirmação clara do responsável pelo projeto:
+
+1. commit;
+2. push;
+3. pull request;
+4. merge;
+5. deploy;
+6. migrations no Supabase remoto;
+7. alterações em dados de produção;
+8. alterações em variáveis de ambiente reais;
+9. configuração de serviços externos;
+10. ativação de serviços pagos;
+11. mudança de stack;
+12. remoção de módulos importantes;
+13. implementação de funcionalidades fora do MVP.
+
+## Aprovação e revisão
+
+Não é necessário usar uma frase padrão de aprovação.
+
+A confirmação pode acontecer em linguagem natural ou pelo próprio fluxo de revisão da IDE, desde que fique claro o que será enviado ou aplicado.
 ## Documentos norteadores
 
 Os documentos de base estão em `/docs`:

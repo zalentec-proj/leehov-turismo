@@ -29,6 +29,7 @@ O MVP deve resolver a dor principal: sair da estrutura atual em WordPress e perm
 8. Pop-up.
 9. Configurações básicas.
 10. Mídia básica.
+11. Webhooks.
 
 ## MVP — Funcionalidades
 
@@ -48,6 +49,10 @@ O MVP deve resolver a dor principal: sair da estrutura atual em WordPress e perm
 14. SEO básico.
 15. Analytics e Pixel mediante acessos.
 16. WhatsApp com mensagem personalizada.
+17. E-mails transacionais com Resend.
+18. Newsletter com double opt-in.
+19. Google Business Profile Reviews com cache.
+20. Webhooks server-side com logs.
 
 ## Fora do MVP
 
@@ -58,11 +63,12 @@ O MVP deve resolver a dor principal: sair da estrutura atual em WordPress e perm
 5. Multi-idioma.
 6. App mobile.
 7. Automação avançada de e-mail marketing.
-8. Integração com sistemas externos de turismo.
-9. Gestão financeira.
-10. Controle complexo de vagas.
-11. Assinaturas digitais.
-12. Chat interno.
+8. Construtor visual de automações.
+9. Integração com sistemas externos de turismo fora das integrações documentadas.
+10. Gestão financeira.
+11. Controle complexo de vagas.
+12. Assinaturas digitais.
+13. Chat interno.
 
 ## Roadmap futuro
 
@@ -78,11 +84,11 @@ O MVP deve resolver a dor principal: sair da estrutura atual em WordPress e perm
 ### Fase 3
 
 1. Lista de espera por caravana.
-2. Automação de e-mails.
-3. Integração com Brevo/Mailchimp.
+2. Automação avançada de e-mails.
+3. Integração com Brevo/Mailchimp para campanhas.
 4. Segmentação de newsletter.
 5. Dashboard de performance.
-6. Google Reviews automatizado com cache.
+6. Solicitações automatizadas de Google Reviews.
 
 ### Fase 4
 
@@ -105,5 +111,6 @@ O MVP será considerado bem-sucedido quando:
 6. Newsletter estiver captando e-mails.
 7. Pop-up puder ser editado.
 8. O visual estiver alinhado ao design system aprovado.
-9. A cliente receber treinamento básico.
-10. O suporte inicial de 3 meses puder começar após publicação.
+9. Webhooks puderem ser configurados e testados.
+10. A cliente receber treinamento básico.
+11. O suporte inicial de 3 meses puder começar após publicação.

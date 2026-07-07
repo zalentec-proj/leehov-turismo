@@ -1,8 +1,14 @@
 # Webhooks e Automações
 
+## Objetivo
+
+O módulo de webhooks permite que eventos importantes do site e do painel administrativo sejam enviados para automações externas sem transformar o MVP em um construtor visual de automações.
+
 O painel administrativo deve possuir uma aba chamada Webhooks para configurar disparos de eventos do sistema para automações externas.
 
 Rota planejada: `/admin/webhooks`.
+
+Item no menu lateral: `Webhooks`.
 
 ## Eventos previstos para o MVP
 

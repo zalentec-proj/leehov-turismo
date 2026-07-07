@@ -296,7 +296,8 @@ Menu previsto:
 7. Pop-ups;
 8. Mídia;
 9. Configurações;
-10. Usuários.
+10. Webhooks;
+11. Usuários.
 
 O admin deve ser simples para o cliente usar.
 
@@ -388,18 +389,22 @@ O admin deve permitir:
 4. configurar exibição de Google Reviews;
 5. definir modo de exibição: manual, Google ou misto.
 
-A integração com Google Reviews depende de configuração técnica, Place ID e disponibilidade da API.
+A integração oficial escolhida para reviews reais é a Google Business Profile API. Ela depende de OAuth 2.0, acesso ao Perfil da Empresa e credenciais válidas.
+
+O admin poderá sincronizar avaliações, ocultar ou destacar no site, responder avaliações e remover respostas da empresa. O admin não poderá excluir a avaliação original do cliente no Google.
 
 ## 20. Newsletter
 
-A newsletter deve ser simples no MVP.
+A newsletter deve ser simples no MVP, com double opt-in e e-mails transacionais via Resend.
 
 Fluxo:
 
 1. visitante informa nome e e-mail;
-2. sistema salva no Supabase;
-3. admin vê inscritos;
-4. futura integração com ferramenta externa pode ser adicionada depois.
+2. sistema salva no Supabase com status pendente;
+3. sistema envia e-mail de confirmação;
+4. visitante confirma a inscrição;
+5. admin vê inscritos e status;
+6. campanhas avançadas ficam para fase posterior.
 
 ## 21. Pop-up
 
@@ -447,6 +452,35 @@ Status sugeridos:
 2. em atendimento;
 3. convertido;
 4. arquivado.
+
+## 22.1 Webhooks
+
+O painel administrativo deve possuir uma área de Webhooks em `/admin/webhooks`.
+
+Objetivo:
+
+1. configurar disparos server-side para eventos do sistema;
+2. testar envios;
+3. visualizar histórico;
+4. reenviar falhas.
+
+Eventos previstos:
+
+1. lead criado;
+2. interesse em caravana criado;
+3. contato criado;
+4. inscrição ou confirmação de newsletter;
+5. review do Google criado ou com nota baixa;
+6. caravana criada, atualizada ou publicada;
+7. post publicado.
+
+Fora do MVP:
+
+1. construtor visual de automações;
+2. condições avançadas por campo;
+3. múltiplas etapas;
+4. editor livre de payload;
+5. integração nativa com vários CRMs.
 
 ## 23. Página Quem Somos
 
@@ -523,7 +557,9 @@ Módulos principais:
 5. `testimonials`;
 6. `popups`;
 7. `settings`;
-8. `media`.
+8. `media`;
+9. `emails`;
+10. `webhooks`.
 
 Essa arquitetura deve evitar acoplamento excessivo e facilitar manutenção.
 
@@ -539,7 +575,8 @@ Não implementar no primeiro momento:
 6. multi-idioma;
 7. login para viajantes;
 8. automação avançada de e-mail;
-9. integrações externas complexas.
+9. construtor visual de automações;
+10. integrações externas complexas fora das integrações documentadas.
 
 Esses recursos podem entrar em evolução futura.
 

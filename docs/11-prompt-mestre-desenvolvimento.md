@@ -37,6 +37,9 @@ Não crie, altere, delete, commite, instale dependências ou modifique estrutura
 9. React Hook Form.
 10. Lucide React.
 11. Vercel.
+12. Resend.
+13. Google Business Profile API.
+14. Cloudflare Turnstile.
 
 ## Design
 
@@ -64,6 +67,8 @@ Criar módulos para:
 6. `popups`
 7. `settings`
 8. `media`
+9. `emails`
+10. `webhooks`
 
 Cada módulo deve conter, quando necessário:
 
@@ -101,6 +106,7 @@ Implementar:
 8. Pop-ups.
 9. Mídia.
 10. Configurações.
+11. Webhooks.
 
 ## Supabase
 
@@ -129,8 +135,9 @@ Implementar em fases:
 5. Blog.
 6. Leads/newsletter.
 7. Pop-up/depoimentos.
-8. SEO e integrações.
-9. Testes e publicação.
+8. Webhooks.
+9. SEO e integrações.
+10. Testes e publicação.
 
 ## Não fazer sem aprovação
 
@@ -140,4 +147,5 @@ Implementar em fases:
 4. CRM completo.
 5. Multi-idioma.
 6. Automação avançada.
-7. Qualquer funcionalidade fora do MVP.
+7. Construtor visual de automações.
+8. Qualquer funcionalidade fora do MVP.

@@ -17,11 +17,14 @@ O projeto será construído de forma modular para permitir uma primeira entrega 
 - React Hook Form
 - Zod
 - Lucide React
+- Resend
+- Google Business Profile API
+- Cloudflare Turnstile
 - Paper MCP como fonte de referência visual
 
 ## Objetivo
 
-Criar uma plataforma moderna e administrável, substituindo a estrutura atual em WordPress por um site público mais limpo, responsivo e orientado à conversão, além de um painel administrativo para gestão de caravanas, blog, leads, newsletter, pop-ups, depoimentos e configurações gerais.
+Criar uma plataforma moderna e administrável, substituindo a estrutura atual em WordPress por um site público mais limpo, responsivo e orientado à conversão, além de um painel administrativo para gestão de caravanas, blog, leads, newsletter, pop-ups, depoimentos, webhooks, mídia e configurações gerais.
 
 ## Fluxo de trabalho com agentes e IDE
 
@@ -80,3 +83,13 @@ Os documentos de base estão em `/docs`:
 10. `09-checklist-conteudos-acessos.md`
 11. `10-cronograma.md`
 12. `11-prompt-mestre-desenvolvimento.md`
+13. `12-contexto-completo-do-projeto.md`
+14. `13-integracao-google-business-profile.md`
+15. `14-emails-resend.md`
+16. `15-webhooks-e-automacoes.md`
+17. `16-modelagem-supabase-sql.md`
+18. `17-componentes-ui.md`
+19. `18-fluxos-site-publico.md`
+20. `19-fluxos-admin.md`
+21. `20-backlog-implementacao.md`
+22. `21-plano-setup-tecnico.md`

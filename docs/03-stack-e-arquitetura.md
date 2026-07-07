@@ -23,6 +23,9 @@ A arquitetura será modular por domínio para facilitar manutenção e evoluçã
 | Ícones | Lucide React |
 | Tabelas | TanStack Table + shadcn |
 | Gráficos | Recharts/shadcn charts |
+| E-mails transacionais | Resend |
+| Reviews | Google Business Profile API |
+| Anti-spam | Cloudflare Turnstile |
 | Design source | Paper MCP |
 
 ## Áreas do sistema
@@ -59,9 +62,15 @@ src/
     popups/
     settings/
     media/
+    emails/
+    webhooks/
 
   lib/
     supabase/
+    email/
+    google/
+    turnstile/
+    webhooks/
     utils/
     validations/
 
@@ -121,15 +130,19 @@ Rotas principais:
 12. `/admin/popups`
 13. `/admin/midia`
 14. `/admin/configuracoes`
-15. `/admin/usuarios`
+15. `/admin/webhooks`
+16. `/admin/usuarios`
 
 ## Integrações previstas
 
-1. Google Analytics 4.
-2. Meta Pixel.
-3. Google Reviews/Google Business Profile ou Places API, conforme viabilidade.
-4. WhatsApp com mensagem personalizada por caravana.
-5. Resend ou Brevo para notificações de formulário.
+1. Google Analytics 4, configurado via admin/Supabase.
+2. Google Tag Manager, configurado via admin/Supabase.
+3. Meta Pixel, configurado via admin/Supabase.
+4. Google Business Profile API para reviews.
+5. Resend para e-mails transacionais.
+6. Cloudflare Turnstile para proteção dos formulários.
+7. Webhooks server-side para eventos do sistema.
+8. WhatsApp com mensagem personalizada por caravana.
 
 ## Regras técnicas
 
@@ -143,3 +156,5 @@ Rotas principais:
 8. Uploads apenas para usuários autenticados.
 9. O admin deve exigir autenticação.
 10. Design deve seguir o Paper MCP e o design system.
+11. Secrets e API keys devem ficar em `.env` ou ambiente seguro.
+12. Analytics, GTM e Pixel devem ser editáveis no admin e salvos no Supabase.

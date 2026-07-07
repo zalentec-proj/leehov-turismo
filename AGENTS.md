@@ -11,31 +11,38 @@ Antes de qualquer alteração, leia obrigatoriamente:
 
 ## Regra operacional obrigatória
 
-Nenhuma ação deve ser feita no GitHub sem aprovação explícita do responsável pelo projeto.
+O agente/IDE pode trabalhar localmente dentro do escopo da tarefa solicitada, sem pedir aprovação para cada pequena ação local.
 
-Isso inclui:
+Dentro de uma tarefa solicitada, é permitido:
 
-1. criar arquivos;
-2. alterar arquivos;
-3. excluir arquivos;
-4. instalar dependências;
-5. criar branches;
-6. fazer commits;
-7. abrir pull requests;
-8. criar migrations;
+1. criar e alterar arquivos localmente;
+2. organizar pastas;
+3. gerar documentos;
+4. preparar código local;
+5. instalar dependências locais quando isso fizer parte da tarefa;
+6. rodar comandos de desenvolvimento, build, lint e testes;
+7. refatorar arquivos relacionados ao escopo solicitado;
+8. apresentar diff ou resumo para revisão pela IDE.
+
+A revisão pode acontecer pelo próprio diff da IDE. Não é necessário copiar uma frase padrão de aprovação para cada alteração local.
+
+Ainda exige confirmação clara do responsável antes de:
+
+1. fazer commit;
+2. fazer push;
+3. abrir pull request;
+4. fazer merge;
+5. fazer deploy;
+6. aplicar migrations no Supabase remoto;
+7. alterar dados de produção;
+8. alterar variáveis reais de ambiente;
 9. configurar serviços externos;
-10. alterar estrutura de pastas;
-11. modificar banco de dados;
-12. subir código ou documentação.
+10. ativar serviços pagos;
+11. mudar a stack;
+12. remover módulos importantes;
+13. implementar funcionalidades fora do MVP.
 
-Antes de qualquer ação, apresente:
-
-1. o que será feito;
-2. quais arquivos serão afetados;
-3. por que isso será feito;
-4. qual será a mensagem de commit, quando houver.
-
-Aguarde aprovação explícita antes de executar.
+Antes de uma ação que exija confirmação, apresente o que será feito, os arquivos afetados, o objetivo da alteração e a mensagem de commit pretendida, quando houver.
 
 ## Contexto do projeto
 
@@ -66,7 +73,10 @@ Usar:
 8. Vercel;
 9. React Hook Form;
 10. Zod;
-11. Lucide React.
+11. Lucide React;
+12. Resend;
+13. Google Business Profile API;
+14. Cloudflare Turnstile.
 
 ## Design
 
@@ -122,6 +132,8 @@ Módulos principais:
 6. `popups`
 7. `settings`
 8. `media`
+9. `emails`
+10. `webhooks`
 
 Cada módulo deve concentrar, quando necessário:
 
@@ -172,7 +184,8 @@ O admin deve conter, no MVP:
 8. Pop-ups;
 9. Mídia;
 10. Configurações;
-11. Usuários, se necessário.
+11. Webhooks;
+12. Usuários, se necessário.
 
 O admin deve ser simples, limpo, funcional e organizado para uso por cliente não técnico.
 

@@ -52,16 +52,17 @@ O prazo pode ser impactado por atraso no envio de conteúdos, imagens, acessos, 
 7. Newsletter.
 8. Notificações básicas.
 
-## Semana 5 — Depoimentos, pop-up, SEO e integrações
+## Semana 5 — Depoimentos, pop-up, Webhooks, SEO e integrações
 
 1. Depoimentos manuais.
 2. Preparação para Google Reviews.
 3. Pop-up editável.
 4. Configurações gerais.
 5. SEO básico.
-6. Analytics.
-7. Pixel.
-8. Ajustes visuais.
+6. Analytics/GTM/Pixel via admin.
+7. E-mails transacionais com Resend.
+8. Webhooks e logs.
+9. Ajustes visuais.
 
 ## Semana 6 — Testes e entrega
 
@@ -84,5 +85,6 @@ O prazo pode ser impactado por atraso no envio de conteúdos, imagens, acessos, 
 6. Newsletter funcionando.
 7. Pop-up editável.
 8. Depoimentos configuráveis.
-9. Responsivo em celular, tablet e desktop.
-10. Cliente treinada no uso básico.
+9. Webhooks configuráveis.
+10. Responsivo em celular, tablet e desktop.
+11. Cliente treinada no uso básico.

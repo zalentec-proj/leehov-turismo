@@ -20,9 +20,13 @@ O banco será PostgreSQL via Supabase, com Row Level Security habilitado nas tab
 10. `newsletter_subscribers`
 11. `testimonials`
 12. `google_reviews_cache`
-13. `popups`
-14. `site_settings`
-15. `media_assets`
+13. `google_business_settings`
+14. `popups`
+15. `site_settings`
+16. `media_assets`
+17. `email_logs`
+18. `webhooks`
+19. `webhook_logs`
 
 ## `profiles`
 
@@ -277,6 +281,31 @@ Campos:
 13. `raw_data jsonb`
 14. `fetched_at timestamp`
 
+## `google_business_settings`
+
+Configurações da integração Google Business Profile.
+
+Campos:
+
+1. `id uuid primary key`
+2. `account_id text`
+3. `location_id text`
+4. `enabled boolean default false`
+5. `display_mode text default 'mixed'`
+6. `reviews_limit integer default 6`
+7. `min_rating integer default 4`
+8. `cache_hours integer default 24`
+9. `last_sync_at timestamp`
+10. `last_sync_status text`
+11. `last_sync_error text`
+12. `created_at timestamp`
+13. `updated_at timestamp`
+
+Segurança:
+
+1. OAuth client secret e refresh token ficam em `.env` ou ambiente seguro.
+2. Account ID e Location ID podem ficar no admin/Supabase.
+
 ## `popups`
 
 Campos:
@@ -313,8 +342,11 @@ Chaves sugeridas:
 4. `home_hero_settings`
 5. `seo_global`
 6. `analytics_scripts`
-7. `google_reviews_settings`
-8. `whatsapp_settings`
+7. `google_tag_manager`
+8. `meta_pixel`
+9. `google_reviews_settings`
+10. `whatsapp_settings`
+11. `email_settings`
 
 ## `media_assets`
 
@@ -332,6 +364,60 @@ Campos:
 8. `created_by uuid`
 9. `created_at timestamp`
 
+## `email_logs`
+
+Logs de envios transacionais via Resend.
+
+Campos:
+
+1. `id uuid primary key`
+2. `template_key text`
+3. `recipient_email text`
+4. `subject text`
+5. `provider text default 'resend'`
+6. `provider_message_id text`
+7. `status text`
+8. `error_message text`
+9. `related_entity_type text`
+10. `related_entity_id uuid`
+11. `created_at timestamp`
+12. `sent_at timestamp`
+
+## `webhooks`
+
+Configurações de disparo para automações externas.
+
+Campos:
+
+1. `id uuid primary key`
+2. `name text`
+3. `url text`
+4. `event text`
+5. `validation_key text`
+6. `description text`
+7. `active boolean default true`
+8. `created_at timestamp`
+9. `updated_at timestamp`
+
+## `webhook_logs`
+
+Histórico de entregas de webhooks.
+
+Campos:
+
+1. `id uuid primary key`
+2. `webhook_id uuid references webhooks(id)`
+3. `event text`
+4. `delivery_id text`
+5. `payload jsonb`
+6. `status text`
+7. `response_status integer`
+8. `response_body text`
+9. `error_message text`
+10. `attempts integer default 0`
+11. `created_at timestamp`
+12. `sent_at timestamp`
+
 ## Segurança/RLS
 
 Regras gerais:
@@ -346,6 +432,8 @@ Regras gerais:
 8. Apenas admin/editor pode criar, editar e excluir conteúdos.
 9. Uploads devem ser permitidos apenas a usuários autenticados.
 10. Configurações sensíveis devem ser lidas apenas pelo servidor/admin.
+11. Logs de e-mail e webhooks não devem ser lidos por visitantes.
+12. Webhooks devem ser enviados apenas pelo servidor.
 
 ## Buckets de storage
 

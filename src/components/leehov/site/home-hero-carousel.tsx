@@ -1,10 +1,14 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CaravanHeroMedia } from "@/features/caravans/components/caravan-hero-media";
+import { LEEHOV_WHATSAPP_URL } from "@/features/settings/utils";
 import { cn } from "@/lib/utils";
+import type { CaravanDetail } from "@/features/caravans/types";
 
 type HeroSlide = {
   id: string;
@@ -12,73 +16,26 @@ type HeroSlide = {
   description: string;
   category: string;
   backgroundImage: string;
+  videoUrl: string;
   cardImage: string;
   cardTitle: string;
   primaryHref: string;
   primaryLabel: string;
-  whatsappHref: string;
 };
 
-const heroSlides: HeroSlide[] = [
+const fallbackSlides: HeroSlide[] = [
   {
-    id: "italia",
-    title: "Itália",
-    category: "História e cultura",
+    id: "leehov",
+    title: "Viaje em grupo com a Leehov",
+    category: "Caravanas acompanhadas",
     description:
-      "História, fé e cultura em cada detalhe. Viva viagens inesquecíveis pelos lugares mais icônicos da Itália.",
-    backgroundImage:
-      "https://app.paper.design/file-assets/01KW53FCR6TMPD7ZTD8XRG1SKZ/01KW5C1A7VTT5C5FVFV9GZVKND.jpg",
-    cardImage:
-      "https://app.paper.design/file-assets/01KW53FCR6TMPD7ZTD8XRG1SKZ/4W4PXC7M4SQVBT9VD2SDWA31PZ.jpg",
-    cardTitle: "Coliseu",
-    primaryHref: "/caravanas/italia-cultural",
-    primaryLabel: "Ver roteiro",
-    whatsappHref: "/contato",
-  },
-  {
-    id: "santorini",
-    title: "Santorini",
-    category: "Viagem em grupo",
-    description:
-      "Mar, vilas brancas e experiências compartilhadas em um roteiro leve para viajar com tranquilidade.",
-    backgroundImage:
-      "https://app.paper.design/file-assets/01KW53FCR6TMPD7ZTD8XRG1SKZ/2SNJQS5KB0EFVF2967SAJZGJRE.jpg",
-    cardImage:
-      "https://app.paper.design/file-assets/01KW53FCR6TMPD7ZTD8XRG1SKZ/2SNJQS5KB0EFVF2967SAJZGJRE.jpg",
-    cardTitle: "Santorini",
+      "Organização, cuidado e suporte próximo para viver cada destino com confiança.",
+    backgroundImage: "/images/leehov/hero-fallback.jpg",
+    videoUrl: "",
+    cardImage: "/images/leehov/hero-card-fallback.jpg",
+    cardTitle: "Leehov Turismo",
     primaryHref: "/caravanas",
-    primaryLabel: "Ver destinos",
-    whatsappHref: "/contato",
-  },
-  {
-    id: "terra-santa",
-    title: "Terra Santa",
-    category: "Fé e memória",
-    description:
-      "Uma jornada acompanhada para viver lugares marcantes com contexto, cuidado e apoio próximo.",
-    backgroundImage:
-      "https://app.paper.design/file-assets/01KW53FCR6TMPD7ZTD8XRG1SKZ/0E8PM2ZTHHEJNGCZE08X1EK343.jpg",
-    cardImage:
-      "https://app.paper.design/file-assets/01KW53FCR6TMPD7ZTD8XRG1SKZ/0E8PM2ZTHHEJNGCZE08X1EK343.jpg",
-    cardTitle: "Jerusalém",
-    primaryHref: "/caravanas/terra-santa-completa",
-    primaryLabel: "Ver roteiro",
-    whatsappHref: "/contato",
-  },
-  {
-    id: "japao",
-    title: "Japão",
-    category: "Cultura e tradição",
-    description:
-      "Templos, paisagens e convivência em grupo em um roteiro cultural com acompanhamento do início ao fim.",
-    backgroundImage:
-      "https://app.paper.design/file-assets/01KW53FCR6TMPD7ZTD8XRG1SKZ/4P1Y09KMHBZG2KX5Y8M5X1794D.jpg",
-    cardImage:
-      "https://app.paper.design/file-assets/01KW53FCR6TMPD7ZTD8XRG1SKZ/4P1Y09KMHBZG2KX5Y8M5X1794D.jpg",
-    cardTitle: "Japão Tradicional",
-    primaryHref: "/caravanas/japao-cultural",
-    primaryLabel: "Ver roteiro",
-    whatsappHref: "/contato",
+    primaryLabel: "Ver caravanas",
   },
 ];
 
@@ -113,13 +70,25 @@ function usePrefersReducedMotion() {
   return prefersReducedMotion;
 }
 
-export function HomeHeroCarousel() {
+export function HomeHeroCarousel({ caravans }: { caravans: CaravanDetail[] }) {
+  const heroSlides = useMemo<HeroSlide[]>(() => caravans.length ? caravans.map((caravan) => ({
+    id: caravan.id,
+    title: caravan.heroTitle || caravan.title,
+    category: caravan.category?.name || "Caravana acompanhada",
+    description: caravan.heroDescription || caravan.summary,
+    backgroundImage: caravan.heroImageUrl || caravan.imageUrl,
+    videoUrl: caravan.videoUrl,
+    cardImage: caravan.imageUrl || caravan.heroImageUrl,
+    cardTitle: caravan.destination,
+    primaryHref: caravan.heroCtaUrl || `/caravanas/${caravan.slug}`,
+    primaryLabel: caravan.heroCtaText || "Ver roteiro",
+  })) : fallbackSlides, [caravans]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const prefersReducedMotion = usePrefersReducedMotion();
   const activeSlide = heroSlides[activeIndex];
-  const hasLongTitle =
-    activeSlide.title.includes(" ") || activeSlide.title.length > 10;
+  const hasVeryLongTitle = activeSlide.title.length > 28;
+  const hasLongTitle = activeSlide.title.includes(" ") || activeSlide.title.length > 10;
 
   const goToSlide = useCallback((index: number) => {
     setActiveIndex(index);
@@ -127,18 +96,18 @@ export function HomeHeroCarousel() {
 
   const nextSlide = useCallback(() => {
     setActiveIndex((currentIndex) => (currentIndex + 1) % heroSlides.length);
-  }, []);
+  }, [heroSlides.length]);
 
   const prevSlide = useCallback(() => {
     setActiveIndex(
       (currentIndex) =>
         (currentIndex - 1 + heroSlides.length) % heroSlides.length,
     );
-  }, []);
+  }, [heroSlides.length]);
 
   const visibleDesktopCards = useMemo(
     () =>
-      desktopCardLayout.map((layout, offset) => {
+      desktopCardLayout.slice(0, Math.min(desktopCardLayout.length, heroSlides.length)).map((layout, offset) => {
         const slideIndex = (activeIndex + offset) % heroSlides.length;
 
         return {
@@ -147,22 +116,22 @@ export function HomeHeroCarousel() {
           slideIndex,
         };
       }),
-    [activeIndex],
+    [activeIndex, heroSlides],
   );
 
   useEffect(() => {
-    if (isPaused || prefersReducedMotion) {
+    if (isPaused || prefersReducedMotion || heroSlides.length < 2) {
       return;
     }
 
     const intervalId = window.setInterval(nextSlide, 6000);
 
     return () => window.clearInterval(intervalId);
-  }, [isPaused, nextSlide, prefersReducedMotion]);
+  }, [heroSlides.length, isPaused, nextSlide, prefersReducedMotion]);
 
   return (
     <section
-      aria-label="Destinos em destaque"
+      aria-label="Caravanas em destaque"
       aria-roledescription="carousel"
       className="relative isolate h-[850px] max-h-[100svh] min-h-[760px] overflow-hidden bg-leehov-navy-950 text-white"
       onBlur={() => setIsPaused(false)}
@@ -175,13 +144,14 @@ export function HomeHeroCarousel() {
           <div
             key={slide.id}
             className={cn(
-              "absolute inset-0 bg-cover bg-center transition-[opacity,transform] duration-700 ease-out motion-reduce:transition-none",
+              "absolute inset-0 transition-[opacity,transform] duration-700 ease-out motion-reduce:transition-none",
               index === activeIndex
                 ? "opacity-100 motion-safe:scale-105"
                 : "opacity-0 scale-100",
             )}
-            style={{ backgroundImage: `url(${slide.backgroundImage})` }}
-          />
+          >
+            <CaravanHeroMedia imageUrl={slide.backgroundImage} videoUrl={index === activeIndex ? slide.videoUrl : ""} priority={index === 0} />
+          </div>
         ))}
       </div>
       <div className="absolute inset-0 bg-[linear-gradient(190deg,rgb(255_255_255_/_0%)_-1%,rgb(8_60_90_/_68%)_38%,rgb(6_26_42_/_96%)_81%)] mix-blend-multiply" />
@@ -198,9 +168,11 @@ export function HomeHeroCarousel() {
               <h1
                 className={cn(
                   "max-w-[560px] text-balance break-words font-extrabold leading-[0.92] tracking-normal text-white motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-6 motion-safe:duration-700",
-                  hasLongTitle
-                    ? "text-[clamp(52px,6vw,88px)]"
-                    : "text-[clamp(56px,8vw,104px)]",
+                  hasVeryLongTitle
+                    ? "text-[clamp(40px,4.7vw,64px)] leading-[1]"
+                    : hasLongTitle
+                      ? "text-[clamp(50px,6vw,82px)]"
+                      : "text-[clamp(56px,8vw,104px)]",
                 )}
               >
                 {activeSlide.title}
@@ -210,24 +182,24 @@ export function HomeHeroCarousel() {
               </p>
             </div>
             <div className="mt-9 flex flex-col gap-[18px] motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 motion-safe:delay-200 motion-safe:duration-700 sm:flex-row">
-              <Button asChild className="h-[58px] w-[190px] rounded-full bg-gradient-to-r from-leehov-blue-300 to-leehov-blue-600 text-[16px] font-extrabold text-white shadow-[0_14px_26px_rgb(8_117_205_/_30%)] hover:from-leehov-blue-500 hover:to-leehov-blue-600">
+              <Button asChild className="h-[58px] min-w-[256px] rounded-full bg-gradient-to-r from-leehov-blue-300 to-leehov-blue-600 px-6 text-[16px] font-extrabold text-white shadow-[0_14px_26px_rgb(8_117_205_/_30%)] hover:from-leehov-blue-500 hover:to-leehov-blue-600 [&_a]:whitespace-nowrap">
                 <Link href={activeSlide.primaryHref}>
                   {activeSlide.primaryLabel}
                   <ArrowRight className="size-4" />
                 </Link>
               </Button>
               <Button asChild variant="outline" className="h-[58px] w-[210px] rounded-full border-white/55 bg-white/5 text-[16px] font-extrabold text-white hover:bg-white/12 hover:text-white">
-                <Link href={activeSlide.whatsappHref}>
+                <a href={LEEHOV_WHATSAPP_URL} target="_blank" rel="noreferrer">
                   <MessageCircle className="size-4" />
                   Falar no WhatsApp
-                </Link>
+                </a>
               </Button>
             </div>
           </div>
 
-          <div className="mt-6 flex items-center gap-3">
+          {heroSlides.length > 1 ? <div className="mt-6 flex items-center gap-3">
             <Button
-              aria-label="Destino anterior"
+              aria-label="Caravana anterior"
               className="size-10 rounded-full border border-white/40 bg-white/8 text-white hover:bg-white/16 hover:text-white"
               onClick={prevSlide}
               size="icon"
@@ -237,7 +209,7 @@ export function HomeHeroCarousel() {
               <ArrowLeft className="size-4" />
             </Button>
             <Button
-              aria-label="Próximo destino"
+              aria-label="Próxima caravana"
               className="size-10 rounded-full border border-white/40 bg-white/8 text-white hover:bg-white/16 hover:text-white"
               onClick={nextSlide}
               size="icon"
@@ -259,7 +231,7 @@ export function HomeHeroCarousel() {
                 />
               ))}
             </div>
-          </div>
+          </div> : null}
         </div>
 
         <div className="pointer-events-none absolute left-[54%] top-[196px] hidden items-start gap-[34px] lg:flex xl:left-[660px]">
@@ -286,14 +258,14 @@ export function HomeHeroCarousel() {
               </div>
               <div
                 className={cn(
-                  "relative overflow-hidden rounded-[18px] border bg-cover bg-center shadow-xl shadow-black/20 transition-[border-color,box-shadow,opacity,transform] duration-300",
+                  "relative overflow-hidden rounded-[18px] border bg-leehov-navy-800 shadow-xl shadow-black/20 transition-[border-color,box-shadow,opacity,transform] duration-300",
                   slideIndex === activeIndex
                     ? "scale-[1.03] border-white/60 opacity-100 shadow-2xl shadow-black/30"
                     : "scale-100 border-white/20 opacity-80 hover:border-white/35 hover:opacity-95",
                   layout.imageClassName,
                 )}
-                style={{ backgroundImage: `url(${slide.cardImage})` }}
               >
+                <Image src={slide.cardImage} alt="" fill unoptimized={slide.cardImage.startsWith("http")} sizes="300px" className="object-cover" />
                 {slideIndex === activeIndex ? (
                   <div className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-black/35 to-transparent" />
                 ) : null}
@@ -318,10 +290,7 @@ export function HomeHeroCarousel() {
                 onClick={() => goToSlide(index)}
                 type="button"
               >
-                <span
-                  className="h-16 w-16 shrink-0 rounded-[14px] bg-cover bg-center"
-                  style={{ backgroundImage: `url(${slide.cardImage})` }}
-                />
+                <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-[14px] bg-leehov-navy-800"><Image src={slide.cardImage} alt="" fill unoptimized={slide.cardImage.startsWith("http")} sizes="64px" className="object-cover" /></span>
                 <span>
                   <span className="block text-[13px] font-extrabold leading-4 text-white">
                     {slide.cardTitle}

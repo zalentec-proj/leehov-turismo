@@ -14,11 +14,9 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const aboutImages = {
-  rio: "https://app.paper.design/file-assets/01KW53FCR6TMPD7ZTD8XRG1SKZ/6G6P59YQ1HAVXXHZEJ8X2FJ7Q3.jpg",
-  santorini:
-    "https://app.paper.design/file-assets/01KW53FCR6TMPD7ZTD8XRG1SKZ/2SNJQS5KB0EFVF2967SAJZGJRE.jpg",
-  island:
-    "https://app.paper.design/file-assets/01KW53FCR6TMPD7ZTD8XRG1SKZ/3SYAZSGFBPCFY23EG7M0JXXTV4.jpg",
+  rio: "/images/leehov/about-rio.jpg",
+  santorini: "/images/leehov/about-santorini.jpg",
+  island: "/images/leehov/about-island.jpg",
 };
 
 const metrics = [
@@ -304,12 +302,7 @@ export function HomeAboutLeehovSection() {
               rotate: 3.5,
             })}
           >
-            <div
-              className="leehov-about-float h-full w-full rounded-[20px] bg-cover bg-center shadow-[0_22px_54px_rgb(6_42_68_/_12%)]"
-              style={{ backgroundImage: `url(${aboutImages.rio})` }}
-              role="img"
-              aria-label="Viajante observando a paisagem do Rio de Janeiro"
-            />
+            <div className="leehov-about-float relative h-full w-full overflow-hidden rounded-[20px] shadow-[0_22px_54px_rgb(6_42_68_/_12%)]"><Image src={aboutImages.rio} alt="Viajante observando a paisagem do Rio de Janeiro" fill sizes="(min-width: 1024px) 480px, 72vw" className="object-cover" /></div>
           </div>
 
           <div
@@ -322,12 +315,7 @@ export function HomeAboutLeehovSection() {
               rotate: 4,
             })}
           >
-            <div
-              className="leehov-about-float-delay h-full w-full rounded-[16px] border border-white/70 bg-cover bg-center shadow-[0_12px_28px_rgb(0_75_120_/_18%)]"
-              style={{ backgroundImage: `url(${aboutImages.santorini})` }}
-              role="img"
-              aria-label="Casas brancas e cúpulas azuis em Santorini"
-            />
+            <div className="leehov-about-float-delay relative h-full w-full overflow-hidden rounded-[16px] border border-white/70 shadow-[0_12px_28px_rgb(0_75_120_/_18%)]"><Image src={aboutImages.santorini} alt="Casas brancas e cúpulas azuis em Santorini" fill sizes="260px" className="object-cover" /></div>
           </div>
 
           <div
@@ -340,12 +328,7 @@ export function HomeAboutLeehovSection() {
               rotate: -4,
             })}
           >
-            <div
-              className="leehov-about-float-soft h-full w-full rounded-[16px] border border-white/70 bg-cover bg-center shadow-[0_12px_28px_rgb(0_75_120_/_18%)]"
-              style={{ backgroundImage: `url(${aboutImages.island})` }}
-              role="img"
-              aria-label="Ilha tropical com água cristalina"
-            />
+            <div className="leehov-about-float-soft relative h-full w-full overflow-hidden rounded-[16px] border border-white/70 shadow-[0_12px_28px_rgb(0_75_120_/_18%)]"><Image src={aboutImages.island} alt="Ilha tropical com água cristalina" fill sizes="230px" className="object-cover" /></div>
           </div>
         </div>
 

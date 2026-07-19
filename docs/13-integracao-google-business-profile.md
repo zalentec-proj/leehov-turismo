@@ -95,7 +95,8 @@ Variáveis de ambiente previstas:
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 GOOGLE_REDIRECT_URI=
-GOOGLE_REFRESH_TOKEN=
+GOOGLE_TOKEN_ENCRYPTION_KEY=
+GOOGLE_BUSINESS_API_ACCESS_STATUS=
 ```
 
 Configurações armazenadas no Supabase/admin:
@@ -200,11 +201,12 @@ O widget de depoimentos deve permitir:
 
 ## 12. Segurança
 
-1. Tokens e segredos OAuth ficam apenas no servidor.
+1. O refresh token fica criptografado no Supabase com AES-256-GCM; access tokens vivem somente em memória no servidor.
 2. Nenhuma credencial sensível deve usar prefixo `NEXT_PUBLIC`.
 3. O site público deve ler apenas avaliações já cacheadas e marcadas como visíveis.
-4. Apenas usuários admin/editor podem responder, ocultar ou destacar avaliações.
+4. Editor ativo pode ocultar e destacar; somente admin conecta, sincroniza, responde ou remove respostas.
 5. Ações de resposta e remoção de resposta devem ser registradas em log administrativo, se houver módulo de auditoria.
+6. O cache público expira fisicamente em no máximo 30 dias e nunca é lido diretamente da API durante uma visita ao site.
 
 ## 13. Fora do escopo inicial
 

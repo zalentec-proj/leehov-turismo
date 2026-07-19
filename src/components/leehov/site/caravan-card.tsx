@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { CalendarDays, MapPin, UsersRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,13 +8,8 @@ import type { CaravanSummary } from "@/features/caravans/types";
 
 export function CaravanCard({ caravan }: { caravan: CaravanSummary }) {
   return (
-    <Card className="overflow-hidden rounded-[18px] border-leehov-border bg-white p-0 shadow-leehov-card transition hover:-translate-y-1 hover:shadow-leehov-floating">
-      <div
-        className="h-56 bg-cover bg-center"
-        style={{ backgroundImage: `url(${caravan.imageUrl})` }}
-        role="img"
-        aria-label={`Imagem da caravana ${caravan.title}`}
-      />
+    <Card className="overflow-hidden rounded-[18px] border-leehov-border bg-white p-0 shadow-leehov-card transition hover:-translate-y-1 hover:shadow-leehov-floating motion-reduce:transition-none">
+      <div className="relative h-56 overflow-hidden bg-leehov-surface">{caravan.imageUrl ? <Image src={caravan.imageUrl} alt={`Imagem da caravana ${caravan.title}`} fill unoptimized sizes="(min-width: 768px) 33vw, 100vw" className="object-cover" /> : null}</div>
       <div className="space-y-5 p-5">
         <div className="flex items-center justify-between gap-3">
           <StatusBadge status={caravan.status} />
@@ -45,7 +41,7 @@ export function CaravanCard({ caravan }: { caravan: CaravanSummary }) {
         </div>
         <div className="flex items-center justify-between gap-4">
           <span className="text-sm font-bold text-leehov-navy-950">
-            {caravan.price}
+            {caravan.price || "Sob consulta"}
           </span>
           <Button asChild className="rounded-full bg-leehov-blue-600 text-white hover:bg-leehov-cyan">
             <Link href={`/caravanas/${caravan.slug}`}>Ver detalhes</Link>

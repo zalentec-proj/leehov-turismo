@@ -1,24 +1,26 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ArrowUpRight, Menu } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { LEEHOV_WHATSAPP_URL } from "@/features/settings/utils";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/caravanas", label: "Roteiros", activePath: "/caravanas" },
-  { href: "/caravanas", label: "Viagens em Grupo" },
-  { href: "/caravanas", label: "Destinos" },
-  { href: "/quem-somos", label: "Sobre a Leehov", activePath: "/quem-somos" },
-  { href: "/blog", label: "Blog", activePath: "/blog" },
-  { href: "/contato", label: "Contato", activePath: "/contato" },
+  { href: "/caravanas", label: "Caravanas" },
+  { href: "/quem-somos", label: "Quem Somos" },
+  { href: "/blog", label: "Blog" },
+  { href: "/contato", label: "Contato" },
 ];
 
 export function SiteHeader() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isHome = pathname === "/";
   const hasGlassBackground = isScrolled || !isHome;
 
@@ -30,6 +32,10 @@ export function SiteHeader() {
 
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  function isItemActive(href: string) {
+    return pathname === href || pathname.startsWith(`${href}/`);
+  }
 
   return (
     <header
@@ -46,25 +52,17 @@ export function SiteHeader() {
           hasGlassBackground ? "h-[82px]" : "h-[112px]",
         )}
       >
-        <Link href="/" className="flex items-center gap-3" aria-label="Leehov Turismo">
-          <span className="relative flex h-[46px] w-[46px] shrink-0 items-center justify-center">
-            <span className="absolute left-1 top-2 h-7 w-7 rounded-full bg-leehov-blue-600" />
-            <span className="absolute bottom-2 right-1 h-7 w-7 rounded-full bg-leehov-blue-300/90" />
-            <span className="relative text-base font-extrabold text-white">L</span>
-          </span>
-          <span className="flex flex-col leading-none">
-            <span className="text-[24px] font-extrabold uppercase leading-[24px] tracking-normal">
-              Leehov
-            </span>
-            <span
-              className={cn(
-                "self-end text-[7px] font-bold uppercase tracking-[0.18em] transition-colors",
-                hasGlassBackground ? "text-white/75" : "text-white/85",
-              )}
-            >
-              Turismo
-            </span>
-          </span>
+        <Link href="/" className="block shrink-0" aria-label="Leehov Turismo">
+          <Image
+            src="/images/leehov/logo-site.webp"
+            alt="Leehov Turismo"
+            width={500}
+            height={158}
+            priority
+            unoptimized
+            sizes="(min-width: 640px) 194px, 170px"
+            className="h-auto w-[170px] sm:w-[194px]"
+          />
         </Link>
 
         <nav
@@ -74,10 +72,7 @@ export function SiteHeader() {
           )}
         >
           {navItems.map((item) => {
-            const isActive =
-              item.activePath &&
-              (pathname === item.activePath ||
-                pathname.startsWith(`${item.activePath}/`));
+            const isActive = isItemActive(item.href);
 
             return (
               <Link
@@ -99,24 +94,46 @@ export function SiteHeader() {
             asChild
             className="hidden h-[42px] w-[170px] rounded-full bg-gradient-to-r from-leehov-blue-300 to-leehov-blue-600 px-0 text-[12px] font-extrabold leading-4 text-white shadow-[0_10px_22px_rgb(8_117_205_/_28%)] hover:from-leehov-blue-500 hover:to-leehov-blue-600 sm:inline-flex"
           >
-            <Link href="/contato">
+            <a href={LEEHOV_WHATSAPP_URL} target="_blank" rel="noreferrer">
               <ArrowUpRight className="size-3.5" />
               Fale conosco
-            </Link>
+            </a>
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className={cn(
-              "lg:hidden",
-              hasGlassBackground
-                ? "text-white hover:bg-white/10 hover:text-white"
-                : "text-white hover:bg-white/10 hover:text-white",
-            )}
-            aria-label="Abrir menu"
-          >
-            <Menu className="size-5" />
-          </Button>
+          <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 hover:text-white lg:hidden" aria-label="Abrir menu principal" aria-expanded={isMenuOpen}>
+                <Menu className="size-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="w-[min(88vw,390px)] border-white/10 bg-leehov-navy-950 p-0 text-white" showCloseButton={false}>
+              <SheetHeader className="border-b border-white/10 px-6 py-7 text-left">
+                <SheetTitle className="text-xl font-extrabold text-white">Leehov Turismo</SheetTitle>
+                <SheetDescription className="text-white/58">Caravanas e viagens em grupo acompanhadas.</SheetDescription>
+              </SheetHeader>
+              <nav aria-label="Menu principal" className="flex flex-col gap-2 px-4 py-6">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    aria-current={isItemActive(item.href) ? "page" : undefined}
+                    onClick={() => setIsMenuOpen(false)}
+                    className={cn(
+                      "rounded-xl px-4 py-4 text-base font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-leehov-blue-300 motion-reduce:transition-none",
+                      isItemActive(item.href) ? "bg-leehov-blue-500 text-white" : "text-white/74 hover:bg-white/8 hover:text-white",
+                    )}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </nav>
+              <SheetFooter className="border-t border-white/10 p-6">
+                <Button asChild size="lg" className="w-full rounded-full bg-gradient-to-r from-leehov-blue-300 to-leehov-blue-600 text-white">
+                  <a href={LEEHOV_WHATSAPP_URL} target="_blank" rel="noreferrer" onClick={() => setIsMenuOpen(false)}><ArrowUpRight className="size-4" />Fale conosco</a>
+                </Button>
+                <Button type="button" variant="ghost" className="mt-2 w-full text-white/70 hover:bg-white/8 hover:text-white" onClick={() => setIsMenuOpen(false)}>Fechar menu</Button>
+              </SheetFooter>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </header>

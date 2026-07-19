@@ -1,11 +1,8 @@
 import { NextResponse } from "next/server";
 
-export async function POST() {
-  return NextResponse.json(
-    {
-      ok: false,
-      message: "Webhook retry requires webhook_logs persisted in Supabase.",
-    },
-    { status: 501 },
-  );
+import { retryWebhookDeliveryAction } from "@/features/webhooks/actions";
+
+export async function POST(request: Request) {
+  const result = await retryWebhookDeliveryAction(await request.json().catch(() => null));
+  return NextResponse.json(result, { status: result.success ? 200 : 400 });
 }

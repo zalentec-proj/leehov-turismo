@@ -93,3 +93,5 @@ Os documentos de base estão em `/docs`:
 20. `19-fluxos-admin.md`
 21. `20-backlog-implementacao.md`
 22. `21-plano-setup-tecnico.md`
+23. `22-execucao-sprint-01.md`
+24. `23-inventario-site-atual.md`

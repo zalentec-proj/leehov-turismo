@@ -30,7 +30,52 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  await supabase.auth.getClaims();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const userId = claimsData?.claims?.sub;
+  const pathname = request.nextUrl.pathname;
+
+  function redirectWithCookies(url: URL) {
+    const redirectResponse = NextResponse.redirect(url);
+    response.cookies.getAll().forEach((cookie) => redirectResponse.cookies.set(cookie));
+    return redirectResponse;
+  }
+
+  if (pathname === "/admin/login") {
+    if (!userId) return response;
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("active")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (profile?.active) {
+      return redirectWithCookies(new URL("/admin", request.url));
+    }
+
+    return response;
+  }
+
+  if (!userId) {
+    const loginUrl = new URL("/admin/login", request.url);
+    loginUrl.searchParams.set("next", pathname);
+    return redirectWithCookies(loginUrl);
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("active, role")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (!profile?.active) {
+    return redirectWithCookies(new URL("/admin/login?error=inactive", request.url));
+  }
+
+  const adminOnly = ["/admin/usuarios", "/admin/configuracoes", "/admin/webhooks"];
+  if (profile.role !== "admin" && adminOnly.some((prefix) => pathname.startsWith(prefix))) {
+    return redirectWithCookies(new URL("/admin?error=forbidden", request.url));
+  }
 
   return response;
 }

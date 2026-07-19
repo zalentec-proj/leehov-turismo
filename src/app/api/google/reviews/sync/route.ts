@@ -1,12 +1,8 @@
 import { NextResponse } from "next/server";
 
+import { syncGoogleReviewsAction } from "@/features/testimonials/actions";
+
 export async function POST() {
-  return NextResponse.json(
-    {
-      ok: false,
-      message:
-        "Google Business Profile sync requires OAuth credentials and explicit integration setup.",
-    },
-    { status: 501 },
-  );
+  const result = await syncGoogleReviewsAction();
+  return NextResponse.json(result, { status: result.success ? 200 : 400 });
 }

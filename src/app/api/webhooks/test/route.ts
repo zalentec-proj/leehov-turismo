@@ -1,11 +1,8 @@
 import { NextResponse } from "next/server";
 
-export async function POST() {
-  return NextResponse.json(
-    {
-      ok: false,
-      message: "Webhook test sending requires persisted webhook settings.",
-    },
-    { status: 501 },
-  );
+import { testWebhookAction } from "@/features/webhooks/actions";
+
+export async function POST(request: Request) {
+  const result = await testWebhookAction(await request.json().catch(() => null));
+  return NextResponse.json(result, { status: result.success ? 200 : 400 });
 }

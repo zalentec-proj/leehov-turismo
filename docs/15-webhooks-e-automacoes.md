@@ -29,7 +29,7 @@ Item no menu lateral: `Webhooks`.
 1. Criar configuração.
 2. Editar configuração.
 3. Ativar ou desativar.
-4. Selecionar evento.
+4. Selecionar um ou mais eventos.
 5. Configurar destino externo.
 6. Configurar chave de validação.
 7. Testar envio.
@@ -43,11 +43,11 @@ Item no menu lateral: `Webhooks`.
 
 1. `id`
 2. `name`
-3. `url`
-4. `event`
-5. `validation_key`
-6. `description`
-7. `active`
+3. `endpoint_url`
+4. `events`
+5. `validation_key_ciphertext`
+6. `active`
+7. autoria e auditoria;
 8. `created_at`
 9. `updated_at`
 
@@ -64,7 +64,7 @@ Item no menu lateral: `Webhooks`.
 9. `error_message`
 10. `attempts`
 11. `created_at`
-12. `sent_at`
+12. `request_started_at`, `completed_at` e `updated_at`
 
 ## Regras
 
@@ -74,6 +74,11 @@ Item no menu lateral: `Webhooks`.
 4. Logs devem registrar status, resposta e erro.
 5. O admin deve exibir o último status de envio.
 6. O sistema deve permitir reenvio manual de falhas.
+7. O corpo usa versão, evento, `deliveryId`, `occurredAt` e dados mínimos da entidade.
+8. A assinatura HMAC-SHA256 cobre `timestamp.body` e usa os headers `X-Leehov-*`.
+9. URLs internas, loopback, redes privadas, redirects e HTTP em produção são bloqueados; o timeout é de oito segundos.
+10. A chave fica criptografada e nunca volta ao navegador depois de salva.
+11. Logs expiram após 90 dias e o reenvio preserva payload e `deliveryId`.
 
 ## Fora do MVP
 

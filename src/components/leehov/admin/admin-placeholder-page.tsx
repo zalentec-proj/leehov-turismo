@@ -1,4 +1,3 @@
-import { AdminShell } from "@/components/leehov/admin/admin-shell";
 import { Card } from "@/components/ui/card";
 
 type AdminPlaceholderPageProps = {
@@ -13,7 +12,7 @@ export function AdminPlaceholderPage({
   items,
 }: AdminPlaceholderPageProps) {
   return (
-    <AdminShell>
+    <>
       <div className="mb-8">
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-leehov-blue-600">
           Módulo admin
@@ -37,6 +36,6 @@ export function AdminPlaceholderPage({
           ))}
         </ul>
       </Card>
-    </AdminShell>
+    </>
   );
 }

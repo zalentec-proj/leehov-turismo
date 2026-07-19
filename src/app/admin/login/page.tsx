@@ -1,8 +1,6 @@
 import { LockKeyhole } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { LoginForm } from "@/features/auth/components/login-form";
 
 export default function AdminLoginPage() {
   return (
@@ -16,22 +14,10 @@ export default function AdminLoginPage() {
             Acesso administrativo
           </h1>
           <p className="mt-3 text-sm leading-6 text-leehov-muted">
-            Login sera conectado ao Supabase Auth na fase de admin base.
+            Entre com seu e-mail e senha do Supabase Auth para acessar o painel.
           </p>
         </div>
-        <form className="space-y-5">
-          <div className="space-y-2">
-            <Label htmlFor="email">E-mail</Label>
-            <Input id="email" type="email" placeholder="admin@leehov.com.br" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Senha</Label>
-            <Input id="password" type="password" placeholder="••••••••" />
-          </div>
-          <Button type="button" className="w-full rounded-full bg-leehov-blue-600 text-white hover:bg-leehov-cyan">
-            Entrar
-          </Button>
-        </form>
+        <LoginForm />
       </Card>
     </main>
   );

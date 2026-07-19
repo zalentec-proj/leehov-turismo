@@ -1,11 +1,12 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
   Globe2,
   Headphones,
-  LockKeyhole,
   Mail,
   Plane,
+  Play,
   ShoppingBag,
   ShieldCheck,
   UsersRound,
@@ -16,13 +17,18 @@ import { SectionHeading } from "@/components/leehov/shared/section-heading";
 import { HomeAboutLeehovSection } from "@/components/leehov/site/home-about-leehov-section";
 import { HomeHeroCarousel } from "@/components/leehov/site/home-hero-carousel";
 import type { BlogPostSummary } from "@/features/blog/types";
-import type { CaravanSummary } from "@/features/caravans/types";
+import type { CaravanDetail, CaravanSummary } from "@/features/caravans/types";
 import type { TestimonialSummary } from "@/features/testimonials/types";
+import { NewsletterSignup } from "@/features/newsletter/components/newsletter-signup";
+import { TestimonialsCarousel } from "@/features/testimonials/components/testimonials-carousel";
+import type { HomeSettings } from "@/features/settings/types";
 
 type HomePageProps = {
   caravans: CaravanSummary[];
+  heroCaravans: CaravanDetail[];
   posts: BlogPostSummary[];
   testimonials: TestimonialSummary[];
+  homeSettings: HomeSettings;
 };
 
 const benefits = [
@@ -53,48 +59,12 @@ const benefits = [
   },
 ];
 
-const featuredRoutes = [
-  {
-    title: "Croácia & Ilhas Maur",
-    meta: "12 dias | Relaxamento",
-    price: "R$ 6.490",
-    href: "/caravanas",
-    imageUrl:
-      "https://app.paper.design/file-assets/01KW53FCR6TMPD7ZTD8XRG1SKZ/37HBAT0TVYZ628ZWNXN29RCRCC.jpg",
-  },
-  {
-    title: "Caminho de Santiago",
-    meta: "15 dias | Religioso",
-    price: "R$ 8.290",
-    href: "/caravanas",
-    imageUrl:
-      "https://app.paper.design/file-assets/01KW53FCR6TMPD7ZTD8XRG1SKZ/2ADP4EQSJSGKBN5NBGTF74231Z.jpg",
-  },
-  {
-    title: "Dubai & Abu Dhabi",
-    meta: "8 dias | Luxo",
-    price: "R$ 7.260",
-    href: "/caravanas",
-    imageUrl:
-      "https://app.paper.design/file-assets/01KW53FCR6TMPD7ZTD8XRG1SKZ/6ZXSJJRGRJ14R1EHMX4HXGMG88.jpg",
-  },
-  {
-    title: "Japão Tradicional",
-    meta: "14 dias | Cultura",
-    price: "R$ 11.420",
-    href: "/caravanas/japao-cultural",
-    imageUrl:
-      "https://app.paper.design/file-assets/01KW53FCR6TMPD7ZTD8XRG1SKZ/4P1Y09KMHBZG2KX5Y8M5X1794D.jpg",
-  },
-];
+const newsletterImage = "/images/leehov/about-island.jpg";
 
-const newsletterImage =
-  "https://app.paper.design/file-assets/01KW53FCR6TMPD7ZTD8XRG1SKZ/3SYAZSGFBPCFY23EG7M0JXXTV4.jpg";
-
-export function HomePage({ posts, testimonials }: HomePageProps) {
+export function HomePage({ caravans, heroCaravans, posts, testimonials, homeSettings }: HomePageProps) {
   return (
     <>
-      <HomeHeroCarousel />
+      <HomeHeroCarousel caravans={heroCaravans} />
 
       <section className="relative z-10 -mt-5 rounded-t-[28px] bg-[#f9fcff] px-5 pb-14 pt-[126px] sm:px-8 lg:px-12 xl:px-[112px]">
         <div className="mx-auto max-w-[1313px]">
@@ -104,35 +74,30 @@ export function HomePage({ posts, testimonials }: HomePageProps) {
                 Viagens incríveis
               </p>
               <h2 className="mt-[18px] text-[40px] font-extrabold leading-[46px] tracking-normal text-[#153b5b] sm:text-[48px] sm:leading-[54px]">
-                Roteiros em destaque
+                Caravanas em destaque
               </h2>
               <p className="mt-[18px] max-w-[620px] text-[16px] font-normal leading-[26px] text-[#6d879d]">
-                Seleção especial de roteiros para você explorar o melhor de cada destino com conforto, segurança e experiências únicas.
+                Viagens em grupo selecionadas para você explorar cada destino com organização, segurança e acompanhamento próximo.
               </p>
             </div>
             <Button asChild variant="link" className="h-auto p-0 text-[15px] font-extrabold leading-[18px] text-leehov-blue-500 hover:text-leehov-blue-600">
               <Link href="/caravanas">
-                Ver todos os roteiros
+                Ver todas as caravanas
                 <ArrowRight className="size-4" />
               </Link>
             </Button>
           </div>
 
           <div className="mt-16 grid gap-7 sm:grid-cols-2 xl:grid-cols-4">
-            {featuredRoutes.map((route) => (
+            {caravans.map((route) => (
               <Link
-                key={route.title}
-                href={route.href}
+                key={route.id}
+                href={`/caravanas/${route.slug}`}
                 className="group flex h-[420px] overflow-hidden rounded-[16px] border border-[#d7e7f5] bg-white shadow-[0_10px_28px_rgb(13_54_83_/_8%)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_44px_rgb(13_54_83_/_12%)]"
               >
                 <article className="flex w-full flex-col">
-                  <div className="relative h-[250px] shrink-0 overflow-hidden">
-                    <div
-                      className="absolute inset-0 bg-cover bg-center transition duration-500 group-hover:scale-105"
-                      style={{ backgroundImage: `url(${route.imageUrl})` }}
-                      role="img"
-                      aria-label={`Imagem do roteiro ${route.title}`}
-                    />
+                  <div className="relative h-[250px] shrink-0 overflow-hidden bg-leehov-surface">
+                    {route.imageUrl ? <Image src={route.imageUrl} alt={`Imagem da caravana ${route.title}`} fill unoptimized sizes="(min-width: 1280px) 25vw, (min-width: 640px) 50vw, 100vw" className="object-cover transition duration-500 group-hover:scale-105 motion-reduce:transition-none" /> : null}
                     <span className="absolute left-4 top-4 rounded-full bg-leehov-blue-500 px-3 py-2 text-[12px] font-bold leading-4 text-white">
                       Grupo Acompanhado
                     </span>
@@ -142,10 +107,10 @@ export function HomePage({ posts, testimonials }: HomePageProps) {
                       {route.title}
                     </h3>
                     <p className="text-[14px] font-normal leading-[18px] text-[#7891a8]">
-                      {route.meta}
+                      {route.duration} | {route.category?.name ?? "Caravana"}
                     </p>
                     <p className="text-[18px] font-extrabold leading-[22px] text-[#0a9fe3]">
-                      {route.price}
+                      {route.price ?? "Sob consulta"}
                     </p>
                   </div>
                 </article>
@@ -153,12 +118,30 @@ export function HomePage({ posts, testimonials }: HomePageProps) {
             ))}
           </div>
 
+          {!caravans.length ? <Card className="mt-12 rounded-[18px] border-leehov-border p-8 text-center text-leehov-muted">Novas caravanas serão publicadas em breve.</Card> : null}
           <div className="mt-14 flex justify-center gap-3" aria-hidden="true">
             <span className="size-[13px] rounded-full bg-leehov-blue-500" />
             <span className="mt-0.5 size-2 rounded-full bg-[#d6e6f2]" />
             <span className="mt-0.5 size-2 rounded-full bg-[#d6e6f2]" />
             <span className="mt-0.5 size-2 rounded-full bg-[#d6e6f2]" />
           </div>
+        </div>
+      </section>
+
+      <section className="bg-[#f9fcff] px-5 py-20 sm:px-8 lg:px-12 xl:px-[112px]">
+        <div className="mx-auto grid max-w-[1313px] items-center gap-10 lg:grid-cols-[0.9fr_1.1fr]">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-leehov-blue-500">Viaje com quem cuida</p>
+            <h2 className="mt-4 text-[38px] font-extrabold leading-tight text-leehov-navy-950 sm:text-[48px]">A experiência Leehov começa antes do embarque</h2>
+            <p className="mt-5 max-w-xl text-base leading-8 text-leehov-muted">Planejamento, orientação e presença humana para que o grupo viva cada destino com confiança.</p>
+            <Button asChild variant="outline" size="lg" className="mt-7 rounded-full px-6"><Link href="/quem-somos">Conheça nosso jeito de viajar <ArrowRight className="size-4" /></Link></Button>
+          </div>
+          <a href={homeSettings.videoUrl || "/quem-somos"} target={homeSettings.videoUrl ? "_blank" : undefined} rel={homeSettings.videoUrl ? "noreferrer" : undefined} className="group relative aspect-video overflow-hidden rounded-[24px] bg-leehov-navy-950 shadow-leehov-floating focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-leehov-blue-300">
+            <Image src="/images/leehov/hero-fallback.jpg" alt="Grupo viajando com a Leehov" fill sizes="(min-width: 1024px) 55vw, 100vw" className="object-cover opacity-72 transition duration-500 group-hover:scale-[1.025] motion-reduce:transition-none" />
+            <span className="absolute inset-0 bg-gradient-to-t from-leehov-navy-950/65 to-transparent" />
+            <span className="absolute inset-0 flex items-center justify-center"><span className="flex size-16 items-center justify-center rounded-full border border-white/30 bg-white/16 text-white backdrop-blur transition group-hover:scale-105 group-hover:bg-white/24 motion-reduce:transition-none"><Play className="ml-1 size-6 fill-white" aria-hidden="true" /></span></span>
+            <span className="absolute inset-x-0 bottom-0 p-6 text-sm font-bold text-white">{homeSettings.videoUrl ? "Assistir ao vídeo institucional" : "Conhecer a história da Leehov"}</span>
+          </a>
         </div>
       </section>
 
@@ -197,10 +180,7 @@ export function HomePage({ posts, testimonials }: HomePageProps) {
                 <p className="mt-[20px] flex-1 text-[14px] font-normal leading-[22px] text-[#627b91]">
                   {benefit.text}
                 </p>
-                <span
-                  aria-hidden="true"
-                  className="mt-[20px] h-[3px] w-[52px] rounded-full bg-leehov-blue-500"
-                />
+                <span aria-hidden="true" className="mt-[20px] h-[3px] w-[52px] rounded-full bg-leehov-blue-500" />
               </article>
             ))}
           </div>
@@ -210,12 +190,7 @@ export function HomePage({ posts, testimonials }: HomePageProps) {
       <section className="bg-leehov-surface px-5 pb-[72px] pt-0 sm:px-8 lg:px-12 xl:px-11">
         <div className="mx-auto max-w-[1449px]">
           <div className="relative min-h-[300px] overflow-hidden rounded-[16px] bg-[linear-gradient(90deg,#082b46_0%,#0b5772_50%,#07253d_100%)] shadow-[0_22px_54px_rgb(6_42_68_/_10%)]">
-            <div
-              className="absolute inset-0 hidden bg-cover bg-center lg:block"
-              style={{ backgroundImage: `url(${newsletterImage})` }}
-              role="img"
-              aria-label="Ilha tropical vista do alto"
-            />
+            <Image src={newsletterImage} alt="Ilha tropical vista do alto" fill sizes="(min-width: 1024px) 1450px, 1px" className="hidden object-cover object-center lg:block" />
             <div className="absolute inset-0 bg-[linear-gradient(90deg,#062a44_0%,#062a44_31%,rgb(6_42_68_/_92%)_43%,rgb(6_42_68_/_56%)_58%,rgb(6_26_42_/_18%)_76%,rgb(6_26_42_/_4%)_100%)]" />
             <svg
               aria-hidden="true"
@@ -249,74 +224,16 @@ export function HomePage({ posts, testimonials }: HomePageProps) {
                   Novos destinos, ofertas exclusivas e dicas de viagem selecionadas especialmente para você.
                 </h2>
 
-                <form
-                  className="mt-[22px] flex max-w-[560px] flex-col gap-3 sm:flex-row sm:gap-0"
-                  aria-label="Inscrição na newsletter"
-                >
-                  <label className="sr-only" htmlFor="newsletter-email">
-                    Seu melhor e-mail
-                  </label>
-                  <input
-                    id="newsletter-email"
-                    name="email"
-                    type="email"
-                    placeholder="Seu melhor e-mail"
-                    className="h-11 w-full rounded-full border border-white/16 bg-[#073654] px-[22px] text-[13px] leading-4 text-white placeholder:text-[#98b5c8] outline-none transition focus:border-leehov-blue-300 sm:w-[314px] sm:rounded-r-none"
-                  />
-                  <button
-                    type="button"
-                    className="h-11 rounded-full bg-gradient-to-r from-leehov-blue-300 to-leehov-blue-600 px-8 text-[13px] font-extrabold leading-4 whitespace-nowrap text-white shadow-[0_10px_20px_rgb(8_117_205_/_30%)] transition hover:from-leehov-blue-500 hover:to-leehov-blue-600 sm:-ml-6 sm:w-[172px]"
-                  >
-                    Quero receber
-                  </button>
-                </form>
-
-                <p className="mt-4 flex flex-wrap items-center gap-2 text-[12px] leading-4 text-white/72">
-                  <LockKeyhole
-                    aria-hidden="true"
-                    className="size-4 fill-white text-white"
-                  />
-                  Prometemos não enviar spam.
-                  <Link
-                    href="/politica-de-privacidade"
-                    className="underline underline-offset-2 transition hover:text-white"
-                  >
-                    Política de Privacidade
-                  </Link>
-                </p>
+                <div className="mt-[22px]"><NewsletterSignup source="home" variant="banner" /></div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="bg-white px-5 py-24 sm:px-8 lg:px-12">
-        <div className="mx-auto max-w-7xl">
-          <SectionHeading
-            eyebrow="Avaliado por viajantes"
-            title="Depoimentos"
-            description="Cards preparados para combinar depoimentos manuais e Google Reviews cacheados."
-          />
-          <div className="grid gap-5 md:grid-cols-3">
-            {testimonials.map((testimonial) => (
-              <Card key={testimonial.id} className="rounded-[18px] border-leehov-border p-7 shadow-leehov-card">
-                <div className="mb-4 text-sm font-bold text-leehov-blue-600">
-                  {"★".repeat(testimonial.rating)}
-                </div>
-                <p className="text-sm leading-7 text-leehov-text">
-                  {testimonial.text}
-                </p>
-                <div className="mt-6">
-                  <p className="font-bold text-leehov-navy-950">{testimonial.name}</p>
-                  <p className="text-sm text-leehov-muted">{testimonial.city}</p>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+      <TestimonialsCarousel testimonials={testimonials} eyebrow={homeSettings.testimonialsEyebrow} title={homeSettings.testimonialsTitle} />
 
-      <section className="bg-leehov-surface px-5 py-24 sm:px-8 lg:px-12">
+      {posts.length ? <section className="bg-leehov-surface px-5 py-24 sm:px-8 lg:px-12">
         <div className="mx-auto max-w-7xl">
           <SectionHeading
             eyebrow="Inspirações"
@@ -330,10 +247,7 @@ export function HomePage({ posts, testimonials }: HomePageProps) {
           <div className="grid gap-5 md:grid-cols-3">
             {posts.map((post) => (
               <Link key={post.id} href={`/blog/${post.slug}`} className="group overflow-hidden rounded-[18px] border border-leehov-border bg-white shadow-leehov-card">
-                <div
-                  className="h-48 bg-cover bg-center transition group-hover:scale-105"
-                  style={{ backgroundImage: `url(${post.imageUrl})` }}
-                />
+                <div className="relative h-48 overflow-hidden bg-leehov-surface">{post.imageUrl ? <Image src={post.imageUrl} alt={post.coverAltText} fill unoptimized sizes="(min-width: 768px) 33vw, 100vw" className="object-cover transition duration-500 group-hover:scale-105 motion-reduce:transition-none" /> : null}</div>
                 <div className="p-5">
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-leehov-blue-600">
                     {post.category}
@@ -349,7 +263,7 @@ export function HomePage({ posts, testimonials }: HomePageProps) {
             ))}
           </div>
         </div>
-      </section>
+      </section> : null}
     </>
   );
 }

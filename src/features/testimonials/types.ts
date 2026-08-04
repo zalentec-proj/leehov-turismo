@@ -1,6 +1,6 @@
 import type { Enums } from "@/types/database";
 
-export type TestimonialSource = "manual" | "google";
+export type TestimonialSource = "manual" | "google" | "google_places";
 export type ReviewDisplayMode = Enums<"review_display_mode">;
 
 export type TestimonialSummary = {
@@ -11,6 +11,7 @@ export type TestimonialSummary = {
   rating: number;
   text: string;
   imageUrl: string;
+  sourceUrl: string;
   source: TestimonialSource;
   featured: boolean;
   orderIndex: number;
@@ -26,6 +27,8 @@ export type Testimonial = TestimonialSummary & {
 export type GoogleReview = TestimonialSummary & {
   googleReviewId: string;
   profileUrl: string;
+  provider: "business_profile" | "places";
+  canModerate: boolean;
   replyComment: string;
   visible: boolean;
   syncedAt: string;
@@ -59,6 +62,8 @@ export type GoogleBusinessSettings = {
   lastSyncError: string;
   credentialsConfigured: boolean;
   apiAccessStatus: "pending" | "approved" | "blocked";
+  placesConfigured: boolean;
+  placesPlaceId: string;
   connection: GoogleBusinessConnection | null;
 };
 
@@ -69,4 +74,8 @@ export type TestimonialMetrics = {
   googleVisible: number;
 };
 
-export type TestimonialActionResult = { success: boolean; message: string; id?: string };
+export type TestimonialActionResult = {
+  success: boolean;
+  message: string;
+  id?: string;
+};

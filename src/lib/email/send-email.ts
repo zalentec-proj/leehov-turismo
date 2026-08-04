@@ -2,7 +2,7 @@ import "server-only";
 import type { ReactElement } from "react";
 import type { EmailDeliveryResult, EmailTemplateKey } from "@/features/emails/types";
 import { createEmailLog, finishEmailLog } from "@/lib/email/email-log";
-import { getResendClient } from "@/lib/email/resend";
+import { getResendApiKey, getResendClient } from "@/lib/email/resend";
 import type { Json } from "@/types/database";
 import { getServerEmailSettings } from "@/features/settings/queries";
 
@@ -36,7 +36,7 @@ export async function sendTransactionalEmail(input: SendEmailInput): Promise<Ema
   const settings = await getServerEmailSettings();
   const from = process.env.RESEND_FROM_EMAIL;
   const visitorConfirmationDisabled = input.templateKey.startsWith("visitor_") && !settings.visitorConfirmationsEnabled;
-  const hasProviderConfiguration = Boolean(settings.enabled && !visitorConfirmationDisabled && process.env.RESEND_API_KEY && from);
+  const hasProviderConfiguration = Boolean(settings.enabled && !visitorConfirmationDisabled && getResendApiKey() && from);
 
   if (!input.to || !hasProviderConfiguration) {
     const logId = await createEmailLog({

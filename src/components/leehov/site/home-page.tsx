@@ -6,7 +6,6 @@ import {
   Headphones,
   Mail,
   Plane,
-  Play,
   ShoppingBag,
   ShieldCheck,
   UsersRound,
@@ -16,6 +15,7 @@ import { Card } from "@/components/ui/card";
 import { SectionHeading } from "@/components/leehov/shared/section-heading";
 import { HomeAboutLeehovSection } from "@/components/leehov/site/home-about-leehov-section";
 import { HomeHeroCarousel } from "@/components/leehov/site/home-hero-carousel";
+import { HomeInstitutionalVideo } from "@/components/leehov/site/home-institutional-video";
 import type { BlogPostSummary } from "@/features/blog/types";
 import type { CaravanDetail, CaravanSummary } from "@/features/caravans/types";
 import type { TestimonialSummary } from "@/features/testimonials/types";
@@ -61,7 +61,13 @@ const benefits = [
 
 const newsletterImage = "/images/leehov/about-island.jpg";
 
-export function HomePage({ caravans, heroCaravans, posts, testimonials, homeSettings }: HomePageProps) {
+export function HomePage({
+  caravans,
+  heroCaravans,
+  posts,
+  testimonials,
+  homeSettings,
+}: HomePageProps) {
   return (
     <>
       <HomeHeroCarousel caravans={heroCaravans} />
@@ -77,10 +83,15 @@ export function HomePage({ caravans, heroCaravans, posts, testimonials, homeSett
                 Caravanas em destaque
               </h2>
               <p className="mt-[18px] max-w-[620px] text-[16px] font-normal leading-[26px] text-[#6d879d]">
-                Viagens em grupo selecionadas para você explorar cada destino com organização, segurança e acompanhamento próximo.
+                Viagens em grupo selecionadas para você explorar cada destino
+                com organização, segurança e acompanhamento próximo.
               </p>
             </div>
-            <Button asChild variant="link" className="h-auto p-0 text-[15px] font-extrabold leading-[18px] text-leehov-blue-500 hover:text-leehov-blue-600">
+            <Button
+              asChild
+              variant="link"
+              className="h-auto p-0 text-[15px] font-extrabold leading-[18px] text-leehov-blue-500 hover:text-leehov-blue-600"
+            >
               <Link href="/caravanas">
                 Ver todas as caravanas
                 <ArrowRight className="size-4" />
@@ -97,7 +108,16 @@ export function HomePage({ caravans, heroCaravans, posts, testimonials, homeSett
               >
                 <article className="flex w-full flex-col">
                   <div className="relative h-[250px] shrink-0 overflow-hidden bg-leehov-surface">
-                    {route.imageUrl ? <Image src={route.imageUrl} alt={`Imagem da caravana ${route.title}`} fill unoptimized sizes="(min-width: 1280px) 25vw, (min-width: 640px) 50vw, 100vw" className="object-cover transition duration-500 group-hover:scale-105 motion-reduce:transition-none" /> : null}
+                    {route.imageUrl ? (
+                      <Image
+                        src={route.imageUrl}
+                        alt={`Imagem da caravana ${route.title}`}
+                        fill
+                        unoptimized
+                        sizes="(min-width: 1280px) 25vw, (min-width: 640px) 50vw, 100vw"
+                        className="object-cover transition duration-500 group-hover:scale-105 motion-reduce:transition-none"
+                      />
+                    ) : null}
                     <span className="absolute left-4 top-4 rounded-full bg-leehov-blue-500 px-3 py-2 text-[12px] font-bold leading-4 text-white">
                       Grupo Acompanhado
                     </span>
@@ -118,7 +138,11 @@ export function HomePage({ caravans, heroCaravans, posts, testimonials, homeSett
             ))}
           </div>
 
-          {!caravans.length ? <Card className="mt-12 rounded-[18px] border-leehov-border p-8 text-center text-leehov-muted">Novas caravanas serão publicadas em breve.</Card> : null}
+          {!caravans.length ? (
+            <Card className="mt-12 rounded-[18px] border-leehov-border p-8 text-center text-leehov-muted">
+              Novas caravanas serão publicadas em breve.
+            </Card>
+          ) : null}
           <div className="mt-14 flex justify-center gap-3" aria-hidden="true">
             <span className="size-[13px] rounded-full bg-leehov-blue-500" />
             <span className="mt-0.5 size-2 rounded-full bg-[#d6e6f2]" />
@@ -131,17 +155,28 @@ export function HomePage({ caravans, heroCaravans, posts, testimonials, homeSett
       <section className="bg-[#f9fcff] px-5 py-20 sm:px-8 lg:px-12 xl:px-[112px]">
         <div className="mx-auto grid max-w-[1313px] items-center gap-10 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-leehov-blue-500">Viaje com quem cuida</p>
-            <h2 className="mt-4 text-[38px] font-extrabold leading-tight text-leehov-navy-950 sm:text-[48px]">A experiência Leehov começa antes do embarque</h2>
-            <p className="mt-5 max-w-xl text-base leading-8 text-leehov-muted">Planejamento, orientação e presença humana para que o grupo viva cada destino com confiança.</p>
-            <Button asChild variant="outline" size="lg" className="mt-7 rounded-full px-6"><Link href="/quem-somos">Conheça nosso jeito de viajar <ArrowRight className="size-4" /></Link></Button>
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-leehov-blue-500">
+              Viaje com quem cuida
+            </p>
+            <h2 className="mt-4 text-[38px] font-extrabold leading-tight text-leehov-navy-950 sm:text-[48px]">
+              A experiência Leehov começa antes do embarque
+            </h2>
+            <p className="mt-5 max-w-xl text-base leading-8 text-leehov-muted">
+              Planejamento, orientação e presença humana para que o grupo viva
+              cada destino com confiança.
+            </p>
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="mt-7 rounded-full px-6"
+            >
+              <Link href="/quem-somos">
+                Conheça nosso jeito de viajar <ArrowRight className="size-4" />
+              </Link>
+            </Button>
           </div>
-          <a href={homeSettings.videoUrl || "/quem-somos"} target={homeSettings.videoUrl ? "_blank" : undefined} rel={homeSettings.videoUrl ? "noreferrer" : undefined} className="group relative aspect-video overflow-hidden rounded-[24px] bg-leehov-navy-950 shadow-leehov-floating focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-leehov-blue-300">
-            <Image src="/images/leehov/hero-fallback.jpg" alt="Grupo viajando com a Leehov" fill sizes="(min-width: 1024px) 55vw, 100vw" className="object-cover opacity-72 transition duration-500 group-hover:scale-[1.025] motion-reduce:transition-none" />
-            <span className="absolute inset-0 bg-gradient-to-t from-leehov-navy-950/65 to-transparent" />
-            <span className="absolute inset-0 flex items-center justify-center"><span className="flex size-16 items-center justify-center rounded-full border border-white/30 bg-white/16 text-white backdrop-blur transition group-hover:scale-105 group-hover:bg-white/24 motion-reduce:transition-none"><Play className="ml-1 size-6 fill-white" aria-hidden="true" /></span></span>
-            <span className="absolute inset-x-0 bottom-0 p-6 text-sm font-bold text-white">{homeSettings.videoUrl ? "Assistir ao vídeo institucional" : "Conhecer a história da Leehov"}</span>
-          </a>
+          <HomeInstitutionalVideo videoUrl={homeSettings.videoUrl} />
         </div>
       </section>
 
@@ -158,7 +193,9 @@ export function HomePage({ caravans, heroCaravans, posts, testimonials, homeSett
               Por que viajar com a Leehov?
             </h2>
             <p className="mt-[22px] max-w-[680px] text-[17px] font-normal leading-[31px] text-[#627b91]">
-              Muito mais que destinos, entregamos confiança, cuidado e experiências feitas sob medida para você viver o melhor da sua jornada.
+              Muito mais que destinos, entregamos confiança, cuidado e
+              experiências feitas sob medida para você viver o melhor da sua
+              jornada.
             </p>
           </div>
 
@@ -180,7 +217,10 @@ export function HomePage({ caravans, heroCaravans, posts, testimonials, homeSett
                 <p className="mt-[20px] flex-1 text-[14px] font-normal leading-[22px] text-[#627b91]">
                   {benefit.text}
                 </p>
-                <span aria-hidden="true" className="mt-[20px] h-[3px] w-[52px] rounded-full bg-leehov-blue-500" />
+                <span
+                  aria-hidden="true"
+                  className="mt-[20px] h-[3px] w-[52px] rounded-full bg-leehov-blue-500"
+                />
               </article>
             ))}
           </div>
@@ -190,7 +230,13 @@ export function HomePage({ caravans, heroCaravans, posts, testimonials, homeSett
       <section className="bg-leehov-surface px-5 pb-[72px] pt-0 sm:px-8 lg:px-12 xl:px-11">
         <div className="mx-auto max-w-[1449px]">
           <div className="relative min-h-[300px] overflow-hidden rounded-[16px] bg-[linear-gradient(90deg,#082b46_0%,#0b5772_50%,#07253d_100%)] shadow-[0_22px_54px_rgb(6_42_68_/_10%)]">
-            <Image src={newsletterImage} alt="Ilha tropical vista do alto" fill sizes="(min-width: 1024px) 1450px, 1px" className="hidden object-cover object-center lg:block" />
+            <Image
+              src={newsletterImage}
+              alt="Ilha tropical vista do alto"
+              fill
+              sizes="(min-width: 1024px) 1450px, 1px"
+              className="hidden object-cover object-center lg:block"
+            />
             <div className="absolute inset-0 bg-[linear-gradient(90deg,#062a44_0%,#062a44_31%,rgb(6_42_68_/_92%)_43%,rgb(6_42_68_/_56%)_58%,rgb(6_26_42_/_18%)_76%,rgb(6_26_42_/_4%)_100%)]" />
             <svg
               aria-hidden="true"
@@ -221,49 +267,88 @@ export function HomePage({ caravans, heroCaravans, posts, testimonials, homeSett
                   Receba o melhor do mundo no seu e-mail
                 </p>
                 <h2 className="mt-[18px] max-w-[560px] text-[27px] font-extrabold leading-[36px] tracking-normal text-white sm:text-[31px] sm:leading-[40px]">
-                  Novos destinos, ofertas exclusivas e dicas de viagem selecionadas especialmente para você.
+                  Novos destinos, ofertas exclusivas e dicas de viagem
+                  selecionadas especialmente para você.
                 </h2>
 
-                <div className="mt-[22px]"><NewsletterSignup source="home" variant="banner" /></div>
+                <div className="mt-[22px]">
+                  <NewsletterSignup source="home" variant="banner" />
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <TestimonialsCarousel testimonials={testimonials} eyebrow={homeSettings.testimonialsEyebrow} title={homeSettings.testimonialsTitle} />
+      <TestimonialsCarousel
+        testimonials={testimonials}
+        eyebrow={homeSettings.testimonialsEyebrow}
+        title={homeSettings.testimonialsTitle}
+      />
 
-      {posts.length ? <section className="bg-leehov-surface px-5 py-24 sm:px-8 lg:px-12">
+      <section className="bg-leehov-surface px-5 py-24 sm:px-8 lg:px-12">
         <div className="mx-auto max-w-7xl">
           <SectionHeading
             eyebrow="Inspirações"
-            title="Conteúdos para planejar melhor"
+            title="Conteúdos para planejar melhor sua viagem"
             action={
               <Button asChild variant="link" className="text-leehov-blue-600">
                 <Link href="/blog">Ver blog</Link>
               </Button>
             }
           />
-          <div className="grid gap-5 md:grid-cols-3">
-            {posts.map((post) => (
-              <Link key={post.id} href={`/blog/${post.slug}`} className="group overflow-hidden rounded-[18px] border border-leehov-border bg-white shadow-leehov-card">
-                <div className="relative h-48 overflow-hidden bg-leehov-surface">{post.imageUrl ? <Image src={post.imageUrl} alt={post.coverAltText} fill unoptimized sizes="(min-width: 768px) 33vw, 100vw" className="object-cover transition duration-500 group-hover:scale-105 motion-reduce:transition-none" /> : null}</div>
-                <div className="p-5">
-                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-leehov-blue-600">
-                    {post.category}
-                  </p>
-                  <h3 className="mt-3 text-lg font-bold text-leehov-navy-950">
-                    {post.title}
-                  </h3>
-                  <p className="mt-3 text-sm leading-6 text-leehov-muted">
-                    {post.summary}
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
+          {posts.length ? (
+            <div className="grid gap-5 md:grid-cols-3">
+              {posts.map((post) => (
+                <Link
+                  key={post.id}
+                  href={`/blog/${post.slug}`}
+                  className="group overflow-hidden rounded-[18px] border border-leehov-border bg-white shadow-leehov-card"
+                >
+                  <div className="relative h-48 overflow-hidden bg-leehov-surface">
+                    {post.imageUrl ? (
+                      <Image
+                        src={post.imageUrl}
+                        alt={post.coverAltText}
+                        fill
+                        unoptimized
+                        sizes="(min-width: 768px) 33vw, 100vw"
+                        className="object-cover transition duration-500 group-hover:scale-105 motion-reduce:transition-none"
+                      />
+                    ) : null}
+                  </div>
+                  <div className="p-5">
+                    <p className="text-xs font-bold uppercase tracking-[0.18em] text-leehov-blue-600">
+                      {post.category}
+                    </p>
+                    <h3 className="mt-3 text-lg font-bold text-leehov-navy-950">
+                      {post.title}
+                    </h3>
+                    <p className="mt-3 text-sm leading-6 text-leehov-muted">
+                      {post.summary}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <Card className="mt-8 rounded-[18px] border-leehov-border bg-white p-8 text-center shadow-leehov-card">
+              <p className="text-lg font-bold text-leehov-navy-950">
+                Novas histórias estão a caminho
+              </p>
+              <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-leehov-muted">
+                Em breve, você encontrará roteiros, destinos e orientações para
+                viajar em grupo com mais confiança.
+              </p>
+              <Button asChild variant="outline" className="mt-5 rounded-full">
+                <Link href="/blog">
+                  Conhecer o Blog <ArrowRight className="size-4" />
+                </Link>
+              </Button>
+            </Card>
+          )}
         </div>
-      </section> : null}
+      </section>
     </>
   );
 }

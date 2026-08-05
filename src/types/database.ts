@@ -856,16 +856,66 @@ export type Database = {
           },
         ]
       }
+      lead_interactions: {
+        Row: {
+          body: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          interaction_type: Database["public"]["Enums"]["lead_interaction_type"]
+          lead_id: string
+          metadata: Json
+          title: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          interaction_type: Database["public"]["Enums"]["lead_interaction_type"]
+          lead_id: string
+          metadata?: Json
+          title: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          interaction_type?: Database["public"]["Enums"]["lead_interaction_type"]
+          lead_id?: string
+          metadata?: Json
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_interactions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_interactions_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
+          assigned_to: string | null
           caravan_id: string | null
           city: string | null
           created_at: string
-          email: string
+          email: string | null
           id: string
-          message: string
+          message: string | null
           metadata: Json
           name: string
+          next_follow_up_at: string | null
           phone: string
           source: string
           state: string | null
@@ -874,14 +924,16 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          assigned_to?: string | null
           caravan_id?: string | null
           city?: string | null
           created_at?: string
-          email: string
+          email?: string | null
           id?: string
-          message: string
+          message?: string | null
           metadata?: Json
           name: string
+          next_follow_up_at?: string | null
           phone: string
           source: string
           state?: string | null
@@ -890,14 +942,16 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          assigned_to?: string | null
           caravan_id?: string | null
           city?: string | null
           created_at?: string
-          email?: string
+          email?: string | null
           id?: string
-          message?: string
+          message?: string | null
           metadata?: Json
           name?: string
+          next_follow_up_at?: string | null
           phone?: string
           source?: string
           state?: string | null
@@ -906,6 +960,13 @@ export type Database = {
           updated_by?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "leads_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "leads_caravan_id_fkey"
             columns: ["caravan_id"]
@@ -966,6 +1027,156 @@ export type Database = {
           {
             foreignKeyName: "media_assets_created_by_fkey"
             columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      newsletter_campaign_recipients: {
+        Row: {
+          attempts: number
+          campaign_id: string
+          created_at: string
+          error_message: string | null
+          id: string
+          next_attempt_at: string | null
+          processing_started_at: string | null
+          provider_message_id: string | null
+          recipient_email: string
+          recipient_name: string | null
+          sent_at: string | null
+          skipped_at: string | null
+          status: Database["public"]["Enums"]["newsletter_recipient_status"]
+          subscriber_id: string | null
+          unsubscribe_token_hash: string | null
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          campaign_id: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          next_attempt_at?: string | null
+          processing_started_at?: string | null
+          provider_message_id?: string | null
+          recipient_email: string
+          recipient_name?: string | null
+          sent_at?: string | null
+          skipped_at?: string | null
+          status?: Database["public"]["Enums"]["newsletter_recipient_status"]
+          subscriber_id?: string | null
+          unsubscribe_token_hash?: string | null
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          campaign_id?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          next_attempt_at?: string | null
+          processing_started_at?: string | null
+          provider_message_id?: string | null
+          recipient_email?: string
+          recipient_name?: string | null
+          sent_at?: string | null
+          skipped_at?: string | null
+          status?: Database["public"]["Enums"]["newsletter_recipient_status"]
+          subscriber_id?: string | null
+          unsubscribe_token_hash?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "newsletter_campaign_recipients_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "newsletter_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "newsletter_campaign_recipients_subscriber_id_fkey"
+            columns: ["subscriber_id"]
+            isOneToOne: false
+            referencedRelation: "newsletter_subscribers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      newsletter_campaigns: {
+        Row: {
+          archived_at: string | null
+          audience_frozen_at: string | null
+          cancelled_at: string | null
+          content: Json
+          created_at: string
+          created_by: string | null
+          id: string
+          internal_title: string
+          last_error: string | null
+          pause_reason: string | null
+          preheader: string | null
+          scheduled_at: string | null
+          sending_started_at: string | null
+          sent_at: string | null
+          status: Database["public"]["Enums"]["newsletter_campaign_status"]
+          subject: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          archived_at?: string | null
+          audience_frozen_at?: string | null
+          cancelled_at?: string | null
+          content?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          internal_title: string
+          last_error?: string | null
+          pause_reason?: string | null
+          preheader?: string | null
+          scheduled_at?: string | null
+          sending_started_at?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["newsletter_campaign_status"]
+          subject: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          archived_at?: string | null
+          audience_frozen_at?: string | null
+          cancelled_at?: string | null
+          content?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          internal_title?: string
+          last_error?: string | null
+          pause_reason?: string | null
+          preheader?: string | null
+          scheduled_at?: string | null
+          sending_started_at?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["newsletter_campaign_status"]
+          subject?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "newsletter_campaigns_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "newsletter_campaigns_updated_by_fkey"
+            columns: ["updated_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -1412,7 +1623,23 @@ export type Database = {
         | "synced"
         | "delete_pending"
         | "error"
+      lead_interaction_type:
+        | "note"
+        | "status_change"
+        | "assignment"
+        | "follow_up"
+        | "call"
+        | "whatsapp"
+        | "profile_update"
       lead_status: "new" | "in_progress" | "converted" | "archived"
+      newsletter_campaign_status:
+        | "draft"
+        | "scheduled"
+        | "sending"
+        | "paused"
+        | "sent"
+        | "cancelled"
+      newsletter_recipient_status: "pending" | "processing" | "sent" | "failed" | "skipped"
       newsletter_status: "pending" | "active" | "unsubscribed"
       popup_display_location: "home" | "blog" | "caravans" | "sitewide"
       popup_frequency: "always" | "session" | "daily" | "weekly"
@@ -1421,6 +1648,9 @@ export type Database = {
       webhook_delivery_status: "pending" | "sent" | "failed"
       webhook_event:
         | "lead.created"
+        | "lead.updated"
+        | "lead.status_changed"
+        | "lead.interaction.created"
         | "caravan_interest.created"
         | "contact.created"
         | "newsletter.subscribed"
@@ -1581,7 +1811,18 @@ export const Constants = {
         "delete_pending",
         "error",
       ],
+      lead_interaction_type: [
+        "note",
+        "status_change",
+        "assignment",
+        "follow_up",
+        "call",
+        "whatsapp",
+        "profile_update",
+      ],
       lead_status: ["new", "in_progress", "converted", "archived"],
+      newsletter_campaign_status: ["draft", "scheduled", "sending", "paused", "sent", "cancelled"],
+      newsletter_recipient_status: ["pending", "processing", "sent", "failed", "skipped"],
       newsletter_status: ["pending", "active", "unsubscribed"],
       popup_display_location: ["home", "blog", "caravans", "sitewide"],
       popup_frequency: ["always", "session", "daily", "weekly"],
@@ -1590,6 +1831,9 @@ export const Constants = {
       webhook_delivery_status: ["pending", "sent", "failed"],
       webhook_event: [
         "lead.created",
+        "lead.updated",
+        "lead.status_changed",
+        "lead.interaction.created",
         "caravan_interest.created",
         "contact.created",
         "newsletter.subscribed",

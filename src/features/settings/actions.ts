@@ -13,7 +13,16 @@ export async function saveSiteSettingsAction(input: unknown): Promise<SiteSettin
   const supabase = await createClient();
   const rows = [
     { key: "contact_info", value: parsed.data.contact, media_asset_id: null },
-    { key: "whatsapp_settings", value: parsed.data.whatsapp, media_asset_id: null },
+    { key: "whatsapp_settings", value: {
+      number: parsed.data.whatsapp.number,
+      defaultMessage: parsed.data.whatsapp.defaultMessage,
+      caravanMessage: parsed.data.whatsapp.caravanMessage,
+      provider: parsed.data.whatsapp.provider,
+      evolutionBaseUrl: parsed.data.whatsapp.evolutionBaseUrl,
+      evolutionInstance: parsed.data.whatsapp.evolutionInstance,
+      generalTemplate: parsed.data.whatsapp.generalTemplate,
+      caravanTemplate: parsed.data.whatsapp.caravanTemplate,
+    }, media_asset_id: null },
     { key: "social_links", value: parsed.data.social, media_asset_id: null },
     { key: "home_settings", value: parsed.data.home, media_asset_id: null },
     { key: "seo_global", value: { siteName: parsed.data.seo.siteName, titleTemplate: parsed.data.seo.titleTemplate, defaultDescription: parsed.data.seo.defaultDescription }, media_asset_id: parsed.data.seo.ogImageAssetId || null },

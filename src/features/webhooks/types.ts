@@ -1,5 +1,8 @@
 export const WEBHOOK_EVENTS = [
   "lead.created",
+  "lead.updated",
+  "lead.status_changed",
+  "lead.interaction.created",
   "caravan_interest.created",
   "contact.created",
   "newsletter.subscribed",

@@ -4,7 +4,9 @@ export type EmailTemplateKey =
   | "admin_contact"
   | "visitor_contact_confirmation"
   | "newsletter_double_opt_in"
-  | "newsletter_welcome";
+  | "newsletter_welcome"
+  | "newsletter_campaign"
+  | "newsletter_campaign_test";
 
 export type EmailStatus = "pending" | "sent" | "failed" | "skipped";
 
@@ -27,4 +29,5 @@ export type EmailDeliveryResult = {
   status: Exclude<EmailStatus, "pending">;
   logId: string;
   providerMessageId?: string;
+  errorMessage?: string;
 };

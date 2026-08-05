@@ -10,15 +10,17 @@ import { requireActiveProfile } from "@/features/auth/queries";
 import {
   caravanInterestLeadSchema,
   contactLeadSchema,
+  leadInteractionSchema,
+  leadPipelineSchema,
   leadStatusSchema,
+  manualLeadSchema,
   type CaravanInterestLeadInput,
   type ContactLeadInput,
 } from "@/features/leads/schema";
-import type { LeadActionResult, LeadStatus } from "@/features/leads/types";
+import type { LeadActionResult, LeadInteractionType, LeadStatus } from "@/features/leads/types";
 import { parseEmailRecipients, sendTransactionalEmail } from "@/lib/email/send-email";
 import { protectPublicForm } from "@/lib/security/public-forms";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
 import { getPublicSiteSettings, getServerEmailSettings } from "@/features/settings/queries";
 import { buildWhatsAppUrl } from "@/features/settings/utils";
 import { emitWebhookEvent } from "@/lib/webhooks/events";
@@ -243,22 +245,136 @@ export async function createCaravanInterestAction(rawInput: CaravanInterestLeadI
 }
 
 export async function updateLeadStatusAction(id: string, rawStatus: LeadStatus): Promise<LeadActionResult> {
-  const profile = await requireActiveProfile();
+  await requireActiveProfile();
   const parsedId = leadStatusSchema.safeParse(rawStatus);
   if (!id.match(/^[0-9a-f-]{36}$/i) || !parsedId.success) {
     return { success: false, message: "Lead ou status inválido." };
   }
 
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("leads")
-    .update({ status: parsedId.data, updated_by: profile.id })
-    .eq("id", id)
-    .select("id")
-    .maybeSingle();
-  if (error || !data) return { success: false, message: "Não foi possível atualizar o lead." };
+  return updateLeadPipelineAction({ id, status: parsedId.data });
+}
 
+function refreshLeadPaths(id?: string) {
   revalidatePath("/admin");
   revalidatePath("/admin/leads");
-  return { success: true, message: "Status do lead atualizado." };
+  if (id) revalidatePath(`/admin/leads/${id}`);
+}
+
+async function insertInteraction(input: {
+  leadId: string;
+  type: LeadInteractionType;
+  title: string;
+  body?: string;
+  metadata?: Record<string, string | null>;
+  profileId: string;
+}) {
+  const { data, error } = await createAdminClient().from("lead_interactions").insert({
+    lead_id: input.leadId,
+    interaction_type: input.type,
+    title: input.title,
+    body: input.body?.trim() || null,
+    metadata: input.metadata ?? {},
+    created_by: input.profileId,
+  }).select("id").single();
+  if (error) throw error;
+  return data.id;
+}
+
+async function emitLeadOperationalEvent(event: "lead.created" | "lead.updated" | "lead.status_changed" | "lead.interaction.created", leadId: string, interaction?: { id: string; type: LeadInteractionType }) {
+  const { data } = await createAdminClient().from("leads").select("id, name, email, phone, source, status, caravan_id, assigned_to, next_follow_up_at").eq("id", leadId).maybeSingle();
+  if (!data) return;
+  await emitWebhookEvent(event, {
+    leadId: data.id,
+    name: data.name,
+    email: data.email ?? undefined,
+    phone: data.phone,
+    source: data.source,
+    status: data.status,
+    caravanId: data.caravan_id ?? undefined,
+    assignedTo: data.assigned_to ?? undefined,
+    nextFollowUpAt: data.next_follow_up_at ?? undefined,
+    interactionId: interaction?.id,
+    interactionType: interaction?.type,
+  });
+}
+
+export async function createManualLeadAction(input: unknown): Promise<LeadActionResult> {
+  const profile = await requireActiveProfile();
+  const parsed = manualLeadSchema.safeParse(input);
+  if (!parsed.success) return { success: false, message: parsed.error.issues[0]?.message ?? "Revise os dados do lead." };
+  const value = parsed.data;
+  const admin = createAdminClient();
+  const { data, error } = await admin.from("leads").insert({
+    name: value.name,
+    phone: value.phone,
+    email: value.email ? value.email.toLocaleLowerCase("pt-BR") : null,
+    message: value.message || null,
+    city: value.city || null,
+    state: value.state || null,
+    source: value.source,
+    caravan_id: value.caravanId || null,
+    assigned_to: value.assignedTo || null,
+    next_follow_up_at: value.nextFollowUpAt || null,
+    status: "new",
+    metadata: { createdFrom: "admin" },
+    updated_by: profile.id,
+  }).select("id").single();
+  if (error || !data) return { success: false, message: "Não foi possível cadastrar o lead." };
+  await insertInteraction({ leadId: data.id, type: "profile_update", title: "Lead cadastrado manualmente", profileId: profile.id });
+  await emitLeadOperationalEvent("lead.created", data.id);
+  refreshLeadPaths(data.id);
+  return { success: true, message: "Lead cadastrado.", id: data.id };
+}
+
+export async function updateLeadPipelineAction(input: unknown): Promise<LeadActionResult> {
+  const profile = await requireActiveProfile();
+  const parsed = leadPipelineSchema.safeParse(input);
+  if (!parsed.success) return { success: false, message: "Atualização inválida." };
+  const admin = createAdminClient();
+  const { data: current } = await admin.from("leads").select("status, assigned_to, next_follow_up_at").eq("id", parsed.data.id).maybeSingle();
+  if (!current) return { success: false, message: "Lead não encontrado." };
+  const changes: { status?: LeadStatus; assigned_to?: string | null; next_follow_up_at?: string | null; updated_by: string } = { updated_by: profile.id };
+  if (parsed.data.status !== undefined) changes.status = parsed.data.status;
+  if (parsed.data.assignedTo !== undefined) changes.assigned_to = parsed.data.assignedTo || null;
+  if (parsed.data.nextFollowUpAt !== undefined) changes.next_follow_up_at = parsed.data.nextFollowUpAt || null;
+  const { data, error } = await admin.from("leads").update(changes).eq("id", parsed.data.id).select("id").maybeSingle();
+  if (error || !data) return { success: false, message: "Não foi possível atualizar o lead." };
+
+  let interaction: { id: string; type: LeadInteractionType } | undefined;
+  if (parsed.data.status !== undefined && parsed.data.status !== current.status) {
+    const id = await insertInteraction({ leadId: data.id, type: "status_change", title: "Status atualizado", metadata: { from: current.status, to: parsed.data.status }, profileId: profile.id });
+    interaction = { id, type: "status_change" };
+    await emitLeadOperationalEvent("lead.status_changed", data.id, interaction);
+  } else if (parsed.data.assignedTo !== undefined && (parsed.data.assignedTo || null) !== current.assigned_to) {
+    const id = await insertInteraction({ leadId: data.id, type: "assignment", title: parsed.data.assignedTo ? "Responsável atualizado" : "Responsável removido", metadata: { assignedTo: parsed.data.assignedTo || null }, profileId: profile.id });
+    interaction = { id, type: "assignment" };
+  } else if (parsed.data.nextFollowUpAt !== undefined && (parsed.data.nextFollowUpAt || null) !== current.next_follow_up_at) {
+    const id = await insertInteraction({ leadId: data.id, type: "follow_up", title: parsed.data.nextFollowUpAt ? "Próximo contato agendado" : "Acompanhamento removido", metadata: { nextFollowUpAt: parsed.data.nextFollowUpAt || null }, profileId: profile.id });
+    interaction = { id, type: "follow_up" };
+  }
+  await emitLeadOperationalEvent("lead.updated", data.id, interaction);
+  if (interaction) await emitLeadOperationalEvent("lead.interaction.created", data.id, interaction);
+  refreshLeadPaths(data.id);
+  return { success: true, message: "Lead atualizado." };
+}
+
+export async function addLeadInteractionAction(input: unknown): Promise<LeadActionResult> {
+  const profile = await requireActiveProfile();
+  const parsed = leadInteractionSchema.safeParse(input);
+  if (!parsed.success) return { success: false, message: parsed.error.issues[0]?.message ?? "Revise a interação." };
+  const id = await insertInteraction({ leadId: parsed.data.leadId, type: parsed.data.type, title: parsed.data.title, body: parsed.data.body, profileId: profile.id });
+  await emitLeadOperationalEvent("lead.interaction.created", parsed.data.leadId, { id, type: parsed.data.type });
+  refreshLeadPaths(parsed.data.leadId);
+  return { success: true, message: "Interação registrada.", id };
+}
+
+export async function recordLeadWhatsAppInteractionAction(leadId: string): Promise<void> {
+  try {
+    const profile = await requireActiveProfile();
+    const id = await insertInteraction({ leadId, type: "whatsapp", title: "Conversa iniciada pelo WhatsApp", profileId: profile.id });
+    await emitLeadOperationalEvent("lead.interaction.created", leadId, { id, type: "whatsapp" });
+    refreshLeadPaths(leadId);
+  } catch {
+    // A abertura do wa.me não depende do registro de auditoria.
+  }
 }

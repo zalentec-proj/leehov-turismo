@@ -70,6 +70,6 @@ export async function sendTransactionalEmail(input: SendEmailInput): Promise<Ema
   } catch (error) {
     const errorMessage = sanitizeEmailError(error);
     await finishEmailLog({ id: logId, status: "failed", errorMessage });
-    return { status: "failed", logId };
+    return { status: "failed", logId, errorMessage };
   }
 }

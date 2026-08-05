@@ -190,7 +190,23 @@ export async function unsubscribeNewsletterAction(rawToken: string): Promise<New
       .eq("unsubscribe_token_hash", tokenHash)
       .maybeSingle();
     if (error) throw error;
-    if (!subscriber) return { success: false, status: "invalid", message: "Link de cancelamento inválido." };
+    if (!subscriber) {
+      const { data: recipient, error: recipientError } = await admin
+        .from("newsletter_campaign_recipients")
+        .select("id, subscriber_id, recipient_email")
+        .eq("unsubscribe_token_hash", tokenHash)
+        .maybeSingle();
+      if (recipientError) throw recipientError;
+      if (!recipient) return { success: false, status: "invalid", message: "Link de cancelamento inválido." };
+      const subscriberQuery = admin.from("newsletter_subscribers").update({ status: "unsubscribed", unsubscribed_at: new Date().toISOString() }).eq("status", "active");
+      const { error: campaignUnsubscribeError } = recipient.subscriber_id
+        ? await subscriberQuery.eq("id", recipient.subscriber_id)
+        : await subscriberQuery.eq("email", recipient.recipient_email);
+      if (campaignUnsubscribeError) throw campaignUnsubscribeError;
+      await admin.from("newsletter_campaign_recipients").update({ status: "skipped", skipped_at: new Date().toISOString(), error_message: "Inscrição cancelada." }).eq("recipient_email", recipient.recipient_email).in("status", ["pending", "processing", "failed"]);
+      revalidateNewsletter();
+      return { success: true, status: "unsubscribed", message: "Sua inscrição foi cancelada." };
+    }
 
     if (subscriber.status === "active") {
       const { error: updateError } = await admin

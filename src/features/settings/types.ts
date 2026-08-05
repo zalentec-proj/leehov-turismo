@@ -1,5 +1,13 @@
 export type ContactSettings = { phone: string; contactEmail: string; address: string };
-export type WhatsAppSettings = { number: string; defaultMessage: string; caravanMessage: string };
+export type WhatsAppProviderSettings = {
+  provider: "manual" | "evolution";
+  evolutionBaseUrl: string;
+  evolutionInstance: string;
+  apiKeyConfigured: boolean;
+  generalTemplate: string;
+  caravanTemplate: string;
+};
+export type WhatsAppSettings = { number: string; defaultMessage: string; caravanMessage: string } & WhatsAppProviderSettings;
 export type SocialSettings = { instagram: string; facebook: string; youtube: string };
 export type HomeSettings = { videoUrl: string; testimonialsEyebrow: string; testimonialsTitle: string };
 export type SeoSettings = { siteName: string; titleTemplate: string; defaultDescription: string; ogImageAssetId: string; ogImageUrl: string };

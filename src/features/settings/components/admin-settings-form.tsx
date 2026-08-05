@@ -114,7 +114,7 @@ export function AdminSettingsForm({
         <SettingsTab
           value="whatsapp"
           title="WhatsApp e mensagens"
-          description="O CTA aparece somente quando houver um número institucional."
+          description="O modo Evolution fica apenas preparado nesta sprint; nenhuma mensagem é enviada pela API."
         >
           <div className="grid gap-4 md:grid-cols-2">
             {input(
@@ -124,7 +124,11 @@ export function AdminSettingsForm({
                 setForm({ ...form, whatsapp: { ...form.whatsapp, number } }),
               "+55 11 99999-9999",
             )}
-            <div />
+            <Field label="Provider">
+              <Select value={form.whatsapp.provider} onValueChange={(provider: "manual" | "evolution") => setForm({ ...form, whatsapp: { ...form.whatsapp, provider } })}>
+                <SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="manual">Manual (wa.me)</SelectItem><SelectItem value="evolution">Evolution API — preparação</SelectItem></SelectContent>
+              </Select>
+            </Field>
             {input(
               "Mensagem geral",
               form.whatsapp.defaultMessage,
@@ -143,6 +147,13 @@ export function AdminSettingsForm({
                   whatsapp: { ...form.whatsapp, caravanMessage },
                 }),
             )}
+            {input("Modelo geral do CRM", form.whatsapp.generalTemplate, (generalTemplate) => setForm({ ...form, whatsapp: { ...form.whatsapp, generalTemplate } }), "Use {{nome}} e {{consultor}}")}
+            {input("Modelo para caravana", form.whatsapp.caravanTemplate, (caravanTemplate) => setForm({ ...form, whatsapp: { ...form.whatsapp, caravanTemplate } }), "Use {{nome}}, {{caravana}} e {{consultor}}")}
+            {input("URL HTTPS da Evolution", form.whatsapp.evolutionBaseUrl, (evolutionBaseUrl) => setForm({ ...form, whatsapp: { ...form.whatsapp, evolutionBaseUrl } }))}
+            {input("Nome da instância", form.whatsapp.evolutionInstance, (evolutionInstance) => setForm({ ...form, whatsapp: { ...form.whatsapp, evolutionInstance } }))}
+            <div className="md:col-span-2 rounded-2xl border border-leehov-border bg-leehov-surface p-4 text-sm text-leehov-muted">
+              API key: <strong className="text-leehov-navy-950">{form.whatsapp.apiKeyConfigured ? "configurada no servidor" : "não configurada"}</strong>. A chave nunca é salva nestas configurações nem enviada ao navegador.
+            </div>
           </div>
         </SettingsTab>
         <SettingsTab

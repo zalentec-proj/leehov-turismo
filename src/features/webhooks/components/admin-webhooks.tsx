@@ -20,6 +20,9 @@ import { WEBHOOK_EVENTS, type Webhook, type WebhookDeliveryLog, type WebhookEven
 
 const EVENT_LABELS: Record<WebhookEvent, string> = {
   "lead.created": "Lead criado",
+  "lead.updated": "Lead atualizado",
+  "lead.status_changed": "Status do lead alterado",
+  "lead.interaction.created": "Interação com lead criada",
   "caravan_interest.created": "Interesse em caravana",
   "contact.created": "Contato criado",
   "newsletter.subscribed": "Inscrição iniciada",

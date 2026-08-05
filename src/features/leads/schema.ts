@@ -37,5 +37,35 @@ export const caravanInterestLeadSchema = z.object({
 
 export const leadStatusSchema = z.enum(["new", "in_progress", "converted", "archived"]);
 
+export const leadSourceSchema = z.enum(["manual", "whatsapp", "phone", "referral", "social", "other"]);
+
+export const manualLeadSchema = z.object({
+  name: z.string().trim().min(2, "Informe o nome do lead.").max(100),
+  phone: phoneSchema,
+  email: z.string().trim().email("Informe um e-mail válido.").max(254).or(z.literal("")),
+  message: z.string().trim().max(2000),
+  city: z.string().trim().max(100),
+  state: z.string().trim().max(50),
+  source: leadSourceSchema,
+  caravanId: z.string().uuid().or(z.literal("")),
+  assignedTo: z.string().uuid().or(z.literal("")),
+  nextFollowUpAt: z.string().datetime({ offset: true }).or(z.literal("")),
+});
+
+export const leadPipelineSchema = z.object({
+  id: z.string().uuid(),
+  status: leadStatusSchema.optional(),
+  assignedTo: z.string().uuid().or(z.literal("")).optional(),
+  nextFollowUpAt: z.string().datetime({ offset: true }).or(z.literal("")).optional(),
+});
+
+export const leadInteractionSchema = z.object({
+  leadId: z.string().uuid(),
+  type: z.enum(["note", "call", "whatsapp"]),
+  title: z.string().trim().min(2).max(160),
+  body: z.string().trim().max(4000),
+});
+
 export type ContactLeadInput = z.infer<typeof contactLeadSchema>;
 export type CaravanInterestLeadInput = z.infer<typeof caravanInterestLeadSchema>;
+export type ManualLeadInput = z.infer<typeof manualLeadSchema>;

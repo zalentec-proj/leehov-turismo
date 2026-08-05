@@ -10,9 +10,9 @@ import { TurnstileField } from "@/components/leehov/shared/turnstile-field";
 import { collectAttribution } from "@/features/shared/attribution";
 import { subscribeNewsletterAction } from "@/features/newsletter/actions";
 import { newsletterSignupSchema, type NewsletterSignupInput } from "@/features/newsletter/schema";
-import type { NewsletterSource } from "@/features/newsletter/types";
+import type { PublicNewsletterSource } from "@/features/newsletter/types";
 
-export function NewsletterSignup({ source, variant = "light" }: { source: NewsletterSource; variant?: "banner" | "light" | "dark" }) {
+export function NewsletterSignup({ source, variant = "light" }: { source: PublicNewsletterSource; variant?: "banner" | "light" | "dark" }) {
   const [result, setResult] = useState("");
   const [turnstileKey, setTurnstileKey] = useState(0);
   const form = useForm<NewsletterSignupInput>({

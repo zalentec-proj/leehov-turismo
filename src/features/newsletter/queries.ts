@@ -2,7 +2,8 @@ import "server-only";
 
 import { requireActiveProfile } from "@/features/auth/queries";
 import type { EmailLog, EmailTemplateKey } from "@/features/emails/types";
-import type { NewsletterMetrics, NewsletterStatus, NewsletterSubscriber } from "@/features/newsletter/types";
+import type { NewsletterCampaign, NewsletterCampaignBlock, NewsletterMetrics, NewsletterStatus, NewsletterSubscriber } from "@/features/newsletter/types";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export async function getAdminNewsletterSubscribers(): Promise<NewsletterSubscriber[]> {
@@ -66,4 +67,23 @@ export async function getEmailLogs(limit = 200): Promise<EmailLog[]> {
     createdAt: log.created_at,
     sentAt: log.sent_at,
   }));
+}
+
+export async function getAdminNewsletterCampaigns(): Promise<NewsletterCampaign[]> {
+  await requireActiveProfile();
+  const admin = createAdminClient();
+  const { data, error } = await admin.from("newsletter_campaigns").select("*, recipients:newsletter_campaign_recipients(status)").is("archived_at", null).order("created_at", { ascending: false });
+  if (error) throw new Error(`Não foi possível carregar as campanhas: ${error.message}`);
+  return (data ?? []).map((row) => {
+    const recipients = row.recipients ?? [];
+    return {
+      id: row.id, internalTitle: row.internal_title, subject: row.subject, preheader: row.preheader ?? "",
+      content: row.content as unknown as NewsletterCampaignBlock[], status: row.status, scheduledAt: row.scheduled_at,
+      audienceFrozenAt: row.audience_frozen_at, sendingStartedAt: row.sending_started_at, sentAt: row.sent_at,
+      cancelledAt: row.cancelled_at, archivedAt: row.archived_at, pauseReason: row.pause_reason ?? "", lastError: row.last_error ?? "",
+      recipientCount: recipients.length, sentCount: recipients.filter((item) => item.status === "sent").length,
+      failedCount: recipients.filter((item) => item.status === "failed").length, skippedCount: recipients.filter((item) => item.status === "skipped").length,
+      createdAt: row.created_at, updatedAt: row.updated_at,
+    };
+  });
 }

@@ -14,6 +14,12 @@ export const siteSettingsSchema = z.object({
     number: z.string().trim().regex(/^$|^\+?[0-9 ()-]{8,25}$/, "Informe um WhatsApp válido."),
     defaultMessage: z.string().trim().max(500),
     caravanMessage: z.string().trim().max(500),
+    provider: z.enum(["manual", "evolution"]),
+    evolutionBaseUrl: optionalUrl,
+    evolutionInstance: z.string().trim().max(120).regex(/^$|^[A-Za-z0-9._-]+$/, "Nome de instância inválido."),
+    apiKeyConfigured: z.boolean(),
+    generalTemplate: z.string().trim().min(5).max(1000),
+    caravanTemplate: z.string().trim().min(5).max(1000),
   }),
   social: z.object({ instagram: optionalUrl, facebook: optionalUrl, youtube: optionalUrl }),
   home: z.object({

@@ -20,6 +20,12 @@ const whatsappFallback = {
   number: LEEHOV_WHATSAPP_NUMBER,
   defaultMessage: "Olá! Gostaria de falar com a equipe Leehov.",
   caravanMessage: "Olá! Gostaria de saber mais sobre esta caravana.",
+  provider: "manual" as const,
+  evolutionBaseUrl: "",
+  evolutionInstance: "",
+  apiKeyConfigured: false,
+  generalTemplate: "Olá, {{nome}}! Aqui é {{consultor}} da Leehov Turismo.",
+  caravanTemplate: "Olá, {{nome}}! Vimos seu interesse na caravana {{caravana}}. Aqui é {{consultor}} da Leehov Turismo.",
 };
 const homeFallback = {
   videoUrl: "https://www.youtube.com/watch?v=976sGxAluKk",
@@ -154,6 +160,12 @@ export async function getPublicSiteSettings(): Promise<PublicSiteSettings> {
         "caravanMessage",
         whatsappFallback.caravanMessage,
       ),
+      provider: textValue(whatsapp, "provider") === "evolution" ? "evolution" as const : "manual" as const,
+      evolutionBaseUrl: safeHttpsUrl(textValue(whatsapp, "evolutionBaseUrl")),
+      evolutionInstance: textValue(whatsapp, "evolutionInstance"),
+      apiKeyConfigured: Boolean(process.env.EVOLUTION_API_KEY),
+      generalTemplate: textValue(whatsapp, "generalTemplate", whatsappFallback.generalTemplate),
+      caravanTemplate: textValue(whatsapp, "caravanTemplate", whatsappFallback.caravanTemplate),
     },
     social: {
       instagram: safeHttpsUrl(textValue(social, "instagram")),

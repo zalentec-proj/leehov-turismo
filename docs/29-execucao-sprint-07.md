@@ -105,9 +105,12 @@ Validação remota concluída:
 5. Cron ativo apenas no intervalo horário;
 6. advisors de performance sem erros ou avisos;
 7. advisor de segurança sem erros e com um aviso preexistente de proteção contra senhas vazadas desativada;
-8. `NEWSLETTER_CRON_SECRET` e `EMAIL_ASSET_SIGNING_SECRET` configurados como secrets de Production na Vercel.
+8. `NEWSLETTER_CRON_SECRET` e `EMAIL_ASSET_SIGNING_SECRET` configurados como secrets de Production na Vercel;
+9. `leehov_newsletter_cron_url` e `leehov_newsletter_cron_token` gravados no Supabase Vault após o deployment ficar `Ready`;
+10. rota sem autenticação rejeitada com `401`;
+11. chamada autenticada direta e chamada via `pg_net` validadas com `200`, `campaigns: 0` e `recipients: 0`.
 
-A URL e o token do worker serão gravados no Supabase Vault somente depois de a versão de produção responder corretamente, evitando chamadas para uma rota ainda não publicada.
+O ciclo foi ativado somente depois da publicação da rota. Antes do teste autenticado, o banco confirmou zero campanhas vencidas ou agendadas, portanto nenhum e-mail foi enviado.
 
 ## Dependências e segurança do projeto
 

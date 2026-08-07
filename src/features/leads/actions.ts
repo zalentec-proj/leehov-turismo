@@ -6,7 +6,7 @@ import { AdminCaravanLeadEmail } from "@/emails/templates/admin-caravan-lead-ema
 import { AdminContactEmail } from "@/emails/templates/admin-contact-email";
 import { VisitorCaravanLeadConfirmationEmail } from "@/emails/templates/visitor-caravan-lead-confirmation-email";
 import { VisitorContactConfirmationEmail } from "@/emails/templates/visitor-contact-confirmation-email";
-import { requireActiveProfile } from "@/features/auth/queries";
+import { requirePermission } from "@/features/auth/permissions";
 import {
   caravanInterestLeadSchema,
   contactLeadSchema,
@@ -245,7 +245,7 @@ export async function createCaravanInterestAction(rawInput: CaravanInterestLeadI
 }
 
 export async function updateLeadStatusAction(id: string, rawStatus: LeadStatus): Promise<LeadActionResult> {
-  await requireActiveProfile();
+  await requirePermission("leads.update");
   const parsedId = leadStatusSchema.safeParse(rawStatus);
   if (!id.match(/^[0-9a-f-]{36}$/i) || !parsedId.success) {
     return { success: false, message: "Lead ou status inválido." };
@@ -299,7 +299,7 @@ async function emitLeadOperationalEvent(event: "lead.created" | "lead.updated" |
 }
 
 export async function createManualLeadAction(input: unknown): Promise<LeadActionResult> {
-  const profile = await requireActiveProfile();
+  const { profile } = await requirePermission("leads.create");
   const parsed = manualLeadSchema.safeParse(input);
   if (!parsed.success) return { success: false, message: parsed.error.issues[0]?.message ?? "Revise os dados do lead." };
   const value = parsed.data;
@@ -327,9 +327,15 @@ export async function createManualLeadAction(input: unknown): Promise<LeadAction
 }
 
 export async function updateLeadPipelineAction(input: unknown): Promise<LeadActionResult> {
-  const profile = await requireActiveProfile();
   const parsed = leadPipelineSchema.safeParse(input);
   if (!parsed.success) return { success: false, message: "Atualização inválida." };
+  const required = new Set<"leads.update" | "leads.assign">();
+  if (parsed.data.status !== undefined || parsed.data.nextFollowUpAt !== undefined) required.add("leads.update");
+  if (parsed.data.assignedTo !== undefined) required.add("leads.assign");
+  const requiredPermissions = [...required];
+  if (!requiredPermissions.length) return { success: false, message: "Nenhuma alteração foi informada." };
+  const { profile } = await requirePermission(requiredPermissions[0]);
+  for (const permission of requiredPermissions.slice(1)) await requirePermission(permission);
   const admin = createAdminClient();
   const { data: current } = await admin.from("leads").select("status, assigned_to, next_follow_up_at").eq("id", parsed.data.id).maybeSingle();
   if (!current) return { success: false, message: "Lead não encontrado." };
@@ -359,7 +365,7 @@ export async function updateLeadPipelineAction(input: unknown): Promise<LeadActi
 }
 
 export async function addLeadInteractionAction(input: unknown): Promise<LeadActionResult> {
-  const profile = await requireActiveProfile();
+  const { profile } = await requirePermission("leads.interact");
   const parsed = leadInteractionSchema.safeParse(input);
   if (!parsed.success) return { success: false, message: parsed.error.issues[0]?.message ?? "Revise a interação." };
   const id = await insertInteraction({ leadId: parsed.data.leadId, type: parsed.data.type, title: parsed.data.title, body: parsed.data.body, profileId: profile.id });
@@ -370,7 +376,7 @@ export async function addLeadInteractionAction(input: unknown): Promise<LeadActi
 
 export async function recordLeadWhatsAppInteractionAction(leadId: string): Promise<void> {
   try {
-    const profile = await requireActiveProfile();
+    const { profile } = await requirePermission("leads.interact");
     const id = await insertInteraction({ leadId, type: "whatsapp", title: "Conversa iniciada pelo WhatsApp", profileId: profile.id });
     await emitLeadOperationalEvent("lead.interaction.created", leadId, { id, type: "whatsapp" });
     refreshLeadPaths(leadId);

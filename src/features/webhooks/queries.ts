@@ -1,11 +1,11 @@
 import "server-only";
 
-import { requireAdminProfile } from "@/features/auth/queries";
+import { requirePermission } from "@/features/auth/permissions";
 import type { Webhook, WebhookDeliveryLog, WebhookMetrics } from "@/features/webhooks/types";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function getAdminWebhooks(): Promise<Webhook[]> {
-  await requireAdminProfile();
+  await requirePermission("webhooks.view");
   const { data, error } = await createAdminClient().from("webhooks").select("*").order("created_at", { ascending: false });
   if (error) throw new Error("Não foi possível carregar os webhooks.");
   return (data ?? []).map((row) => ({
@@ -21,7 +21,7 @@ export async function getAdminWebhooks(): Promise<Webhook[]> {
 }
 
 export async function getWebhookDeliveryLogs(limit = 100): Promise<WebhookDeliveryLog[]> {
-  await requireAdminProfile();
+  await requirePermission("webhooks.view");
   const { data, error } = await createAdminClient()
     .from("webhook_logs")
     .select("*, webhook:webhooks(name)")
@@ -49,7 +49,7 @@ export async function getWebhookDeliveryLogs(limit = 100): Promise<WebhookDelive
 }
 
 export async function getWebhookMetrics(): Promise<WebhookMetrics> {
-  await requireAdminProfile();
+  await requirePermission("webhooks.view");
   const supabase = createAdminClient();
   const [total, active, pending, sent, failed] = await Promise.all([
     supabase.from("webhooks").select("id", { head: true, count: "exact" }),

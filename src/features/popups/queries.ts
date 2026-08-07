@@ -1,6 +1,6 @@
 import "server-only";
 
-import { requireActiveProfile } from "@/features/auth/queries";
+import { requirePermission } from "@/features/auth/permissions";
 import type { Popup } from "@/features/popups/types";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -35,7 +35,7 @@ export async function getActivePopup(): Promise<Popup | null> {
 }
 
 export async function getAdminPopups(): Promise<Popup[]> {
-  await requireActiveProfile();
+  await requirePermission("popups.view");
   const supabase = await createClient();
   const { data, error } = await supabase.from("popups").select(popupSelect).order("updated_at", { ascending: false });
   if (error) throw new Error(`Não foi possível carregar os pop-ups: ${error.message}`);

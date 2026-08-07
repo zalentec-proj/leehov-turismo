@@ -2,7 +2,7 @@
 
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
-import { requireActiveProfile } from "@/features/auth/queries";
+import { requirePermission } from "@/features/auth/permissions";
 import { getMediaAssetById } from "@/features/media/queries";
 import { mediaMetadataSchema, mediaUploadSchema } from "@/features/media/schema";
 import type { MediaActionResult } from "@/features/media/types";
@@ -22,7 +22,7 @@ function revalidateMedia() {
 }
 
 export async function uploadMediaAssetAction(formData: FormData): Promise<MediaActionResult> {
-  const profile = await requireActiveProfile();
+  const { profile } = await requirePermission("media.upload");
   const metadata = mediaUploadSchema.safeParse({
     altText: formData.get("altText") ?? "",
     caption: formData.get("caption") ?? "",
@@ -62,7 +62,7 @@ export async function uploadMediaAssetAction(formData: FormData): Promise<MediaA
 }
 
 export async function updateMediaAssetAction(input: unknown): Promise<MediaActionResult> {
-  await requireActiveProfile();
+  await requirePermission("media.update");
   const parsed = mediaMetadataSchema.safeParse(input);
   if (!parsed.success) return { success: false, message: parsed.error.issues[0]?.message ?? "Revise os dados da imagem." };
   const supabase = await createClient();
@@ -77,7 +77,7 @@ export async function updateMediaAssetAction(input: unknown): Promise<MediaActio
 }
 
 export async function deleteMediaAssetAction(id: string): Promise<MediaActionResult> {
-  await requireActiveProfile();
+  await requirePermission("media.delete");
   const supabase = await createClient();
   const { data: asset, error } = await supabase.from("media_assets").select("id, storage_path").eq("id", id).maybeSingle();
   if (error || !asset) return { success: false, message: "Imagem não encontrada." };

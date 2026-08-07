@@ -1,9 +1,8 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { loginSchema, updateProfileSchema } from "@/features/auth/schema";
-import { requireAdminProfile } from "@/features/auth/queries";
+import { loginSchema } from "@/features/auth/schema";
+import { firstAllowedAdminPath, getEffectivePermissions } from "@/features/auth/permissions";
 import { createClient } from "@/lib/supabase/server";
 import type { ActionState } from "@/lib/validations/action-state";
 
@@ -51,37 +50,14 @@ export async function loginAction(
     return { success: false, message: "Seu acesso ainda não foi aprovado pelo administrador geral." };
   }
 
-  redirect("/admin");
+  const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (aal?.nextLevel === "aal2" && aal.currentLevel !== "aal2") redirect("/admin/mfa/verificar");
+  const permissions = await getEffectivePermissions(userId, profile.role, profile.active);
+  redirect(firstAllowedAdminPath(permissions));
 }
 
 export async function logoutAction() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   redirect("/admin/login");
-}
-
-export async function updateProfileAction(formData: FormData) {
-  await requireAdminProfile();
-  const parsed = updateProfileSchema.safeParse({
-    id: formData.get("id"),
-    role: formData.get("role"),
-    active: formData.get("active") === "true",
-  });
-
-  if (!parsed.success) {
-    redirect("/admin/usuarios?error=invalid");
-  }
-
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("profiles")
-    .update({ role: parsed.data.role, active: parsed.data.active })
-    .eq("id", parsed.data.id);
-
-  if (error) {
-    redirect(`/admin/usuarios?error=${encodeURIComponent(error.message)}`);
-  }
-
-  revalidatePath("/admin/usuarios");
-  redirect("/admin/usuarios?updated=1");
 }

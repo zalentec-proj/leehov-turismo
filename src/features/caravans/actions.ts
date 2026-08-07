@@ -3,7 +3,7 @@
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { caravanCategorySchema, caravanFormSchema, type CaravanFormInput } from "@/features/caravans/schema";
-import { requireActiveProfile, requireAdminProfile } from "@/features/auth/queries";
+import { requirePermission } from "@/features/auth/permissions";
 import { createClient } from "@/lib/supabase/server";
 import type { TablesUpdate } from "@/types/database";
 import { emitWebhookEvent } from "@/lib/webhooks/events";
@@ -81,11 +81,12 @@ async function syncCollections(supabase: Awaited<ReturnType<typeof createClient>
 }
 
 export async function saveCaravanAction(rawInput: CaravanFormInput): Promise<CaravanActionResult> {
-  const profile = await requireActiveProfile();
   const parsed = caravanFormSchema.safeParse(rawInput);
   if (!parsed.success) {
     return { success: false, message: parsed.error.issues[0]?.message ?? "Revise os dados da caravana." };
   }
+  const { profile } = await requirePermission(parsed.data.id ? "caravans.update" : "caravans.create");
+  if (parsed.data.published) await requirePermission("caravans.publish");
 
   const input = parsed.data;
   const supabase = await createClient();
@@ -159,7 +160,7 @@ export async function saveCaravanAction(rawInput: CaravanFormInput): Promise<Car
 }
 
 export async function setCaravanPublishedAction(id: string, published: boolean): Promise<CaravanActionResult> {
-  const profile = await requireActiveProfile();
+  const { profile } = await requirePermission("caravans.publish");
   const supabase = await createClient();
   const { data: caravan, error: loadError } = await supabase.from("caravans").select("id, slug, status, summary, description, duration, hero_image_url").eq("id", id).single();
   if (loadError) return { success: false, message: "Caravana não encontrada." };
@@ -174,7 +175,7 @@ export async function setCaravanPublishedAction(id: string, published: boolean):
 }
 
 export async function saveCaravanCategoryAction(formData: FormData): Promise<void> {
-  await requireAdminProfile();
+  await requirePermission("caravans.manage_categories");
   const parsed = caravanCategorySchema.safeParse({
     id: formData.get("id") ?? "",
     name: formData.get("name"),
@@ -207,7 +208,7 @@ function validImageSignature(type: string, bytes: Uint8Array) {
 }
 
 export async function uploadCaravanImageAction(caravanId: string, formData: FormData): Promise<CaravanActionResult> {
-  await requireActiveProfile();
+  await requirePermission("caravans.manage_media");
   const file = formData.get("file");
   if (!(file instanceof File)) return { success: false, message: "Selecione uma imagem." };
   if (file.size > 8 * 1024 * 1024) return { success: false, message: "A imagem deve ter no máximo 8 MiB." };
@@ -228,7 +229,7 @@ export async function uploadCaravanImageAction(caravanId: string, formData: Form
 }
 
 export async function removeCaravanImageAction(caravanId: string, path: string): Promise<CaravanActionResult> {
-  const profile = await requireActiveProfile();
+  const { profile } = await requirePermission("caravans.manage_media");
   if (!path.startsWith(`${caravanId}/`)) return { success: false, message: "Caminho de imagem inválido." };
   const supabase = await createClient();
   const { data: caravan } = await supabase.from("caravans").select("slug, card_image_url, hero_image_url, video_thumbnail_url, leader_image_url").eq("id", caravanId).single();

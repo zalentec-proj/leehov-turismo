@@ -4,8 +4,10 @@ import { BlogPostForm } from "@/features/blog/components/blog-post-form";
 import { getBlogCategories } from "@/features/blog/queries";
 import { getAdminCaravans } from "@/features/caravans/queries";
 import { Button } from "@/components/ui/button";
+import { requirePermission } from "@/features/auth/permissions";
 
 export default async function NewBlogPostPage() {
+  await requirePermission("blog.create");
   const [categories, caravans] = await Promise.all([getBlogCategories(), getAdminCaravans()]);
   return (
     <div className="space-y-8">

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { requireActiveProfile } from "@/features/auth/queries";
+import { requirePermission } from "@/features/auth/permissions";
 import type {
   AdminDashboardData,
   DashboardActivity,
@@ -99,7 +99,7 @@ function makeActivities(caravans: CaravanRow[], posts: PostRow[], leads: LeadRow
 }
 
 export async function getAdminDashboardData(): Promise<AdminDashboardData> {
-  await requireActiveProfile();
+  await requirePermission("dashboard.view");
   const supabase = await createClient();
   const [caravansResult, postsResult, leadsResult, subscribersResult] = await Promise.all([
     supabase.from("caravans").select("id, title, destination, published, created_at, updated_at, published_at"),

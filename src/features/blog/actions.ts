@@ -2,11 +2,11 @@
 
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
-import { requireActiveProfile } from "@/features/auth/queries";
+import { requirePermission } from "@/features/auth/permissions";
 import { blogCategorySchema, blogPostFormSchema, type BlogPostFormInput } from "@/features/blog/schema";
 import { calculateReadingTime, sanitizeBlogHtml } from "@/features/blog/sanitize";
 import { normalizeBlogGalleryOrder } from "@/features/blog/gallery";
-import { validateBlogImage } from "@/features/blog/image-validation";
+import { validateBlogImage, validateBlogImageDimensions } from "@/features/blog/image-validation";
 import type { BlogActionResult } from "@/features/blog/types";
 import { createClient } from "@/lib/supabase/server";
 import type { TablesUpdate } from "@/types/database";
@@ -42,9 +42,10 @@ async function syncGallery(supabase: Awaited<ReturnType<typeof createClient>>, p
 }
 
 export async function saveBlogPostAction(rawInput: BlogPostFormInput): Promise<BlogActionResult> {
-  const profile = await requireActiveProfile();
   const parsed = blogPostFormSchema.safeParse(rawInput);
   if (!parsed.success) return { success: false, message: parsed.error.issues[0]?.message ?? "Revise os dados do post." };
+  const { profile } = await requirePermission(parsed.data.id ? "blog.update" : "blog.create");
+  if (parsed.data.published) await requirePermission("blog.publish");
   const input = parsed.data;
   const content = sanitizeBlogHtml(input.content);
   if (content.length < 50) return { success: false, message: "O conteúdo ficou muito curto após a sanitização." };
@@ -98,7 +99,7 @@ export async function saveBlogPostAction(rawInput: BlogPostFormInput): Promise<B
 }
 
 export async function setBlogPostPublishedAction(id: string, published: boolean): Promise<BlogActionResult> {
-  const profile = await requireActiveProfile();
+  const { profile } = await requirePermission("blog.publish");
   const supabase = await createClient();
   const { data: post, error: loadError } = await supabase.from("blog_posts").select("id, slug, title, summary, content, category_id, author, cover_image_url, cover_alt_text, published_at, blog_post_images(alt_text)").eq("id", id).maybeSingle();
   if (loadError || !post) return { success: false, message: "Post não encontrado." };
@@ -125,7 +126,7 @@ export async function setBlogPostPublishedAction(id: string, published: boolean)
 }
 
 export async function deleteDraftBlogPostAction(id: string): Promise<BlogActionResult> {
-  await requireActiveProfile();
+  await requirePermission("blog.delete_draft");
   const supabase = await createClient();
   const { data: post, error } = await supabase.from("blog_posts").select("slug, published, cover_image_url, blog_post_images(image_url)").eq("id", id).maybeSingle();
   if (error || !post) return { success: false, message: "Post não encontrado." };
@@ -142,7 +143,7 @@ export async function deleteDraftBlogPostAction(id: string): Promise<BlogActionR
 }
 
 export async function saveBlogCategoryAction(formData: FormData): Promise<void> {
-  await requireActiveProfile();
+  await requirePermission("blog.manage_categories");
   const parsed = blogCategorySchema.safeParse({
     id: formData.get("id") ?? "",
     name: formData.get("name"),
@@ -159,24 +160,30 @@ export async function saveBlogCategoryAction(formData: FormData): Promise<void> 
 }
 
 export async function uploadBlogImageAction(postId: string, kind: "cover" | "gallery", formData: FormData): Promise<BlogActionResult> {
-  await requireActiveProfile();
+  await requirePermission("blog.manage_media");
   const file = formData.get("file");
   if (!(file instanceof File)) return { success: false, message: "Selecione uma imagem." };
   const bytes = new Uint8Array(await file.arrayBuffer());
   const validation = validateBlogImage(file.type, file.size, bytes);
   if (!validation.success) return validation;
+  const dimensionValidation = await validateBlogImageDimensions(kind, bytes);
+  if (!dimensionValidation.success) return dimensionValidation;
   const supabase = await createClient();
   const { data: post } = await supabase.from("blog_posts").select("id").eq("id", postId).maybeSingle();
   if (!post) return { success: false, message: "Salve o rascunho antes de enviar imagens." };
   const path = `${postId}/${kind}/${randomUUID()}.${validation.extension}`;
-  const { error } = await supabase.storage.from("blog-images").upload(path, bytes, { contentType: file.type, upsert: false });
+  const { error } = await supabase.storage.from("blog-images").upload(path, bytes, {
+    cacheControl: "31536000",
+    contentType: file.type,
+    upsert: false,
+  });
   if (error) return { success: false, message: error.message };
   const { data } = await supabase.storage.from("blog-images").createSignedUrl(path, 3600);
   return { success: true, message: "Imagem enviada com sucesso.", path, url: data?.signedUrl };
 }
 
 export async function removeBlogImageAction(postId: string, path: string): Promise<BlogActionResult> {
-  const profile = await requireActiveProfile();
+  const { profile } = await requirePermission("blog.manage_media");
   if (!path.startsWith(`${postId}/cover/`) && !path.startsWith(`${postId}/gallery/`)) return { success: false, message: "Caminho de imagem inválido." };
   const supabase = await createClient();
   const { data: post } = await supabase.from("blog_posts").select("slug, cover_image_url").eq("id", postId).maybeSingle();

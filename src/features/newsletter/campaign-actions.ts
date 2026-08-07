@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { NewsletterCampaignEmail } from "@/emails/templates/newsletter-campaign-email";
 import { NewsletterDoubleOptInEmail } from "@/emails/templates/newsletter-double-opt-in-email";
-import { requireActiveProfile, requireAdminProfile } from "@/features/auth/queries";
+import { requirePermission } from "@/features/auth/permissions";
 import { buildCampaignTestEmail, freezeCampaignAudience, processCampaign } from "@/features/newsletter/campaign-service";
 import { manualSubscriberSchema, newsletterCampaignIdSchema, newsletterCampaignScheduleSchema, newsletterCampaignSchema, newsletterCampaignTestSchema } from "@/features/newsletter/schema";
 import type { NewsletterActionResult } from "@/features/newsletter/types";
@@ -29,7 +29,7 @@ async function campaignRuntimeError(campaignId: string, requireCron = false) {
 }
 
 export async function saveNewsletterCampaignAction(input: unknown): Promise<NewsletterActionResult & { id?: string }> {
-  const profile = await requireActiveProfile();
+  const { profile } = await requirePermission("newsletter.manage_drafts");
   const parsed = newsletterCampaignSchema.safeParse(input);
   if (!parsed.success) return { success: false, message: parsed.error.issues[0]?.message ?? "Revise a campanha." };
   const admin = createAdminClient();
@@ -45,7 +45,7 @@ export async function saveNewsletterCampaignAction(input: unknown): Promise<News
 }
 
 export async function cloneNewsletterCampaignAction(rawId: string) {
-  const profile = await requireActiveProfile();
+  const { profile } = await requirePermission("newsletter.manage_drafts");
   const parsed = newsletterCampaignIdSchema.safeParse(rawId);
   if (!parsed.success) return { success: false, message: "Campanha inválida." };
   const admin = createAdminClient();
@@ -57,7 +57,7 @@ export async function cloneNewsletterCampaignAction(rawId: string) {
 }
 
 export async function deleteNewsletterCampaignDraftAction(rawId: string) {
-  await requireActiveProfile();
+  await requirePermission("newsletter.manage_drafts");
   const parsed = newsletterCampaignIdSchema.safeParse(rawId);
   if (!parsed.success) return { success: false, message: "Campanha inválida." };
   const { data, error } = await createAdminClient().from("newsletter_campaigns").delete().eq("id", parsed.data).eq("status", "draft").select("id").maybeSingle();
@@ -66,7 +66,7 @@ export async function deleteNewsletterCampaignDraftAction(rawId: string) {
 }
 
 export async function scheduleNewsletterCampaignAction(input: unknown) {
-  const profile = await requireAdminProfile();
+  const { profile } = await requirePermission("newsletter.send");
   const parsed = newsletterCampaignScheduleSchema.safeParse(input);
   if (!parsed.success || new Date(parsed.data.scheduledAt).getTime() <= Date.now()) return { success: false, message: "Escolha uma data futura válida." };
   const runtimeError = await campaignRuntimeError(parsed.data.id, true);
@@ -78,7 +78,7 @@ export async function scheduleNewsletterCampaignAction(input: unknown) {
 }
 
 export async function sendNewsletterCampaignNowAction(rawId: string) {
-  const profile = await requireAdminProfile();
+  const { profile } = await requirePermission("newsletter.send");
   const parsed = newsletterCampaignIdSchema.safeParse(rawId);
   if (!parsed.success) return { success: false, message: "Campanha inválida." };
   const runtimeError = await campaignRuntimeError(parsed.data);
@@ -91,7 +91,7 @@ export async function sendNewsletterCampaignNowAction(rawId: string) {
 }
 
 export async function cancelNewsletterCampaignAction(rawId: string) {
-  const profile = await requireAdminProfile();
+  const { profile } = await requirePermission("newsletter.send");
   const parsed = newsletterCampaignIdSchema.safeParse(rawId);
   if (!parsed.success) return { success: false, message: "Campanha inválida." };
   const admin = createAdminClient();
@@ -102,7 +102,7 @@ export async function cancelNewsletterCampaignAction(rawId: string) {
 }
 
 export async function archiveNewsletterCampaignAction(rawId: string) {
-  await requireAdminProfile();
+  await requirePermission("newsletter.send");
   const parsed = newsletterCampaignIdSchema.safeParse(rawId);
   if (!parsed.success) return { success: false, message: "Campanha inválida." };
   const { data } = await createAdminClient().from("newsletter_campaigns").update({ archived_at: new Date().toISOString() }).eq("id", parsed.data).in("status", ["sent", "cancelled"]).select("id").maybeSingle();
@@ -111,7 +111,7 @@ export async function archiveNewsletterCampaignAction(rawId: string) {
 }
 
 export async function resumeNewsletterCampaignAction(rawId: string) {
-  const profile = await requireAdminProfile();
+  const { profile } = await requirePermission("newsletter.send");
   const parsed = newsletterCampaignIdSchema.safeParse(rawId);
   if (!parsed.success) return { success: false, message: "Campanha inválida." };
   const { data } = await createAdminClient().from("newsletter_campaigns").update({ status: "sending", pause_reason: null, last_error: null, updated_by: profile.id }).eq("id", parsed.data).eq("status", "paused").select("id").maybeSingle();
@@ -120,7 +120,7 @@ export async function resumeNewsletterCampaignAction(rawId: string) {
 }
 
 export async function sendNewsletterCampaignTestAction(input: unknown) {
-  await requireAdminProfile();
+  await requirePermission("newsletter.send");
   const parsed = newsletterCampaignTestSchema.safeParse(input);
   if (!parsed.success) return { success: false, message: parsed.error.issues[0]?.message ?? "Informe um e-mail válido." };
   const campaign = await buildCampaignTestEmail(parsed.data.id);
@@ -129,7 +129,7 @@ export async function sendNewsletterCampaignTestAction(input: unknown) {
 }
 
 export async function addManualNewsletterSubscriberAction(input: unknown) {
-  await requireAdminProfile();
+  await requirePermission("newsletter.manage_subscribers");
   const parsed = manualSubscriberSchema.safeParse(input);
   if (!parsed.success) return { success: false, message: parsed.error.issues[0]?.message ?? "Revise o inscrito." };
   const admin = createAdminClient();

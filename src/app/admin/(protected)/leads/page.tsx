@@ -4,10 +4,10 @@ import { AdminLeadsTable } from "@/features/leads/components/admin-leads-table";
 import { getAdminLeads, getLeadMetrics, getLeadOwners } from "@/features/leads/queries";
 import { getAdminCaravans } from "@/features/caravans/queries";
 import { getPublicSiteSettings } from "@/features/settings/queries";
-import { requireActiveProfile } from "@/features/auth/queries";
+import { requirePermission } from "@/features/auth/permissions";
 
 export default async function AdminLeadsPage() {
-  const [leads, metrics, owners, caravans, settings, profile] = await Promise.all([getAdminLeads(), getLeadMetrics(), getLeadOwners(), getAdminCaravans(), getPublicSiteSettings(), requireActiveProfile()]);
+  const [leads, metrics, owners, caravans, settings, access] = await Promise.all([getAdminLeads(), getLeadMetrics(), getLeadOwners(), getAdminCaravans(), getPublicSiteSettings(), requirePermission("leads.view")]);
   const cards = [
     { label: "Total de leads", value: metrics.total, icon: MessageSquare },
     { label: "Novos", value: metrics.new, icon: Inbox },
@@ -15,5 +15,5 @@ export default async function AdminLeadsPage() {
     { label: "Convertidos", value: metrics.converted, icon: CircleCheck },
   ];
 
-  return <><div className="mb-8"><p className="text-xs font-bold uppercase tracking-[0.18em] text-leehov-blue-600">Relacionamento</p><h2 className="mt-3 text-3xl font-extrabold text-leehov-navy-950">Leads</h2><p className="mt-3 text-leehov-muted">Acompanhe contatos e interesses em caravanas sem excluir o histórico.</p></div><div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{cards.map((item) => <Card key={item.label} className="rounded-[18px] border-leehov-border p-5 shadow-leehov-card"><item.icon className="size-6 text-leehov-blue-500" /><p className="mt-5 text-3xl font-extrabold text-leehov-navy-950">{item.value}</p><p className="mt-1 text-sm text-leehov-muted">{item.label}</p></Card>)}</div><AdminLeadsTable data={leads} owners={owners} caravans={caravans.map((item) => ({ id: item.id, title: item.title }))} whatsappTemplate={settings.whatsapp.caravanTemplate} consultantName={profile.name || "equipe Leehov"} /></>;
+  return <><div className="mb-8"><p className="text-xs font-bold uppercase tracking-[0.18em] text-leehov-blue-600">Relacionamento</p><h2 className="mt-3 text-3xl font-extrabold text-leehov-navy-950">Leads</h2><p className="mt-3 text-leehov-muted">Acompanhe contatos e interesses em caravanas sem excluir o histórico.</p></div><div className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{cards.map((item) => <Card key={item.label} className="rounded-[18px] border-leehov-border p-5 shadow-leehov-card"><item.icon className="size-6 text-leehov-blue-500" /><p className="mt-5 text-3xl font-extrabold text-leehov-navy-950">{item.value}</p><p className="mt-1 text-sm text-leehov-muted">{item.label}</p></Card>)}</div><AdminLeadsTable data={leads} owners={owners} caravans={caravans.map((item) => ({ id: item.id, title: item.title }))} whatsappTemplate={settings.whatsapp.caravanTemplate} consultantName={access.profile.name || "equipe Leehov"} /></>;
 }

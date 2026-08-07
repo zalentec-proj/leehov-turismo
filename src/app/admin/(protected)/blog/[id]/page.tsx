@@ -6,8 +6,10 @@ import { getAdminPostById, getBlogCategories } from "@/features/blog/queries";
 import { getAdminCaravans } from "@/features/caravans/queries";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { requirePermission } from "@/features/auth/permissions";
 
 export default async function EditBlogPostPage({ params }: { params: Promise<{ id: string }> }) {
+  await requirePermission("blog.update");
   const { id } = await params;
   const [post, categories, caravans] = await Promise.all([getAdminPostById(id), getBlogCategories(), getAdminCaravans()]);
   if (!post) notFound();

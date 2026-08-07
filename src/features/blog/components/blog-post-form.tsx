@@ -344,10 +344,10 @@ export function BlogPostForm({ post, categories, caravans }: { post?: AdminBlogP
               <Card className="rounded-[18px] border-leehov-border p-6">
                 <div className="grid gap-6 md:grid-cols-[280px_1fr]">
                   <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-leehov-surface">
-                    {coverPreview ? <Image src={coverPreview} alt="Preview da capa" fill unoptimized sizes="280px" className="object-cover" /> : <div className="flex h-full flex-col items-center justify-center gap-3 text-leehov-muted"><ImagePlus className="size-7" /><span className="text-sm font-semibold">Capa ainda não enviada</span></div>}
+                    {coverPreview ? <Image src={coverPreview} alt="Preview da capa" fill quality={90} sizes="280px" className="object-cover" /> : <div className="flex h-full flex-col items-center justify-center gap-3 text-leehov-muted"><ImagePlus className="size-7" /><span className="text-sm font-semibold">Capa ainda não enviada</span></div>}
                   </div>
                   <div className="space-y-4">
-                    <Field label="Capa do artigo" error={errors.coverImagePath?.message} hint="JPEG, PNG, WebP ou AVIF, até 8 MiB. Cada arquivo é validado no servidor.">
+                    <Field label="Capa do artigo" error={errors.coverImagePath?.message} hint="Original preservado, sem redução. Use no mínimo 1600 × 900 px; JPEG, PNG, WebP ou AVIF, até 8 MiB.">
                       <Input type="file" accept="image/jpeg,image/png,image/webp,image/avif" disabled={!post || isBusy} onChange={(event) => { void uploadCover(event.target.files?.[0]); event.currentTarget.value = ""; }} />
                     </Field>
                     {!post ? <p className="rounded-xl bg-leehov-surface p-3 text-xs text-leehov-muted">Salve o rascunho para liberar uploads.</p> : null}
@@ -363,7 +363,7 @@ export function BlogPostForm({ post, categories, caravans }: { post?: AdminBlogP
                 <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <h3 className="font-extrabold text-leehov-navy-950">Galeria editorial</h3>
-                    <p className="mt-1 text-sm leading-6 text-leehov-muted">Arraste para ordenar ou use os botões de mover. O texto alternativo é obrigatório para publicar.</p>
+                    <p className="mt-1 text-sm leading-6 text-leehov-muted">O original é preservado sem redução. Use no mínimo 1200 × 800 px. Arraste para ordenar ou use os botões de mover.</p>
                   </div>
                   <Label className={cn("inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-full bg-leehov-blue-600 px-5 text-sm font-bold text-white transition hover:bg-leehov-cyan", (!post || isBusy) && "pointer-events-none opacity-50")}>
                     <UploadCloud className="size-4" />

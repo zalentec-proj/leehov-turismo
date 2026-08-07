@@ -12,6 +12,7 @@
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
     "qa": "node scripts/qa.mjs",
+    "blog:images:restore": "node scripts/blog/restore-wordpress-original-images.mjs",
     "caravans:dry-run": "node scripts/caravans/import-real-caravans-dry-run.mjs",
     "email:dev": "email dev --dir src/emails/templates"
   },
@@ -43,6 +44,7 @@
     "resend": "^6.17.1",
     "sanitize-html": "^2.17.0",
     "server-only": "^0.0.1",
+    "sharp": "0.35.3",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.6.0",
     "tw-animate-css": "^1.4.0",

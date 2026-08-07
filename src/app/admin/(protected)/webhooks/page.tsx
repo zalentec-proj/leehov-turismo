@@ -1,12 +1,12 @@
 import { Activity, Cable, CheckCircle2, XCircle } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
-import { requireAdminProfile } from "@/features/auth/queries";
+import { requirePermission } from "@/features/auth/permissions";
 import { AdminWebhooks } from "@/features/webhooks/components/admin-webhooks";
 import { getAdminWebhooks, getWebhookDeliveryLogs, getWebhookMetrics } from "@/features/webhooks/queries";
 
 export default async function AdminWebhooksPage() {
-  await requireAdminProfile();
+  await requirePermission("webhooks.view");
   const [webhooks, logs, metrics] = await Promise.all([getAdminWebhooks(), getWebhookDeliveryLogs(), getWebhookMetrics()]);
   const cards = [
     { label: "Webhooks ativos", value: `${metrics.active}/${metrics.total}`, icon: Cable },

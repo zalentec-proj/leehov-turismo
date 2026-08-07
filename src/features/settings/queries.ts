@@ -1,6 +1,6 @@
 import "server-only";
 
-import { requireAdminProfile } from "@/features/auth/queries";
+import { requirePermission } from "@/features/auth/permissions";
 import type {
   AdminSiteSettings,
   EmailSettings,
@@ -212,7 +212,7 @@ export async function getPublicSiteSettings(): Promise<PublicSiteSettings> {
 }
 
 export async function getAdminSiteSettings(): Promise<AdminSiteSettings> {
-  await requireAdminProfile();
+  await requirePermission("settings.view");
   const [publicSettings, privateRows] = await Promise.all([
     getPublicSiteSettings(),
     createAdminClient()

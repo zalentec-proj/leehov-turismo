@@ -5,6 +5,7 @@ import { createEmailLog, finishEmailLog } from "@/lib/email/email-log";
 import { getResendApiKey, getResendClient } from "@/lib/email/resend";
 import type { Json } from "@/types/database";
 import { getServerEmailSettings } from "@/features/settings/queries";
+import { sanitizeEmailError } from "@/lib/email/sanitize-email-error";
 
 type SendEmailInput = {
   templateKey: EmailTemplateKey;
@@ -15,15 +16,8 @@ type SendEmailInput = {
   relatedEntityType?: string;
   relatedEntityId?: string;
   metadata?: Record<string, Json | undefined>;
+  idempotencyKey?: string;
 };
-
-function sanitizeEmailError(error: unknown) {
-  const raw = error instanceof Error ? error.message : String(error || "Falha desconhecida no provedor.");
-  return raw
-    .replace(/re_[A-Za-z0-9_-]+/g, "[redacted]")
-    .replace(/Bearer\s+[A-Za-z0-9._-]+/gi, "Bearer [redacted]")
-    .slice(0, 500);
-}
 
 export function parseEmailRecipients(value?: string) {
   return (value ?? "")
@@ -55,13 +49,16 @@ export async function sendTransactionalEmail(input: SendEmailInput): Promise<Ema
   });
 
   try {
-    const result = await getResendClient().emails.send({
-      from: settings.senderName && !String(from).includes("<") ? `${settings.senderName} <${from}>` : from as string,
-      to: input.to,
-      subject: input.subject,
-      react: input.react,
-      replyTo: input.replyTo ?? (settings.replyTo || process.env.RESEND_REPLY_TO_EMAIL),
-    });
+    const result = await getResendClient().emails.send(
+      {
+        from: settings.senderName && !String(from).includes("<") ? `${settings.senderName} <${from}>` : from as string,
+        to: input.to,
+        subject: input.subject,
+        react: input.react,
+        replyTo: input.replyTo ?? (settings.replyTo || process.env.RESEND_REPLY_TO_EMAIL),
+      },
+      input.idempotencyKey ? { idempotencyKey: input.idempotencyKey } : undefined,
+    );
 
     if (result.error) throw new Error(result.error.message);
     const providerMessageId = result.data?.id;

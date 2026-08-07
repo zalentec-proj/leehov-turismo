@@ -132,7 +132,7 @@ export function BlogPhotoLightbox({ images, openIndex, onOpenIndexChange }: Blog
                   alt={currentImage.altText}
                   fill
                   priority
-                  unoptimized
+                  quality={90}
                   sizes="100vw"
                   className="object-contain"
                   onError={() => setFailedImages((current) => ({ ...current, [currentImage.id]: true }))}
@@ -182,7 +182,7 @@ export function BlogPhotoLightbox({ images, openIndex, onOpenIndexChange }: Blog
                       src={image.imageUrl}
                       alt=""
                       fill
-                      unoptimized
+                      quality={90}
                       sizes="76px"
                       className="object-cover"
                       onError={() => setFailedImages((current) => ({ ...current, [image.id]: true }))}

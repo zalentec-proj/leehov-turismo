@@ -6,9 +6,14 @@ export type EmailTemplateKey =
   | "newsletter_double_opt_in"
   | "newsletter_welcome"
   | "newsletter_campaign"
-  | "newsletter_campaign_test";
+  | "newsletter_campaign_test"
+  | "admin_user_invite"
+  | "admin_password_recovery"
+  | "admin_email_change_confirmation"
+  | "admin_email_changed"
+  | "admin_access_changed";
 
-export type EmailStatus = "pending" | "sent" | "failed" | "skipped";
+export type EmailStatus = "pending" | "sent" | "delivered" | "delayed" | "bounced" | "complained" | "suppressed" | "failed" | "skipped";
 
 export type EmailLog = {
   id: string;

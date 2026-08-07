@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 
-import { requireAdminProfile } from "@/features/auth/queries";
+import { getPermissionAccess } from "@/features/auth/permissions";
 import { removeGoogleReviewReply } from "@/features/testimonials/google-business";
 import { googleReviewDeleteReplySchema } from "@/features/testimonials/schema";
 
 export async function POST(request: Request) {
-  await requireAdminProfile();
+  if (!await getPermissionAccess("testimonials.manage_google")) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   const parsed = googleReviewDeleteReplySchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ success: false, message: "Confirme a remoção da resposta." }, { status: 400 });
   try {

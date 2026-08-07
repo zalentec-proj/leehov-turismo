@@ -311,7 +311,7 @@ export function HomePage({
                         src={post.imageUrl}
                         alt={post.coverAltText}
                         fill
-                        unoptimized
+                        quality={90}
                         sizes="(min-width: 768px) 33vw, 100vw"
                         className="object-cover transition duration-500 group-hover:scale-105 motion-reduce:transition-none"
                       />

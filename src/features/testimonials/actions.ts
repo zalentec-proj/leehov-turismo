@@ -1,10 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import {
-  requireActiveProfile,
-  requireAdminProfile,
-} from "@/features/auth/queries";
+import { requirePermission } from "@/features/auth/permissions";
 import {
   googleBusinessSettingsSchema,
   googleLocationSelectionSchema,
@@ -39,7 +36,7 @@ function revalidateTestimonials() {
 export async function saveTestimonialAction(
   input: unknown,
 ): Promise<TestimonialActionResult> {
-  const profile = await requireActiveProfile();
+  const { profile } = await requirePermission("testimonials.manage");
   const parsed = testimonialSchema.safeParse(input);
   if (!parsed.success)
     return {
@@ -47,6 +44,7 @@ export async function saveTestimonialAction(
       message:
         parsed.error.issues[0]?.message ?? "Revise os dados do depoimento.",
     };
+  if (parsed.data.active) await requirePermission("testimonials.publish");
   const supabase = await createClient();
   const payload = {
     name: parsed.data.name,
@@ -87,7 +85,7 @@ export async function setTestimonialActiveAction(
   id: string,
   active: boolean,
 ): Promise<TestimonialActionResult> {
-  const profile = await requireActiveProfile();
+  const { profile } = await requirePermission("testimonials.publish");
   const supabase = await createClient();
   const { error } = await supabase
     .from("testimonials")
@@ -108,7 +106,7 @@ export async function setTestimonialActiveAction(
 export async function deleteTestimonialAction(
   id: string,
 ): Promise<TestimonialActionResult> {
-  await requireActiveProfile();
+  await requirePermission("testimonials.delete");
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("testimonials")
@@ -141,7 +139,7 @@ export async function setGoogleReviewVisibilityAction(
   visible: boolean,
   featured = false,
 ): Promise<TestimonialActionResult> {
-  const profile = await requireActiveProfile();
+  const { profile } = await requirePermission("testimonials.publish");
   const supabase = await createClient();
   const { error } = await supabase
     .from("google_reviews_cache")
@@ -159,7 +157,7 @@ export async function setGoogleReviewVisibilityAction(
 export async function saveGoogleBusinessSettingsAction(
   input: unknown,
 ): Promise<TestimonialActionResult> {
-  const profile = await requireAdminProfile();
+  const { profile } = await requirePermission("testimonials.manage_google");
   const parsed = googleBusinessSettingsSchema.safeParse(input);
   if (!parsed.success)
     return {
@@ -203,7 +201,7 @@ export async function saveGoogleBusinessSettingsAction(
 }
 
 export async function syncGoogleReviewsAction(): Promise<TestimonialActionResult> {
-  await requireAdminProfile();
+  await requirePermission("testimonials.manage_google");
   try {
     const result = await syncGoogleBusinessReviews();
     for (const review of result.newReviews) {
@@ -234,7 +232,7 @@ export async function syncGoogleReviewsAction(): Promise<TestimonialActionResult
 }
 
 export async function loadGoogleAccountsAction() {
-  await requireAdminProfile();
+  await requirePermission("testimonials.manage_google");
   try {
     return {
       success: true as const,
@@ -254,7 +252,7 @@ export async function loadGoogleAccountsAction() {
 }
 
 export async function loadGoogleLocationsAction(accountResourceName: string) {
-  await requireAdminProfile();
+  await requirePermission("testimonials.manage_google");
   try {
     return {
       success: true as const,
@@ -276,7 +274,7 @@ export async function loadGoogleLocationsAction(accountResourceName: string) {
 export async function selectGoogleBusinessLocationAction(
   input: unknown,
 ): Promise<TestimonialActionResult> {
-  const profile = await requireAdminProfile();
+  const { profile } = await requirePermission("testimonials.manage_google");
   const parsed = googleLocationSelectionSchema.safeParse(input);
   if (!parsed.success)
     return {

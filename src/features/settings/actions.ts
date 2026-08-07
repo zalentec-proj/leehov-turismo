@@ -1,13 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireAdminProfile } from "@/features/auth/queries";
+import { requirePermission } from "@/features/auth/permissions";
 import { siteSettingsSchema } from "@/features/settings/schema";
 import type { SiteSettingsActionResult } from "@/features/settings/types";
 import { createClient } from "@/lib/supabase/server";
 
 export async function saveSiteSettingsAction(input: unknown): Promise<SiteSettingsActionResult> {
-  const profile = await requireAdminProfile();
+  const { profile } = await requirePermission("settings.manage");
   const parsed = siteSettingsSchema.safeParse(input);
   if (!parsed.success) return { success: false, message: parsed.error.issues[0]?.message ?? "Revise as configurações." };
   const supabase = await createClient();

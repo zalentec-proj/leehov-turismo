@@ -1,6 +1,6 @@
 import "server-only";
 
-import { requireActiveProfile } from "@/features/auth/queries";
+import { requirePermission } from "@/features/auth/permissions";
 import type { MediaAsset, MediaUsage } from "@/features/media/types";
 import { createClient } from "@/lib/supabase/server";
 
@@ -41,7 +41,7 @@ async function mapAsset(row: MediaRow, usage: MediaUsage[] = []): Promise<MediaA
 }
 
 export async function getAdminMediaAssets(): Promise<MediaAsset[]> {
-  await requireActiveProfile();
+  await requirePermission("media.view");
   const supabase = await createClient();
   const [{ data, error }, testimonials, popups, settings] = await Promise.all([
     supabase.from("media_assets").select("*").order("created_at", { ascending: false }),

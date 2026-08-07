@@ -23,7 +23,7 @@ function formatUpdatedAt(value: string) {
   return new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(new Date(value));
 }
 
-export function AdminBlogTable({ data, categories }: { data: AdminBlogPost[]; categories: BlogCategory[] }) {
+export function AdminBlogTable({ data, categories, canCreate, canUpdate, canPublish, canDeleteDraft }: { data: AdminBlogPost[]; categories: BlogCategory[]; canCreate: boolean; canUpdate: boolean; canPublish: boolean; canDeleteDraft: boolean }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("all");
@@ -96,7 +96,7 @@ export function AdminBlogTable({ data, categories }: { data: AdminBlogPost[]; ca
       header: "Ações",
       cell: ({ row }) => (
         <div className="flex min-w-[210px] justify-end gap-2">
-          <Button
+          {canPublish ? <Button
             type="button"
             variant="outline"
             size="sm"
@@ -105,9 +105,9 @@ export function AdminBlogTable({ data, categories }: { data: AdminBlogPost[]; ca
           >
             {pending && actionId === row.original.id ? <Loader2 className="size-3.5 animate-spin" /> : null}
             {row.original.published ? "Despublicar" : "Publicar"}
-          </Button>
-          <Button asChild variant="ghost" size="icon"><Link href={`/admin/blog/${row.original.id}`} aria-label={`Editar ${row.original.title}`}><Edit3 className="size-4" /></Link></Button>
-          {!row.original.published ? (
+          </Button> : null}
+          {canUpdate ? <Button asChild variant="ghost" size="icon"><Link href={`/admin/blog/${row.original.id}`} aria-label={`Editar ${row.original.title}`}><Edit3 className="size-4" /></Link></Button> : null}
+          {canDeleteDraft && !row.original.published ? (
             <Button
               type="button"
               variant="ghost"
@@ -125,7 +125,7 @@ export function AdminBlogTable({ data, categories }: { data: AdminBlogPost[]; ca
         </div>
       ),
     }),
-  ], [actionId, pending, runAction]);
+  ], [actionId, canDeleteDraft, canPublish, canUpdate, pending, runAction]);
 
   // TanStack Table intentionally exposes non-memoizable functions.
   // eslint-disable-next-line react-hooks/incompatible-library
@@ -157,7 +157,7 @@ export function AdminBlogTable({ data, categories }: { data: AdminBlogPost[]; ca
             <TableHeader>{table.getHeaderGroups().map((group) => <TableRow key={group.id} className="bg-leehov-surface/80">{group.headers.map((header) => <TableHead key={header.id} className="h-12 text-xs font-bold uppercase tracking-[0.08em] text-leehov-muted">{flexRender(header.column.columnDef.header, header.getContext())}</TableHead>)}</TableRow>)}</TableHeader>
             <TableBody>
               {table.getRowModel().rows.map((row) => <TableRow key={row.id} className="h-[88px]">{row.getVisibleCells().map((cell) => <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>)}</TableRow>)}
-              {!table.getRowModel().rows.length ? <TableRow><TableCell colSpan={columns.length} className="h-48 text-center"><p className="font-bold text-leehov-navy-950">Nenhum post encontrado</p><p className="mt-2 text-sm text-leehov-muted">Ajuste os filtros ou crie um novo conteúdo.</p><Button asChild className="mt-5 rounded-full"><Link href="/admin/blog/novo"><Plus className="size-4" />Novo post</Link></Button></TableCell></TableRow> : null}
+              {!table.getRowModel().rows.length ? <TableRow><TableCell colSpan={columns.length} className="h-48 text-center"><p className="font-bold text-leehov-navy-950">Nenhum post encontrado</p><p className="mt-2 text-sm text-leehov-muted">Ajuste os filtros ou crie um novo conteúdo.</p>{canCreate ? <Button asChild className="mt-5 rounded-full"><Link href="/admin/blog/novo"><Plus className="size-4" />Novo post</Link></Button> : null}</TableCell></TableRow> : null}
             </TableBody>
           </Table>
         </div>

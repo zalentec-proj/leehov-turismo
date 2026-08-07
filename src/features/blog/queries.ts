@@ -25,7 +25,13 @@ export async function getPublishedPosts(options: { search?: string; category?: s
 
 export async function getFeaturedPosts(): Promise<BlogPostSummary[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("blog_posts").select(blogSelect).eq("published", true).eq("featured_home", true).order("published_at", { ascending: false }).limit(3);
+  const { data, error } = await supabase
+    .from("blog_posts")
+    .select(blogSelect)
+    .eq("published", true)
+    .order("featured_home", { ascending: false })
+    .order("published_at", { ascending: false })
+    .limit(3);
   if (error) throw new Error(`Não foi possível carregar os destaques do Blog: ${error.message}`);
   return Promise.all(((data ?? []) as unknown as BlogQueryRow[]).map((row) => mapBlogSummary(supabase, row)));
 }

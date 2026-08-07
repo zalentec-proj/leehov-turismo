@@ -3,7 +3,7 @@
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 
-import { requireAdminProfile } from "@/features/auth/queries";
+import { requirePermission } from "@/features/auth/permissions";
 import { webhookRetrySchema, webhookSchema, webhookTestSchema } from "@/features/webhooks/schema";
 import type { WebhookActionResult } from "@/features/webhooks/types";
 import { encryptSecret, hasEncryptionKey } from "@/lib/security/encryption";
@@ -18,7 +18,7 @@ function refreshWebhooks() {
 }
 
 export async function saveWebhookAction(input: unknown): Promise<WebhookActionResult> {
-  const profile = await requireAdminProfile();
+  const { profile } = await requirePermission("webhooks.manage");
   const parsed = webhookSchema.safeParse(input);
   if (!parsed.success) return { success: false, message: parsed.error.issues[0]?.message ?? "Revise os dados do webhook." };
   if (!hasEncryptionKey(WEBHOOK_SECRET_KEY_ENV)) return { success: false, message: "Configure WEBHOOK_SECRET_ENCRYPTION_KEY no servidor antes de salvar webhooks." };
@@ -60,7 +60,7 @@ export async function saveWebhookAction(input: unknown): Promise<WebhookActionRe
 }
 
 export async function setWebhookActiveAction(id: string, active: boolean): Promise<WebhookActionResult> {
-  const profile = await requireAdminProfile();
+  const { profile } = await requirePermission("webhooks.manage");
   const parsed = webhookTestSchema.safeParse({ id });
   if (!parsed.success) return { success: false, message: "Webhook inválido." };
   const { error } = await createAdminClient().from("webhooks").update({ active, updated_by: profile.id }).eq("id", id);
@@ -70,7 +70,7 @@ export async function setWebhookActiveAction(id: string, active: boolean): Promi
 }
 
 export async function deleteWebhookAction(id: string): Promise<WebhookActionResult> {
-  await requireAdminProfile();
+  await requirePermission("webhooks.manage");
   const parsed = webhookTestSchema.safeParse({ id });
   if (!parsed.success) return { success: false, message: "Webhook inválido." };
   const supabase = createAdminClient();
@@ -86,7 +86,7 @@ export async function deleteWebhookAction(id: string): Promise<WebhookActionResu
 }
 
 export async function testWebhookAction(input: unknown): Promise<WebhookActionResult> {
-  await requireAdminProfile();
+  await requirePermission("webhooks.manage");
   const parsed = webhookTestSchema.safeParse(input);
   if (!parsed.success) return { success: false, message: "Webhook inválido." };
   const supabase = createAdminClient();
@@ -116,7 +116,7 @@ export async function testWebhookAction(input: unknown): Promise<WebhookActionRe
 }
 
 export async function retryWebhookDeliveryAction(input: unknown): Promise<WebhookActionResult> {
-  await requireAdminProfile();
+  await requirePermission("webhooks.manage");
   const parsed = webhookRetrySchema.safeParse(input);
   if (!parsed.success) return { success: false, message: "Confirme o reenvio da entrega." };
   const supabase = createAdminClient();

@@ -532,8 +532,11 @@ export type Database = {
       email_logs: {
         Row: {
           created_at: string
+          delivered_at: string | null
           error_message: string | null
           id: string
+          idempotency_key: string | null
+          last_event_at: string | null
           metadata: Json
           provider: string
           provider_message_id: string | null
@@ -547,8 +550,11 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          delivered_at?: string | null
           error_message?: string | null
           id?: string
+          idempotency_key?: string | null
+          last_event_at?: string | null
           metadata?: Json
           provider?: string
           provider_message_id?: string | null
@@ -562,8 +568,11 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          delivered_at?: string | null
           error_message?: string | null
           id?: string
+          idempotency_key?: string | null
+          last_event_at?: string | null
           metadata?: Json
           provider?: string
           provider_message_id?: string | null
@@ -1320,34 +1329,91 @@ export type Database = {
           },
         ]
       }
+      admin_audit_logs: {
+        Row: { action: string; actor_profile_id: string | null; created_at: string; id: string; metadata: Json; new_values: Json; previous_values: Json; target_email: string | null; target_profile_id: string | null }
+        Insert: { action: string; actor_profile_id?: string | null; created_at?: string; id?: string; metadata?: Json; new_values?: Json; previous_values?: Json; target_email?: string | null; target_profile_id?: string | null }
+        Update: { action?: string; actor_profile_id?: string | null; created_at?: string; id?: string; metadata?: Json; new_values?: Json; previous_values?: Json; target_email?: string | null; target_profile_id?: string | null }
+        Relationships: []
+      }
+      permissions: {
+        Row: { action: string; created_at: string; description: string | null; key: string; label: string; module: string; sort_order: number }
+        Insert: { action: string; created_at?: string; description?: string | null; key: string; label: string; module: string; sort_order?: number }
+        Update: { action?: string; created_at?: string; description?: string | null; key?: string; label?: string; module?: string; sort_order?: number }
+        Relationships: []
+      }
+      profile_permission_overrides: {
+        Row: { allowed: boolean; created_at: string; created_by: string | null; permission_key: string; profile_id: string; updated_at: string }
+        Insert: { allowed: boolean; created_at?: string; created_by?: string | null; permission_key: string; profile_id: string; updated_at?: string }
+        Update: { allowed?: boolean; created_at?: string; created_by?: string | null; permission_key?: string; profile_id?: string; updated_at?: string }
+        Relationships: []
+      }
       profiles: {
         Row: {
+          accepted_at: string | null
           active: boolean
           created_at: string
           email: string
           id: string
+          invited_at: string | null
+          invited_by: string | null
           name: string | null
           role: Database["public"]["Enums"]["app_role"]
+          suspended_at: string | null
+          suspended_by: string | null
           updated_at: string
         }
         Insert: {
+          accepted_at?: string | null
           active?: boolean
           created_at?: string
           email: string
           id: string
+          invited_at?: string | null
+          invited_by?: string | null
           name?: string | null
           role?: Database["public"]["Enums"]["app_role"]
+          suspended_at?: string | null
+          suspended_by?: string | null
           updated_at?: string
         }
         Update: {
+          accepted_at?: string | null
           active?: boolean
           created_at?: string
           email?: string
           id?: string
+          invited_at?: string | null
+          invited_by?: string | null
           name?: string | null
           role?: Database["public"]["Enums"]["app_role"]
+          suspended_at?: string | null
+          suspended_by?: string | null
           updated_at?: string
         }
+        Relationships: []
+      }
+      resend_webhook_events: {
+        Row: { event_id: string; event_type: string; payload: Json; provider_message_id: string | null; received_at: string }
+        Insert: { event_id: string; event_type: string; payload?: Json; provider_message_id?: string | null; received_at?: string }
+        Update: { event_id?: string; event_type?: string; payload?: Json; provider_message_id?: string | null; received_at?: string }
+        Relationships: []
+      }
+      role_permissions: {
+        Row: { allowed: boolean; permission_key: string; role: Database["public"]["Enums"]["app_role"] }
+        Insert: { allowed?: boolean; permission_key: string; role: Database["public"]["Enums"]["app_role"] }
+        Update: { allowed?: boolean; permission_key?: string; role?: Database["public"]["Enums"]["app_role"] }
+        Relationships: []
+      }
+      user_email_change_requests: {
+        Row: { consumed_at: string | null; created_at: string; expires_at: string; id: string; new_email: string; old_email: string; profile_id: string; requested_by: string | null; revoked_at: string | null; token_hash: string }
+        Insert: { consumed_at?: string | null; created_at?: string; expires_at: string; id?: string; new_email: string; old_email: string; profile_id: string; requested_by?: string | null; revoked_at?: string | null; token_hash: string }
+        Update: { consumed_at?: string | null; created_at?: string; expires_at?: string; id?: string; new_email?: string; old_email?: string; profile_id?: string; requested_by?: string | null; revoked_at?: string | null; token_hash?: string }
+        Relationships: []
+      }
+      user_invitation_attempts: {
+        Row: { accepted_at: string | null; created_at: string; email_log_id: string | null; error_message: string | null; expires_at: string; id: string; invited_by: string | null; profile_id: string; revoked_at: string | null; status: Database["public"]["Enums"]["invitation_status"]; updated_at: string }
+        Insert: { accepted_at?: string | null; created_at?: string; email_log_id?: string | null; error_message?: string | null; expires_at: string; id?: string; invited_by?: string | null; profile_id: string; revoked_at?: string | null; status?: Database["public"]["Enums"]["invitation_status"]; updated_at?: string }
+        Update: { accepted_at?: string | null; created_at?: string; email_log_id?: string | null; error_message?: string | null; expires_at?: string; id?: string; invited_by?: string | null; profile_id?: string; revoked_at?: string | null; status?: Database["public"]["Enums"]["invitation_status"]; updated_at?: string }
         Relationships: []
       }
       site_settings: {
@@ -1601,6 +1667,8 @@ export type Database = {
         }
         Returns: boolean
       }
+      has_permission: { Args: { permission_name: string }; Returns: boolean }
+      admin_user_delete_preflight: { Args: { target_profile_id: string }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "editor"
@@ -1611,7 +1679,7 @@ export type Database = {
         | "sold_out"
         | "draft"
       departure_status: "available" | "coming_soon" | "waitlist" | "sold_out"
-      email_status: "pending" | "sent" | "failed" | "skipped"
+      email_status: "pending" | "sent" | "failed" | "skipped" | "delivered" | "delayed" | "bounced" | "complained" | "suppressed"
       google_business_connection_status:
         | "pending_location"
         | "connected"
@@ -1632,6 +1700,7 @@ export type Database = {
         | "whatsapp"
         | "profile_update"
       lead_status: "new" | "in_progress" | "converted" | "archived"
+      invitation_status: "pending" | "accepted" | "revoked" | "expired" | "failed"
       newsletter_campaign_status:
         | "draft"
         | "scheduled"
@@ -1797,7 +1866,17 @@ export const Constants = {
         "draft",
       ],
       departure_status: ["available", "coming_soon", "waitlist", "sold_out"],
-      email_status: ["pending", "sent", "failed", "skipped"],
+      email_status: [
+        "pending",
+        "sent",
+        "failed",
+        "skipped",
+        "delivered",
+        "delayed",
+        "bounced",
+        "complained",
+        "suppressed",
+      ],
       google_business_connection_status: [
         "pending_location",
         "connected",
@@ -1821,6 +1900,7 @@ export const Constants = {
         "profile_update",
       ],
       lead_status: ["new", "in_progress", "converted", "archived"],
+      invitation_status: ["pending", "accepted", "revoked", "expired", "failed"],
       newsletter_campaign_status: ["draft", "scheduled", "sending", "paused", "sent", "cancelled"],
       newsletter_recipient_status: ["pending", "processing", "sent", "failed", "skipped"],
       newsletter_status: ["pending", "active", "unsubscribed"],

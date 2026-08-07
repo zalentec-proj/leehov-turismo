@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 
-import { requireAdminProfile } from "@/features/auth/queries";
+import { getPermissionAccess } from "@/features/auth/permissions";
 import { getLiveGoogleConnection, GOOGLE_TOKEN_KEY_ENV } from "@/lib/google/business-profile";
 import { decryptSecret } from "@/lib/security/encryption";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function POST() {
-  const profile = await requireAdminProfile();
+  const access = await getPermissionAccess("testimonials.manage_google");
+  if (!access) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const { profile } = access;
   const connection = await getLiveGoogleConnection();
   if (!connection) return NextResponse.json({ success: true, message: "A integração já está desconectada." });
 

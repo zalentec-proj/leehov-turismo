@@ -1,13 +1,13 @@
 import "server-only";
 
-import { requireActiveProfile } from "@/features/auth/queries";
+import { requirePermission } from "@/features/auth/permissions";
 import type { EmailLog, EmailTemplateKey } from "@/features/emails/types";
 import type { NewsletterCampaign, NewsletterCampaignBlock, NewsletterMetrics, NewsletterStatus, NewsletterSubscriber } from "@/features/newsletter/types";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export async function getAdminNewsletterSubscribers(): Promise<NewsletterSubscriber[]> {
-  await requireActiveProfile();
+  await requirePermission("newsletter.view");
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("newsletter_subscribers")
@@ -31,7 +31,7 @@ export async function getAdminNewsletterSubscribers(): Promise<NewsletterSubscri
 }
 
 export async function getNewsletterMetrics(): Promise<NewsletterMetrics> {
-  await requireActiveProfile();
+  await requirePermission("newsletter.view_logs");
   const supabase = await createClient();
   const { data, error } = await supabase.from("newsletter_subscribers").select("status");
   if (error) return { total: 0, pending: 0, active: 0, unsubscribed: 0 };
@@ -44,7 +44,7 @@ export async function getNewsletterMetrics(): Promise<NewsletterMetrics> {
 }
 
 export async function getEmailLogs(limit = 200): Promise<EmailLog[]> {
-  await requireActiveProfile();
+  await requirePermission("newsletter.view");
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("email_logs")
@@ -70,7 +70,7 @@ export async function getEmailLogs(limit = 200): Promise<EmailLog[]> {
 }
 
 export async function getAdminNewsletterCampaigns(): Promise<NewsletterCampaign[]> {
-  await requireActiveProfile();
+  await requirePermission("newsletter.view");
   const admin = createAdminClient();
   const { data, error } = await admin.from("newsletter_campaigns").select("*, recipients:newsletter_campaign_recipients(status)").is("archived_at", null).order("created_at", { ascending: false });
   if (error) throw new Error(`Não foi possível carregar as campanhas: ${error.message}`);

@@ -1,4 +1,11 @@
+import sharp from "sharp";
+
 const MAX_BLOG_IMAGE_BYTES = 8 * 1024 * 1024;
+
+const minimumDimensions = {
+  cover: { width: 1600, height: 900 },
+  gallery: { width: 1200, height: 800 },
+} as const;
 
 const allowedImageTypes = new Map([
   ["image/jpeg", "jpg"],
@@ -21,4 +28,29 @@ export function validateBlogImage(type: string, size: number, bytes: Uint8Array)
   if (!extension) return { success: false, message: "Use uma imagem JPEG, PNG, WebP ou AVIF." };
   if (!validImageSignature(type, bytes)) return { success: false, message: "O conteúdo do arquivo não corresponde ao formato informado." };
   return { success: true, extension };
+}
+
+export async function validateBlogImageDimensions(
+  kind: keyof typeof minimumDimensions,
+  bytes: Uint8Array,
+): Promise<{ success: true; width: number; height: number } | { success: false; message: string }> {
+  try {
+    const metadata = await sharp(bytes, { failOn: "error" }).metadata();
+    const width = metadata.width ?? 0;
+    const height = metadata.height ?? 0;
+    if (!width || !height) return { success: false, message: "Não foi possível identificar as dimensões da imagem." };
+
+    const minimum = minimumDimensions[kind];
+    if (width < minimum.width || height < minimum.height) {
+      const destination = kind === "cover" ? "capa" : "galeria";
+      return {
+        success: false,
+        message: `A imagem da ${destination} tem ${width} × ${height} px. Use pelo menos ${minimum.width} × ${minimum.height} px para evitar perda de nitidez.`,
+      };
+    }
+
+    return { success: true, width, height };
+  } catch {
+    return { success: false, message: "A imagem está corrompida ou não pôde ser processada." };
+  }
 }

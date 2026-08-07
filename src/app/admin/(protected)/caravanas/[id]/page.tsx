@@ -1,8 +1,10 @@
 import { notFound } from "next/navigation";
 import { CaravanForm } from "@/features/caravans/components/caravan-form";
 import { getCaravanById, getCaravanCategories } from "@/features/caravans/queries";
+import { requirePermission } from "@/features/auth/permissions";
 
 export default async function EditCaravanPage({ params }: { params: Promise<{ id: string }> }) {
+  await requirePermission("caravans.update");
   const { id } = await params;
   const [caravan, categories] = await Promise.all([getCaravanById(id), getCaravanCategories()]);
   if (!caravan) notFound();

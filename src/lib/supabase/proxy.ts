@@ -33,6 +33,13 @@ export async function updateSession(request: NextRequest) {
   const { data: claimsData } = await supabase.auth.getClaims();
   const userId = claimsData?.claims?.sub;
   const pathname = request.nextUrl.pathname;
+  const publicAdminRoutes = [
+    "/admin/login",
+    "/admin/recuperar-senha",
+    "/admin/auth/confirm",
+    "/admin/definir-senha",
+    "/admin/email/confirmar",
+  ];
 
   function redirectWithCookies(url: URL) {
     const redirectResponse = NextResponse.redirect(url);
@@ -56,6 +63,8 @@ export async function updateSession(request: NextRequest) {
     return response;
   }
 
+  if (publicAdminRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`))) return response;
+
   if (!userId) {
     const loginUrl = new URL("/admin/login", request.url);
     loginUrl.searchParams.set("next", pathname);
@@ -72,9 +81,34 @@ export async function updateSession(request: NextRequest) {
     return redirectWithCookies(new URL("/admin/login?error=inactive", request.url));
   }
 
-  const adminOnly = ["/admin/usuarios", "/admin/configuracoes", "/admin/webhooks"];
+  if (pathname !== "/admin/mfa/verificar") {
+    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (aal?.nextLevel === "aal2" && aal.currentLevel !== "aal2") {
+      return redirectWithCookies(new URL("/admin/mfa/verificar", request.url));
+    }
+  }
+
+  const adminOnly = ["/admin/usuarios"];
   if (profile.role !== "admin" && adminOnly.some((prefix) => pathname.startsWith(prefix))) {
     return redirectWithCookies(new URL("/admin?error=forbidden", request.url));
+  }
+
+  const routePermissions = [
+    ["/admin/configuracoes", "settings.view"],
+    ["/admin/webhooks", "webhooks.view"],
+    ["/admin/caravanas", "caravans.view"],
+    ["/admin/blog", "blog.view"],
+    ["/admin/leads", "leads.view"],
+    ["/admin/newsletter", "newsletter.view"],
+    ["/admin/depoimentos", "testimonials.view"],
+    ["/admin/popups", "popups.view"],
+    ["/admin/midia", "media.view"],
+  ] as const;
+  const routePermission = routePermissions.find(([prefix]) => pathname.startsWith(prefix))?.[1]
+    ?? (pathname === "/admin" ? "dashboard.view" : null);
+  if (routePermission) {
+    const { data: allowed } = await supabase.rpc("has_permission", { permission_name: routePermission });
+    if (!allowed) return redirectWithCookies(new URL("/admin/sem-acesso", request.url));
   }
 
   return response;

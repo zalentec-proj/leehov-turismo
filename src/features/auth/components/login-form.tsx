@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import Link from "next/link";
 
 const initialState = { success: false, message: "" };
 
@@ -36,6 +37,9 @@ export function LoginForm() {
         {pending ? <Loader2 className="size-4 animate-spin" /> : null}
         {pending ? "Validando acesso..." : "Entrar"}
       </Button>
+      <p className="text-center text-sm text-leehov-muted">
+        <Link href="/admin/recuperar-senha" className="font-semibold text-leehov-blue-600 hover:underline">Esqueci minha senha</Link>
+      </p>
     </form>
   );
 }

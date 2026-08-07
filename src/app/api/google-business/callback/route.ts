@@ -2,7 +2,7 @@ import { timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-import { requireAdminProfile } from "@/features/auth/queries";
+import { getPermissionAccess } from "@/features/auth/permissions";
 import {
   exchangeGoogleAuthorizationCode,
   getLiveGoogleConnection,
@@ -25,7 +25,9 @@ function redirectWithStatus(request: Request, status: string) {
 }
 
 export async function GET(request: Request) {
-  const profile = await requireAdminProfile();
+  const access = await getPermissionAccess("testimonials.manage_google");
+  if (!access) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const { profile } = access;
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");

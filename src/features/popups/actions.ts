@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireActiveProfile } from "@/features/auth/queries";
+import { requirePermission } from "@/features/auth/permissions";
 import { popupSchema } from "@/features/popups/schema";
 import type { PopupActionResult } from "@/features/popups/types";
 import { getPublicSiteSettings } from "@/features/settings/queries";
@@ -14,10 +14,11 @@ function revalidatePopups() {
 }
 
 export async function savePopupAction(input: unknown): Promise<PopupActionResult> {
-  const profile = await requireActiveProfile();
+  const { profile } = await requirePermission("popups.manage");
   const parsed = popupSchema.safeParse(input);
   if (!parsed.success) return { success: false, message: parsed.error.issues[0]?.message ?? "Revise os dados do pop-up." };
   const value = parsed.data;
+  if (value.active) await requirePermission("popups.publish");
   const supabase = await createClient();
   if (value.popupType === "caravan") {
     const { data: caravan } = await supabase.from("caravans").select("id").eq("id", value.relatedCaravanId).eq("published", true).maybeSingle();
@@ -46,7 +47,7 @@ export async function savePopupAction(input: unknown): Promise<PopupActionResult
 }
 
 export async function setPopupActiveAction(id: string, active: boolean): Promise<PopupActionResult> {
-  const profile = await requireActiveProfile();
+  const { profile } = await requirePermission("popups.publish");
   const supabase = await createClient();
   const { data: popup } = await supabase.from("popups").select("popup_type, related_caravan_id").eq("id", id).maybeSingle();
   if (!popup) return { success: false, message: "Pop-up não encontrado." };
@@ -62,7 +63,7 @@ export async function setPopupActiveAction(id: string, active: boolean): Promise
 }
 
 export async function deletePopupAction(id: string): Promise<PopupActionResult> {
-  await requireActiveProfile();
+  await requirePermission("popups.delete");
   const supabase = await createClient();
   const { data } = await supabase.from("popups").select("active").eq("id", id).maybeSingle();
   if (!data) return { success: false, message: "Pop-up não encontrado." };

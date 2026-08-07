@@ -1,6 +1,6 @@
 import "server-only";
 
-import { requireActiveProfile } from "@/features/auth/queries";
+import { requirePermission } from "@/features/auth/permissions";
 import type { AdminLead, LeadAttribution, LeadInteraction, LeadMetrics, LeadOwner, LeadSource, LeadStatus } from "@/features/leads/types";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -25,21 +25,21 @@ function mapLead(row: LeadRow): AdminLead {
 const leadSelect = "id, name, email, phone, city, state, message, source, caravan_id, status, metadata, assigned_to, next_follow_up_at, created_at, updated_at, caravan:caravans(id, title, slug), assignee:profiles!leads_assigned_to_fkey(id, name, email)";
 
 export async function getAdminLeads(): Promise<AdminLead[]> {
-  await requireActiveProfile();
+  await requirePermission("leads.view");
   const { data, error } = await createAdminClient().from("leads").select(leadSelect).order("created_at", { ascending: false });
   if (error) throw new Error(`Não foi possível carregar os leads: ${error.message}`);
   return ((data ?? []) as unknown as LeadRow[]).map(mapLead);
 }
 
 export async function getAdminLeadById(id: string): Promise<AdminLead | null> {
-  await requireActiveProfile();
+  await requirePermission("leads.view");
   const { data, error } = await createAdminClient().from("leads").select(leadSelect).eq("id", id).maybeSingle();
   if (error) throw new Error("Não foi possível carregar o lead.");
   return data ? mapLead(data as unknown as LeadRow) : null;
 }
 
 export async function getLeadInteractions(leadId: string): Promise<LeadInteraction[]> {
-  await requireActiveProfile();
+  await requirePermission("leads.view");
   const { data, error } = await createAdminClient().from("lead_interactions").select("id, lead_id, interaction_type, title, body, metadata, created_at, created_by_profile:profiles!lead_interactions_created_by_fkey(id, name, email)").eq("lead_id", leadId).order("created_at", { ascending: false });
   if (error) throw new Error("Não foi possível carregar a linha do tempo.");
   return (data ?? []).map((row) => ({
@@ -50,7 +50,7 @@ export async function getLeadInteractions(leadId: string): Promise<LeadInteracti
 }
 
 export async function getLeadOwners(): Promise<LeadOwner[]> {
-  await requireActiveProfile();
+  await requirePermission("leads.view");
   const { data } = await createAdminClient().from("profiles").select("id, name, email").eq("active", true).order("name");
   return (data ?? []).map((profile) => ({ id: profile.id, name: profile.name || profile.email, email: profile.email }));
 }
@@ -58,7 +58,7 @@ export async function getLeadOwners(): Promise<LeadOwner[]> {
 export async function getRecentLeads(limit = 5) { return (await getAdminLeads()).slice(0, limit); }
 
 export async function getLeadMetrics(): Promise<LeadMetrics> {
-  await requireActiveProfile();
+  await requirePermission("leads.view");
   const { data, error } = await createAdminClient().from("leads").select("status");
   if (error) return { total: 0, new: 0, inProgress: 0, converted: 0 };
   return { total: data.length, new: data.filter((lead) => lead.status === "new").length, inProgress: data.filter((lead) => lead.status === "in_progress").length, converted: data.filter((lead) => lead.status === "converted").length };

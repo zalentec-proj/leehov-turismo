@@ -92,7 +92,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               alt={post.coverAltText}
               fill
               priority
-              unoptimized
+              quality={90}
               sizes="(min-width: 1312px) 1312px, 100vw"
               className="object-cover"
             />
@@ -142,7 +142,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               {related.map((item) => (
                 <Link key={item.id} href={`/blog/${item.slug}`} className="group overflow-hidden rounded-[18px] border border-leehov-border bg-white shadow-leehov-card">
                   <div className="relative aspect-[16/10] overflow-hidden bg-leehov-sky">
-                    {item.imageUrl ? <Image src={item.imageUrl} alt={item.coverAltText} fill unoptimized sizes="(min-width: 768px) 33vw, 100vw" className="object-cover transition duration-500 group-hover:scale-[1.035] motion-reduce:transition-none" /> : null}
+                    {item.imageUrl ? <Image src={item.imageUrl} alt={item.coverAltText} fill quality={90} sizes="(min-width: 768px) 33vw, 100vw" className="object-cover transition duration-500 group-hover:scale-[1.035] motion-reduce:transition-none" /> : null}
                   </div>
                   <div className="p-6">
                     <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-leehov-blue-600">{item.category}</p>

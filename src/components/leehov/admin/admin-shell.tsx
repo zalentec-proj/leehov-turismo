@@ -23,26 +23,27 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { logoutAction } from "@/features/auth/actions";
 import type { AdminProfile } from "@/features/auth/types";
+import type { PermissionKey } from "@/features/auth/permissions";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/admin", label: "Dashboard", icon: Home },
-  { href: "/admin/caravanas", label: "Caravanas", icon: Plane },
-  { href: "/admin/blog", label: "Blog", icon: BookOpen },
-  { href: "/admin/leads", label: "Leads", icon: MessageSquare },
-  { href: "/admin/newsletter", label: "Newsletter", icon: Mail },
-  { href: "/admin/depoimentos", label: "Depoimentos", icon: Star },
-  { href: "/admin/popups", label: "Pop-ups", icon: Bell },
-  { href: "/admin/midia", label: "Mídia", icon: Image },
-  { href: "/admin/configuracoes", label: "Configurações", icon: Settings, adminOnly: true },
-  { href: "/admin/webhooks", label: "Webhooks", icon: Cable, adminOnly: true },
-  { href: "/admin/usuarios", label: "Usuários", icon: Users, adminOnly: true },
-];
+  { href: "/admin", label: "Dashboard", icon: Home, permission: "dashboard.view" },
+  { href: "/admin/caravanas", label: "Caravanas", icon: Plane, permission: "caravans.view" },
+  { href: "/admin/blog", label: "Blog", icon: BookOpen, permission: "blog.view" },
+  { href: "/admin/leads", label: "Leads", icon: MessageSquare, permission: "leads.view" },
+  { href: "/admin/newsletter", label: "Newsletter", icon: Mail, permission: "newsletter.view" },
+  { href: "/admin/depoimentos", label: "Depoimentos", icon: Star, permission: "testimonials.view" },
+  { href: "/admin/popups", label: "Pop-ups", icon: Bell, permission: "popups.view" },
+  { href: "/admin/midia", label: "Mídia", icon: Image, permission: "media.view" },
+  { href: "/admin/configuracoes", label: "Configurações", icon: Settings, permission: "settings.view" },
+  { href: "/admin/webhooks", label: "Webhooks", icon: Cable, permission: "webhooks.view" },
+  { href: "/admin/usuarios", label: "Usuários", icon: Users, permission: "users.view" },
+] satisfies Array<{ href: string; label: string; icon: typeof Home; permission: PermissionKey }>;
 
-export function AdminShell({ children, profile }: { children: ReactNode; profile: AdminProfile }) {
+export function AdminShell({ children, profile, permissions }: { children: ReactNode; profile: AdminProfile; permissions: PermissionKey[] }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const visibleNavItems = navItems.filter((item) => !item.adminOnly || profile.role === "admin");
+  const visibleNavItems = navItems.filter((item) => permissions.includes(item.permission));
   const isActive = (href: string) => href === "/admin" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
 
   const navigation = (
@@ -105,12 +106,12 @@ export function AdminShell({ children, profile }: { children: ReactNode; profile
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="hidden rounded-full border border-leehov-border bg-white px-4 py-2 text-sm sm:block">
+            <Link href="/admin/minha-conta" className="hidden rounded-full border border-leehov-border bg-white px-4 py-2 text-sm transition hover:border-leehov-blue-300 sm:block">
               <p className="font-semibold text-leehov-navy-950">{profile.name || profile.email}</p>
               <p className="text-xs text-leehov-muted">
                 {profile.role === "admin" ? "Administrador geral" : "Editor"}
               </p>
-            </div>
+            </Link>
             <form action={logoutAction}>
               <Button type="submit" variant="outline" size="icon" className="rounded-full" aria-label="Sair do painel">
                 <LogOut className="size-4" />

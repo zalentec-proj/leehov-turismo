@@ -54,11 +54,16 @@ export function AdminBlogTable({ data, categories, canCreate, canUpdate, canPubl
   const runAction = useCallback((id: string, action: () => Promise<{ success: boolean; message: string }>) => {
     setActionId(id);
     startTransition(async () => {
-      const result = await action();
-      if (result.success) toast.success(result.message);
-      else toast.error(result.message);
-      setActionId(null);
-      router.refresh();
+      try {
+        const result = await action();
+        if (result.success) toast.success(result.message);
+        else toast.error(result.message);
+        router.refresh();
+      } catch {
+        toast.error("Não foi possível concluir a ação. Atualize a página e tente novamente.");
+      } finally {
+        setActionId(null);
+      }
     });
   }, [router]);
 

@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
-import { mapCaravanDetail, mapCaravanSummary, type CaravanQueryRow } from "@/features/caravans/mappers";
+import { mapCaravanDetail, mapCaravanSummary, type CaravanQueryRow, type CaravanSummaryQueryRow } from "@/features/caravans/mappers";
 import type { AdminCaravan, CaravanCategory, CaravanDetail, CaravanSummary } from "@/features/caravans/types";
 
 const caravanSelect = `
@@ -10,6 +10,17 @@ const caravanSelect = `
   caravan_departures (*),
   caravan_itinerary_days (*),
   caravan_images (*)
+`;
+
+// The admin table only needs the card image and the next departure. Keeping
+// this selection small avoids loading, signing and serializing every itinerary
+// and gallery image just to render a 56px thumbnail.
+const adminCaravanListSelect = `
+  id, title, slug, destination, category_id, duration, status, price, summary,
+  card_image_url, hero_image_url, featured_hero, featured_home, hero_order,
+  published, published_at,
+  caravan_categories (id, name, slug, description, active, sort_order),
+  caravan_departures (label, start_date, order_index)
 `;
 
 async function getCaravanRows(options: {
@@ -49,9 +60,16 @@ export async function getCaravanBySlug(slug: string): Promise<CaravanDetail | nu
   return data ? mapCaravanDetail(supabase, data as unknown as CaravanQueryRow) : null;
 }
 
-export async function getAdminCaravans(): Promise<AdminCaravan[]> {
-  const { supabase, rows } = await getCaravanRows({});
-  return Promise.all(rows.map((row) => mapCaravanDetail(supabase, row)));
+export async function getAdminCaravans(): Promise<CaravanSummary[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("caravans")
+    .select(adminCaravanListSelect)
+    .order("updated_at", { ascending: false });
+  if (error) throw new Error(`Não foi possível carregar os pacotes: ${error.message}`);
+  return Promise.all(
+    ((data ?? []) as unknown as CaravanSummaryQueryRow[]).map((row) => mapCaravanSummary(supabase, row)),
+  );
 }
 
 export async function getCaravanById(id: string): Promise<AdminCaravan | null> {

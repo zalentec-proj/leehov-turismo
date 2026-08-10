@@ -234,12 +234,16 @@ export function BlogPostForm({ post, categories, caravans }: { post?: AdminBlogP
   }
 
   async function onSubmit(input: BlogPostFormInput) {
-    const normalizedInput = { ...input, images: normalizeBlogGalleryOrder(input.images) };
-    const result = await saveBlogPostAction(normalizedInput);
-    if (!result.success) return toast.error(result.message);
-    toast.success(result.message);
-    if (!input.id && result.id) router.push(`/admin/blog/${result.id}`);
-    else router.refresh();
+    try {
+      const normalizedInput = { ...input, images: normalizeBlogGalleryOrder(input.images) };
+      const result = await saveBlogPostAction(normalizedInput);
+      if (!result.success) return toast.error(result.message);
+      toast.success(result.message);
+      if (!input.id && result.id) router.push(`/admin/blog/${result.id}`);
+      else router.refresh();
+    } catch {
+      toast.error("O post foi salvo, mas não foi possível atualizar esta tela. Recarregue a página para continuar.");
+    }
   }
 
   async function uploadCover(file?: File) {

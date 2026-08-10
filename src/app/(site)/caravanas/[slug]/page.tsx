@@ -60,7 +60,7 @@ export default async function CaravanPage({ params }: CaravanPageProps) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(tripSchema).replaceAll("<", "\\u003c") }} />
 
       <section className="relative min-h-[720px] overflow-hidden bg-leehov-navy-950 px-5 pb-14 pt-36 text-white sm:px-8 lg:min-h-[774px] lg:px-12 lg:pb-[54px] lg:pt-[154px]">
-        {heroImage ? <Image src={heroImage} alt="" fill priority unoptimized={heroImage.startsWith("http")} sizes="100vw" className="object-cover object-center lg:object-[72%_center]" /> : null}
+        {heroImage ? <Image src={heroImage} alt="" fill priority sizes="100vw" quality={90} className="object-cover object-center lg:object-[72%_center]" /> : null}
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgb(6_26_42)_0%,rgb(6_26_42_/_94%)_38%,rgb(6_26_42_/_68%)_62%,rgb(6_26_42_/_18%)_100%)]" />
         <div className="absolute inset-0 bg-leehov-navy-950/12" />
 
@@ -112,8 +112,8 @@ export default async function CaravanPage({ params }: CaravanPageProps) {
           </div>
 
           <div className="relative min-h-[390px]">
-            {overviewImages[0] ? <div className="absolute inset-y-0 left-0 right-16 overflow-hidden rounded-[18px] bg-leehov-surface"><Image src={overviewImages[0].imageUrl} alt={overviewImages[0].altText || caravan.title} fill unoptimized={overviewImages[0].imageUrl.startsWith("http")} sizes="(min-width: 1024px) 38vw, 100vw" className="object-cover" /></div> : <div className="absolute inset-y-0 left-0 right-16 rounded-[18px] bg-leehov-surface" />}
-            {overviewImages[1] ? <div className="absolute bottom-8 right-0 h-[220px] w-[42%] overflow-hidden rounded-[16px] border-[5px] border-white bg-leehov-surface shadow-[0_14px_30px_rgb(6_42_68_/_17%)]"><Image src={overviewImages[1].imageUrl} alt={overviewImages[1].altText || caravan.title} fill unoptimized={overviewImages[1].imageUrl.startsWith("http")} sizes="260px" className="object-cover" /></div> : null}
+            {overviewImages[0] ? <div className="absolute inset-y-0 left-0 right-16 overflow-hidden rounded-[18px] bg-leehov-surface"><Image src={overviewImages[0].imageUrl} alt={overviewImages[0].altText || caravan.title} fill sizes="(min-width: 1024px) 38vw, 100vw" quality={90} className="object-cover" /></div> : <div className="absolute inset-y-0 left-0 right-16 rounded-[18px] bg-leehov-surface" />}
+            {overviewImages[1] ? <div className="absolute bottom-8 right-0 h-[220px] w-[42%] overflow-hidden rounded-[16px] border-[5px] border-white bg-leehov-surface shadow-[0_14px_30px_rgb(6_42_68_/_17%)]"><Image src={overviewImages[1].imageUrl} alt={overviewImages[1].altText || caravan.title} fill sizes="260px" quality={75} className="object-cover" /></div> : null}
             {galleryImages.length ? <Button asChild size="sm" className="absolute bottom-5 left-5 rounded-full bg-leehov-navy-950/78 text-xs font-bold text-white backdrop-blur hover:bg-leehov-navy-950"><Link href="#galeria">Clique e explore as imagens</Link></Button> : null}
           </div>
         </div>
@@ -158,7 +158,7 @@ export default async function CaravanPage({ params }: CaravanPageProps) {
             <p className="text-xs font-extrabold uppercase tracking-[0.11em] text-leehov-blue-500">Galeria</p>
             <h2 className="mt-3 text-[clamp(34px,3.6vw,44px)] font-extrabold tracking-[-0.03em] text-leehov-text">Conheça a experiência</h2>
             <div className="mt-9 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {galleryImages.map((image, index) => <figure key={image.id} className={index === 0 ? "sm:col-span-2 lg:row-span-2" : ""}><div className={index === 0 ? "relative h-[420px] overflow-hidden rounded-[18px] bg-leehov-surface lg:h-full lg:min-h-[520px]" : "relative h-[250px] overflow-hidden rounded-[18px] bg-leehov-surface"}><Image src={image.imageUrl} alt={image.altText || caravan.title} fill unoptimized={image.imageUrl.startsWith("http")} sizes={index === 0 ? "(min-width: 1024px) 66vw, 100vw" : "(min-width: 1024px) 33vw, 50vw"} className="object-cover transition duration-500 hover:scale-[1.02] motion-reduce:transition-none" /></div>{image.caption ? <figcaption className="px-1 pt-3 text-sm text-[#668098]">{image.caption}</figcaption> : null}</figure>)}
+              {galleryImages.map((image, index) => <figure key={image.id} className={index === 0 ? "sm:col-span-2 lg:row-span-2" : ""}><div className={index === 0 ? "relative h-[420px] overflow-hidden rounded-[18px] bg-leehov-surface lg:h-full lg:min-h-[520px]" : "relative h-[250px] overflow-hidden rounded-[18px] bg-leehov-surface"}><Image src={image.imageUrl} alt={image.altText || caravan.title} fill sizes={index === 0 ? "(min-width: 1024px) 66vw, 100vw" : "(min-width: 1024px) 33vw, 50vw"} quality={index === 0 ? 90 : 75} className="object-cover transition duration-500 hover:scale-[1.02] motion-reduce:transition-none" /></div>{image.caption ? <figcaption className="px-1 pt-3 text-sm text-[#668098]">{image.caption}</figcaption> : null}</figure>)}
             </div>
           </div>
         </section>

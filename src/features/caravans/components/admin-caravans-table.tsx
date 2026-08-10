@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { createColumnHelper, flexRender, getCoreRowModel, getFilteredRowModel, useReactTable } from "@tanstack/react-table";
@@ -7,7 +8,7 @@ import { Edit3, Loader2, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { deleteDraftCaravanAction, setCaravanPublishedAction } from "@/features/caravans/actions";
-import type { AdminCaravan } from "@/features/caravans/types";
+import type { CaravanSummary } from "@/features/caravans/types";
 import { StatusBadge } from "@/components/leehov/shared/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,9 +17,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-const columnHelper = createColumnHelper<AdminCaravan>();
+const columnHelper = createColumnHelper<CaravanSummary>();
 
-export function AdminCaravansTable({ data, canCreate, canUpdate, canPublish }: { data: AdminCaravan[]; canCreate: boolean; canUpdate: boolean; canPublish: boolean }) {
+export function AdminCaravansTable({ data, canCreate, canUpdate, canPublish }: { data: CaravanSummary[]; canCreate: boolean; canUpdate: boolean; canPublish: boolean }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("all");
@@ -26,7 +27,7 @@ export function AdminCaravansTable({ data, canCreate, canUpdate, canPublish }: {
   const filtered = useMemo(() => data.filter((item) => (status === "all" || item.status === status) && `${item.title} ${item.destination} ${item.category?.name ?? ""}`.toLowerCase().includes(query.toLowerCase())), [data, query, status]);
 
   const columns = useMemo(() => [
-    columnHelper.accessor("title", { header: "Pacote", cell: ({ row }) => <div className="flex min-w-[260px] items-center gap-3"><div className="size-14 shrink-0 rounded-xl bg-leehov-surface bg-cover bg-center" style={{ backgroundImage: row.original.imageUrl ? `url(${row.original.imageUrl})` : undefined }} /><div><p className="font-bold text-leehov-navy-950">{row.original.title}</p><p className="text-xs text-leehov-muted">{row.original.destination}</p></div></div> }),
+    columnHelper.accessor("title", { header: "Pacote", cell: ({ row }) => <div className="flex min-w-[260px] items-center gap-3"><div className="relative size-14 shrink-0 overflow-hidden rounded-xl bg-leehov-surface">{row.original.imageUrl ? <Image src={row.original.imageUrl} alt="" fill sizes="56px" quality={75} className="object-cover" /> : null}</div><div><p className="font-bold text-leehov-navy-950">{row.original.title}</p><p className="text-xs text-leehov-muted">{row.original.destination}</p></div></div> }),
     columnHelper.display({ id: "category", header: "Categoria", cell: ({ row }) => row.original.category?.name ?? "—" }),
     columnHelper.display({ id: "departure", header: "Próxima saída", cell: ({ row }) => <div><p>{row.original.departureLabel}</p><p className="text-xs text-leehov-muted">{row.original.duration}</p></div> }),
     columnHelper.accessor("status", { header: "Status", cell: ({ getValue }) => <StatusBadge status={getValue()} /> }),

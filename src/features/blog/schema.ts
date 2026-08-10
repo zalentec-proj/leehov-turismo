@@ -4,7 +4,7 @@ const optionalId = z.string().uuid().or(z.literal(""));
 
 const blogImageSchema = z.object({
   id: optionalId,
-  imagePath: z.string().min(1, "Informe o path da imagem."),
+  imagePath: z.string().min(1, "Envie uma imagem."),
   altText: z.string().trim().max(180, "Use até 180 caracteres."),
   caption: z.string().trim().max(300, "Use até 300 caracteres."),
   orderIndex: z.number().int().min(0),

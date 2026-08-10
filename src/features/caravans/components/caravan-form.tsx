@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { useFieldArray, useForm, Controller, useWatch } from "react-hook-form";
+import { useFieldArray, useForm, Controller, useWatch, type FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { ImagePlus, Loader2, Plus, Save, Trash2, X } from "lucide-react";
@@ -82,6 +82,21 @@ function BooleanField({ label, description, checked, onCheckedChange }: { label:
   );
 }
 
+const caravanFormTabs = [
+  { value: "general", fields: ["title", "slug", "destination", "categoryId", "type", "summary", "description", "duration", "price", "currency"] },
+  { value: "images", fields: ["cardImagePath", "heroImagePath", "videoUrl", "videoThumbnailPath", "images"] },
+  { value: "departures", fields: ["departures"] },
+  { value: "itinerary", fields: ["itinerary"] },
+  { value: "included", fields: ["included", "notIncluded", "notes"] },
+  { value: "group", fields: ["isGroupTrip", "isAccompanied", "hasPortugueseGuide", "hasLeehovRepresentative", "hasTravelKit", "hasTravelInsurance", "minPeople", "maxPeople", "leaderName", "leaderBio", "leaderImagePath"] },
+  { value: "seo", fields: ["seoTitle", "seoDescription"] },
+  { value: "publication", fields: ["status", "featuredHome", "featuredHero", "heroTitle", "heroDescription", "heroCtaText", "heroCtaUrl", "heroOrder", "published"] },
+] as const;
+
+function tabWithFirstError(errors: FieldErrors<CaravanFormInput>) {
+  return caravanFormTabs.find((tab) => tab.fields.some((field) => field in errors))?.value ?? "general";
+}
+
 function PackageImagePicker({
   id,
   label,
@@ -127,33 +142,53 @@ function PackageImagePicker({
 
 export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; categories: CaravanCategory[] }) {
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState("general");
   const [uploading, setUploading] = useState(false);
-  const [assetPreviews, setAssetPreviews] = useState<Record<"card" | "hero" | "thumbnail", string>>(() => ({
+  const [assetPreviews, setAssetPreviews] = useState<Record<"card" | "hero" | "thumbnail" | "leader", string>>(() => ({
     card: caravan?.imageUrl ?? "",
     hero: caravan?.heroImagePath && caravan.heroImageUrl !== "/images/leehov/hero-fallback.jpg" ? caravan.heroImageUrl : "",
     thumbnail: caravan?.videoThumbnailUrl ?? "",
+    leader: caravan?.leaderImageUrl ?? "",
   }));
+  const [galleryPreviews, setGalleryPreviews] = useState<Record<string, string>>(() => Object.fromEntries(caravan?.images.filter((image) => image.imagePath && image.imageUrl).map((image) => [image.imagePath, image.imageUrl]) ?? []));
   const [itineraryPreviews, setItineraryPreviews] = useState<Record<string, string>>(() => Object.fromEntries(caravan?.itinerary.filter((day) => day.imagePath && day.imageUrl).map((day) => [day.imagePath, day.imageUrl]) ?? []));
-  const [lastResult, setLastResult] = useState("");
+  const [lastError, setLastError] = useState("");
   const form = useForm<CaravanFormInput>({ resolver: zodResolver(caravanFormSchema), defaultValues: defaults(caravan), mode: "onBlur" });
   const departures = useFieldArray({ control: form.control, name: "departures" });
   const itinerary = useFieldArray({ control: form.control, name: "itinerary" });
   const images = useFieldArray({ control: form.control, name: "images" });
   const title = useWatch({ control: form.control, name: "title" });
   const watchedItinerary = useWatch({ control: form.control, name: "itinerary" });
+  const watchedImages = useWatch({ control: form.control, name: "images" });
 
   useEffect(() => {
     if (!caravan && !form.getFieldState("slug").isDirty) form.setValue("slug", slugifyCaravanTitle(title));
   }, [caravan, form, title]);
 
   async function onSubmit(input: CaravanFormInput) {
-    setLastResult("");
-    const result = await saveCaravanAction(input);
-    setLastResult(result.message);
-    if (!result.success) return toast.error(result.message);
-    toast.success(result.message);
-    if (!input.id && result.id) router.push(`/admin/caravanas/${result.id}`);
-    else router.refresh();
+    setLastError("");
+    try {
+      const result = await saveCaravanAction(input);
+      if (!result.success) {
+        setLastError(result.message);
+        return toast.error(result.message);
+      }
+      toast.success(result.message);
+      if (!input.id && result.id) router.push(`/admin/caravanas/${result.id}`);
+      else router.refresh();
+    } catch {
+      const message = "O pacote pode ter sido salvo, mas não foi possível atualizar esta tela. Recarregue a página para confirmar.";
+      setLastError(message);
+      toast.error(message);
+    }
+  }
+
+  function onInvalid(errors: FieldErrors<CaravanFormInput>) {
+    const targetTab = tabWithFirstError(errors);
+    const message = "Revise os campos destacados antes de salvar. Abrimos a aba que contém o primeiro erro.";
+    setActiveTab(targetTab);
+    setLastError(message);
+    toast.error(message);
   }
 
   async function upload(file: File | undefined) {
@@ -167,12 +202,13 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
     setUploading(false);
     if (!result.success || !result.path) return toast.error(result.message);
     images.append({ id: "", imagePath: result.path, altText: title, caption: "", orderIndex: images.fields.length * 10 });
+    if (result.url) setGalleryPreviews((current) => ({ ...current, [result.path as string]: result.url as string }));
     if (!form.getValues("cardImagePath")) form.setValue("cardImagePath", result.path, { shouldDirty: true });
     if (!form.getValues("heroImagePath")) form.setValue("heroImagePath", result.path, { shouldDirty: true });
     toast.success("Imagem adicionada. Salve para confirmar a galeria.");
   }
 
-  async function uploadAsset(field: "cardImagePath" | "heroImagePath" | "videoThumbnailPath", previewKey: "card" | "hero" | "thumbnail", file: File | undefined) {
+  async function uploadAsset(field: "cardImagePath" | "heroImagePath" | "videoThumbnailPath" | "leaderImagePath", previewKey: "card" | "hero" | "thumbnail" | "leader", file: File | undefined) {
     const caravanId = form.getValues("id");
     if (!caravanId) return toast.info("Salve o pacote antes de enviar imagens.");
     if (!file) return;
@@ -187,7 +223,7 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
     toast.success("Imagem enviada. Salve o pacote para confirmar a alteração.");
   }
 
-  function clearAsset(field: "cardImagePath" | "heroImagePath" | "videoThumbnailPath", previewKey: "card" | "hero" | "thumbnail") {
+  function clearAsset(field: "cardImagePath" | "heroImagePath" | "videoThumbnailPath" | "leaderImagePath", previewKey: "card" | "hero" | "thumbnail" | "leader") {
     form.setValue(field, "", { shouldDirty: true, shouldValidate: true });
     setAssetPreviews((current) => ({ ...current, [previewKey]: "" }));
   }
@@ -199,6 +235,11 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
       if (!result.success) return toast.error(result.message);
       toast.success(result.message);
     }
+    setGalleryPreviews((current) => {
+      const next = { ...current };
+      delete next[image.imagePath];
+      return next;
+    });
     images.remove(index);
   }
 
@@ -219,9 +260,9 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
 
   const errors = form.formState.errors;
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-      {lastResult && !form.formState.isSubmitSuccessful ? <Alert variant="destructive"><AlertDescription>{lastResult}</AlertDescription></Alert> : null}
-      <Tabs defaultValue="general" className="space-y-6">
+    <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-6">
+      {lastError ? <Alert variant="destructive"><AlertDescription>{lastError}</AlertDescription></Alert> : null}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="h-auto w-full justify-start overflow-x-auto rounded-[16px] bg-white p-2">
           <TabsTrigger value="general">1. Informações gerais</TabsTrigger>
           <TabsTrigger value="images">2. Imagens</TabsTrigger>
@@ -251,6 +292,9 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
             <PackageImagePicker id="card-image-upload" label="Imagem do card" helper="Usada nos cards do site e como imagem principal do compartilhamento." preview={assetPreviews.card} disabled={!caravan || uploading} uploading={uploading} onSelect={(file) => uploadAsset("cardImagePath", "card", file)} onClear={() => clearAsset("cardImagePath", "card")} />
             <PackageImagePicker id="hero-image-upload" label="Imagem principal" helper="Usada no Hero da página do pacote e da Home quando não houver vídeo." preview={assetPreviews.hero} disabled={!caravan || uploading} uploading={uploading} onSelect={(file) => uploadAsset("heroImagePath", "hero", file)} onClear={() => clearAsset("heroImagePath", "hero")} />
             <PackageImagePicker id="video-thumbnail-upload" label="Thumbnail do vídeo" helper="Capa exibida antes da reprodução do vídeo, quando aplicável." preview={assetPreviews.thumbnail} disabled={!caravan || uploading} uploading={uploading} onSelect={(file) => uploadAsset("videoThumbnailPath", "thumbnail", file)} onClear={() => clearAsset("videoThumbnailPath", "thumbnail")} />
+            <Input type="hidden" {...form.register("cardImagePath")} />
+            <Input type="hidden" {...form.register("heroImagePath")} />
+            <Input type="hidden" {...form.register("videoThumbnailPath")} />
           </div>
           {!caravan ? <p className="-mt-2 text-xs text-leehov-muted">Salve o rascunho para liberar os uploads de imagens.</p> : null}
           <div className="grid gap-5 md:grid-cols-2">
@@ -261,7 +305,27 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
             <div className="mt-3 flex items-center gap-3"><Input id="caravan-upload" type="file" accept="image/jpeg,image/png,image/webp,image/avif" disabled={!caravan || uploading} onChange={(event) => upload(event.target.files?.[0])} />{uploading ? <Loader2 className="size-5 animate-spin" /> : <ImagePlus className="size-5 text-leehov-blue-500" />}</div>
             {!caravan ? <p className="mt-2 text-xs text-leehov-muted">Salve o rascunho para liberar uploads.</p> : null}
           </div>
-          <div className="space-y-3"><Label>Galeria</Label>{images.fields.map((field, index) => <div key={field.id} className="grid gap-3 rounded-xl bg-leehov-surface p-4 md:grid-cols-[1fr_1fr_auto]"><Input {...form.register(`images.${index}.imagePath`)} placeholder="Path" /><Input {...form.register(`images.${index}.altText`)} placeholder="Texto alternativo" /><Button type="button" variant="outline" size="icon" onClick={() => removeImage(index)}><Trash2 className="size-4" /></Button></div>)}</div>
+          <div className="space-y-3">
+            <Label>Galeria</Label>
+            {images.fields.map((field, index) => {
+              const imagePath = watchedImages?.[index]?.imagePath ?? field.imagePath;
+              const preview = galleryPreviews[imagePath];
+              return (
+                <div key={field.id} className="grid gap-4 rounded-xl bg-leehov-surface p-4 md:grid-cols-[112px_minmax(0,1fr)_auto] md:items-center">
+                  <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-white">
+                    {preview ? <Image src={preview} alt="" fill unoptimized={preview.startsWith("http")} sizes="112px" className="object-cover" /> : <div className="flex size-full items-center justify-center text-leehov-muted"><ImagePlus className="size-5" /></div>}
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Input type="hidden" {...form.register(`images.${index}.imagePath`)} />
+                    <Field label="Texto alternativo" error={errors.images?.[index]?.altText?.message}><Input {...form.register(`images.${index}.altText`)} placeholder="Descreva a imagem" /></Field>
+                    <Field label="Legenda"><Input {...form.register(`images.${index}.caption`)} placeholder="Legenda opcional" /></Field>
+                  </div>
+                  <Button type="button" variant="outline" size="icon" aria-label={`Remover imagem ${index + 1}`} onClick={() => removeImage(index)}><Trash2 className="size-4" /></Button>
+                </div>
+              );
+            })}
+            {!images.fields.length ? <p className="rounded-xl border border-dashed border-leehov-border p-5 text-sm text-leehov-muted">Nenhuma imagem adicionada à galeria.</p> : null}
+          </div>
         </Card></TabsContent>
 
         <TabsContent value="departures"><Card className="space-y-4 rounded-[18px] border-leehov-border p-6">
@@ -292,7 +356,7 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
                     <Field label="Local"><Input {...form.register(`itinerary.${index}.location`)} /></Field>
                     <div className="flex items-end"><Button type="button" variant="outline" size="icon" aria-label={`Remover dia ${index + 1}`} onClick={() => itinerary.remove(index)}><Trash2 className="size-4" /></Button></div>
                     <div className="md:col-span-4"><Field label="Descrição"><Textarea rows={4} {...form.register(`itinerary.${index}.description`)} /></Field></div>
-                    <div className="md:col-span-2"><Field label="Path da imagem"><Input {...form.register(`itinerary.${index}.imagePath`)} placeholder="Preenchido automaticamente no upload" /></Field></div>
+                    <Input type="hidden" {...form.register(`itinerary.${index}.imagePath`)} />
                     <Field label="Hospedagem"><Input {...form.register(`itinerary.${index}.accommodation`)} /></Field>
                     <Field label="Refeições"><Controller control={form.control} name={`itinerary.${index}.meals`} render={({ field: mealsField }) => <Input value={mealsField.value.join(", ")} onChange={(event) => mealsField.onChange(event.target.value.split(",").map((item) => item.trim()).filter(Boolean))} placeholder="Café da manhã, jantar" />} /></Field>
                   </div>
@@ -311,7 +375,10 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
         <TabsContent value="group"><Card className="grid gap-5 rounded-[18px] border-leehov-border p-6 md:grid-cols-2">
           {([ ["isGroupTrip", "Viagem em grupo"], ["isAccompanied", "Roteiro acompanhado"], ["hasPortugueseGuide", "Guia em português"], ["hasLeehovRepresentative", "Representante Leehov"], ["hasTravelKit", "Kit de viagem"], ["hasTravelInsurance", "Seguro-viagem"] ] as const).map(([name, label]) => <Controller key={name} control={form.control} name={name} render={({ field }) => <BooleanField label={label} checked={field.value} onCheckedChange={field.onChange} />} />)}
           <Field label="Mínimo de pessoas"><Input type="number" min={1} {...form.register("minPeople", { setValueAs: (value) => value === "" ? null : Number(value) })} /></Field><Field label="Máximo de pessoas"><Input type="number" min={1} {...form.register("maxPeople", { setValueAs: (value) => value === "" ? null : Number(value) })} /></Field>
-          <Field label="Líder / acompanhamento"><Input {...form.register("leaderName")} /></Field><Field label="Path da foto do líder"><Input {...form.register("leaderImagePath")} /></Field><div className="md:col-span-2"><Field label="Apresentação do líder"><Textarea rows={5} {...form.register("leaderBio")} /></Field></div>
+          <Field label="Líder / acompanhamento"><Input {...form.register("leaderName")} /></Field>
+          <PackageImagePicker id="leader-image-upload" label="Foto do líder" helper="Imagem exibida na apresentação do acompanhamento deste pacote." preview={assetPreviews.leader} disabled={!caravan || uploading} uploading={uploading} onSelect={(file) => uploadAsset("leaderImagePath", "leader", file)} onClear={() => clearAsset("leaderImagePath", "leader")} />
+          <Input type="hidden" {...form.register("leaderImagePath")} />
+          <div className="md:col-span-2"><Field label="Apresentação do líder"><Textarea rows={5} {...form.register("leaderBio")} /></Field></div>
         </Card></TabsContent>
 
         <TabsContent value="seo"><Card className="grid gap-5 rounded-[18px] border-leehov-border p-6">

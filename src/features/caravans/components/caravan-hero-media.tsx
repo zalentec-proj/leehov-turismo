@@ -33,8 +33,8 @@ export function CaravanHeroMedia({ imageUrl, videoUrl = "", priority = false, cl
           alt=""
           fill
           priority={priority}
-          unoptimized={imageUrl.startsWith("http")}
           sizes="100vw"
+          quality={90}
           className="object-cover object-center"
         />
       ) : null}

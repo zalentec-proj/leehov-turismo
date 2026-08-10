@@ -9,6 +9,11 @@ export type CaravanQueryRow = Database["public"]["Tables"]["caravans"]["Row"] & 
   caravan_images: Database["public"]["Tables"]["caravan_images"]["Row"][];
 };
 
+export type CaravanSummaryQueryRow = Database["public"]["Tables"]["caravans"]["Row"] & {
+  caravan_categories: Database["public"]["Tables"]["caravan_categories"]["Row"] | null;
+  caravan_departures: Database["public"]["Tables"]["caravan_departures"]["Row"][];
+};
+
 function jsonStringArray(value: Json): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 }
@@ -31,7 +36,7 @@ export async function resolveCaravanAssetUrl(
   return data?.signedUrl ?? "";
 }
 
-function mapCategory(row: CaravanQueryRow["caravan_categories"]): CaravanCategory | null {
+function mapCategory(row: CaravanSummaryQueryRow["caravan_categories"]): CaravanCategory | null {
   if (!row) return null;
   return {
     id: row.id,
@@ -45,7 +50,7 @@ function mapCategory(row: CaravanQueryRow["caravan_categories"]): CaravanCategor
 
 export async function mapCaravanSummary(
   supabase: SupabaseClient<Database>,
-  row: CaravanQueryRow,
+  row: CaravanSummaryQueryRow,
 ): Promise<CaravanSummary> {
   const departures = [...(row.caravan_departures ?? [])].sort((a, b) => a.order_index - b.order_index);
   const firstDeparture = departures.find((departure) => departure.start_date) ?? departures[0];

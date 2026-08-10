@@ -7,9 +7,16 @@ import { createWebhookDeliveries, deliverWebhookLog } from "@/lib/webhooks/deliv
 import type { Json } from "@/types/database";
 
 export async function emitWebhookEvent(event: WebhookEvent, data: Record<string, Json | undefined>) {
-  const deliveryIds = await createWebhookDeliveries(event, data);
-  if (!deliveryIds.length) return;
-  after(async () => {
-    await Promise.allSettled(deliveryIds.map((id) => deliverWebhookLog(id)));
-  });
+  // A webhook is an integration side effect. Its persistence or delivery must
+  // never make the action that created the primary record fail after it has
+  // already committed (for example, a blog post that was just published).
+  try {
+    const deliveryIds = await createWebhookDeliveries(event, data);
+    if (!deliveryIds.length) return;
+    after(async () => {
+      await Promise.allSettled(deliveryIds.map((id) => deliverWebhookLog(id)));
+    });
+  } catch {
+    console.error(`Não foi possível enfileirar o webhook ${event}.`);
+  }
 }

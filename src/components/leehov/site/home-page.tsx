@@ -113,8 +113,8 @@ export function HomePage({
                         src={route.imageUrl}
                         alt={`Imagem do pacote ${route.title}`}
                         fill
-                        unoptimized
                         sizes="(min-width: 1280px) 25vw, (min-width: 640px) 50vw, 100vw"
+                        quality={75}
                         className="object-cover transition duration-500 group-hover:scale-105 motion-reduce:transition-none"
                       />
                     ) : null}

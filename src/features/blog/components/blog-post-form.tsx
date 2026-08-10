@@ -39,6 +39,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { removeBlogImageAction, saveBlogPostAction, uploadBlogImageAction } from "@/features/blog/actions";
 import { BlogEditor } from "@/features/blog/components/blog-editor";
+import { BlogActionProgress } from "@/features/blog/components/blog-action-progress";
 import { blogPostFormSchema, type BlogPostFormInput } from "@/features/blog/schema";
 import { slugifyBlogTitle } from "@/features/blog/sanitize";
 import { normalizeBlogGalleryOrder } from "@/features/blog/gallery";
@@ -190,6 +191,7 @@ function SortableGalleryCard({
 
 export function BlogPostForm({ post, categories, caravans }: { post?: AdminBlogPost; categories: BlogCategory[]; caravans: RelatedCaravan[] }) {
   const router = useRouter();
+  const [progress, setProgress] = useState<{ title: string; description: string } | null>(null);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [uploadResults, setUploadResults] = useState<UploadResult[]>([]);
   const [coverPreview, setCoverPreview] = useState(post?.imageUrl ?? "");
@@ -234,14 +236,23 @@ export function BlogPostForm({ post, categories, caravans }: { post?: AdminBlogP
   }
 
   async function onSubmit(input: BlogPostFormInput) {
+    const publishing = input.published;
+    setProgress({
+      title: publishing ? "Publicando artigo..." : "Salvando rascunho...",
+      description: publishing ? "Estamos validando o conteúdo, atualizando o Blog e preparando a página pública." : "Estamos salvando o conteúdo e atualizando o painel administrativo.",
+    });
     try {
       const normalizedInput = { ...input, images: normalizeBlogGalleryOrder(input.images) };
       const result = await saveBlogPostAction(normalizedInput);
-      if (!result.success) return toast.error(result.message);
+      if (!result.success) {
+        setProgress(null);
+        return toast.error(result.message);
+      }
       toast.success(result.message);
       if (!input.id && result.id) router.push(`/admin/blog/${result.id}`);
-      else router.refresh();
+      setProgress(null);
     } catch {
+      setProgress(null);
       toast.error("O post foi salvo, mas não foi possível atualizar esta tela. Recarregue a página para continuar.");
     }
   }
@@ -318,13 +329,14 @@ export function BlogPostForm({ post, categories, caravans }: { post?: AdminBlogP
   }
 
   const errors = form.formState.errors;
-  const isBusy = form.formState.isSubmitting || uploadingCover || isUploadingGallery;
+  const isBusy = form.formState.isSubmitting || uploadingCover || isUploadingGallery || Boolean(progress);
 
   return (
     <form
       onSubmit={form.handleSubmit(onSubmit, () => toast.error("Revise os campos destacados antes de salvar."))}
       className="space-y-6"
     >
+      <BlogActionProgress open={Boolean(progress)} title={progress?.title ?? "Processando artigo..."} description={progress?.description ?? "Aguarde a conclusão desta etapa."} />
       <Tabs defaultValue="content" className="space-y-6">
         <TabsList className="h-auto w-full justify-start overflow-x-auto rounded-[16px] border border-leehov-border bg-white p-2 shadow-sm">
           <TabsTrigger value="content">Conteúdo</TabsTrigger>

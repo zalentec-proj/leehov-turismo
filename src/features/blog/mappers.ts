@@ -1,11 +1,17 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
-import type { AdminBlogPost, BlogPostDetail, BlogPostSummary } from "@/features/blog/types";
+import type { AdminBlogListItem, AdminBlogPost, BlogPostDetail, BlogPostSummary } from "@/features/blog/types";
 
 export type BlogQueryRow = Database["public"]["Tables"]["blog_posts"]["Row"] & {
   category: Database["public"]["Tables"]["blog_categories"]["Row"] | null;
   images: Database["public"]["Tables"]["blog_post_images"]["Row"][];
   relatedCaravan: Pick<Database["public"]["Tables"]["caravans"]["Row"], "id" | "title" | "slug" | "published"> | null;
+};
+
+export type AdminBlogListRow = Pick<Database["public"]["Tables"]["blog_posts"]["Row"],
+  "id" | "title" | "slug" | "summary" | "category_id" | "author" | "reading_time" | "cover_image_url" | "published" | "featured_home" | "featured_blog" | "updated_at"
+> & {
+  category: Pick<Database["public"]["Tables"]["blog_categories"]["Row"], "name"> | null;
 };
 
 export async function resolveBlogAssetUrl(supabase: SupabaseClient<Database>, path: string | null): Promise<string> {
@@ -60,6 +66,24 @@ export async function mapAdminBlogPost(supabase: SupabaseClient<Database>, row: 
     published: row.published,
     sourceUrl: row.source_url ?? "",
     createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export async function mapAdminBlogListItem(supabase: SupabaseClient<Database>, row: AdminBlogListRow): Promise<AdminBlogListItem> {
+  return {
+    id: row.id,
+    title: row.title,
+    slug: row.slug,
+    summary: row.summary ?? "",
+    category: row.category?.name ?? "Sem categoria",
+    categoryId: row.category_id ?? "",
+    author: row.author ?? "Equipe Leehov",
+    readingTime: row.reading_time ?? 1,
+    imageUrl: await resolveBlogAssetUrl(supabase, row.cover_image_url),
+    published: row.published,
+    featuredHome: row.featured_home,
+    featuredBlog: row.featured_blog,
     updatedAt: row.updated_at,
   };
 }

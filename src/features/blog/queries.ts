@@ -1,14 +1,20 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
-import { mapAdminBlogPost, mapBlogDetail, mapBlogSummary, type BlogQueryRow } from "@/features/blog/mappers";
-import type { AdminBlogPost, BlogCategory, BlogPostDetail, BlogPostSummary } from "@/features/blog/types";
+import { mapAdminBlogListItem, mapAdminBlogPost, mapBlogDetail, mapBlogSummary, type AdminBlogListRow, type BlogQueryRow } from "@/features/blog/mappers";
+import type { AdminBlogListItem, AdminBlogPost, BlogCategory, BlogPostDetail, BlogPostSummary } from "@/features/blog/types";
 
 const blogSelect = `
   *,
   category:blog_categories (*),
   images:blog_post_images (*),
   relatedCaravan:caravans (id, title, slug, published)
+`;
+
+const adminBlogListSelect = `
+  id, title, slug, summary, category_id, author, reading_time, cover_image_url,
+  published, featured_home, featured_blog, updated_at,
+  category:blog_categories (name)
 `;
 
 export async function getPublishedPosts(options: { search?: string; category?: string } = {}): Promise<BlogPostSummary[]> {
@@ -62,11 +68,11 @@ export async function getRelatedPosts(post: BlogPostDetail, limit = 3): Promise<
   return Promise.all(((data ?? []) as unknown as BlogQueryRow[]).map((row) => mapBlogSummary(supabase, row)));
 }
 
-export async function getAdminPosts(): Promise<AdminBlogPost[]> {
+export async function getAdminPosts(): Promise<AdminBlogListItem[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("blog_posts").select(blogSelect).order("updated_at", { ascending: false });
+  const { data, error } = await supabase.from("blog_posts").select(adminBlogListSelect).order("updated_at", { ascending: false });
   if (error) throw new Error(`Não foi possível carregar os posts: ${error.message}`);
-  return Promise.all(((data ?? []) as unknown as BlogQueryRow[]).map((row) => mapAdminBlogPost(supabase, row)));
+  return Promise.all(((data ?? []) as unknown as AdminBlogListRow[]).map((row) => mapAdminBlogListItem(supabase, row)));
 }
 
 export async function getAdminPostById(id: string): Promise<AdminBlogPost | null> {

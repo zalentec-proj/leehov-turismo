@@ -2,13 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createColumnHelper, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { ChevronLeft, ChevronRight, Edit3, Loader2, Plus, Search, Trash2, X } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { deleteDraftBlogPostAction, setBlogPostPublishedAction } from "@/features/blog/actions";
-import type { AdminBlogPost, BlogCategory } from "@/features/blog/types";
+import { BlogActionProgress } from "@/features/blog/components/blog-action-progress";
+import type { AdminBlogListItem, BlogCategory } from "@/features/blog/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -16,24 +16,27 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-const columnHelper = createColumnHelper<AdminBlogPost>();
+const columnHelper = createColumnHelper<AdminBlogListItem>();
 const PAGE_SIZE = 8;
 
 function formatUpdatedAt(value: string) {
   return new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(new Date(value));
 }
 
-export function AdminBlogTable({ data, categories, canCreate, canUpdate, canPublish, canDeleteDraft }: { data: AdminBlogPost[]; categories: BlogCategory[]; canCreate: boolean; canUpdate: boolean; canPublish: boolean; canDeleteDraft: boolean }) {
-  const router = useRouter();
+export function AdminBlogTable({ data, categories, canCreate, canUpdate, canPublish, canDeleteDraft }: { data: AdminBlogListItem[]; categories: BlogCategory[]; canCreate: boolean; canUpdate: boolean; canPublish: boolean; canDeleteDraft: boolean }) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("all");
   const [category, setCategory] = useState("all");
   const [highlight, setHighlight] = useState("all");
+  const [rows, setRows] = useState(data);
   const [page, setPage] = useState(0);
   const [actionId, setActionId] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
+  const [progress, setProgress] = useState<{ title: string; description: string } | null>(null);
+  const requestedPage = useRef<number | null>(null);
 
-  const filtered = useMemo(() => data.filter((post) => {
+  useEffect(() => setRows(data), [data]);
+
+  const filtered = useMemo(() => rows.filter((post) => {
     const matchesStatus = status === "all" || (status === "published" ? post.published : !post.published);
     const matchesCategory = category === "all" || post.categoryId === category;
     const matchesHighlight = highlight === "all"
@@ -43,29 +46,50 @@ export function AdminBlogTable({ data, categories, canCreate, canUpdate, canPubl
       || (highlight === "home" && post.featuredHome);
     const matchesSearch = `${post.title} ${post.summary} ${post.author}`.toLocaleLowerCase("pt-BR").includes(query.toLocaleLowerCase("pt-BR"));
     return matchesStatus && matchesCategory && matchesHighlight && matchesSearch;
-  }), [category, data, highlight, query, status]);
+  }), [category, highlight, query, rows, status]);
 
   useEffect(() => setPage(0), [category, highlight, query, status]);
+  useEffect(() => {
+    if (requestedPage.current !== page) return;
+    requestedPage.current = null;
+    setProgress(null);
+  }, [page]);
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageRows = filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
   const hasFilters = Boolean(query) || status !== "all" || category !== "all" || highlight !== "all";
 
-  const runAction = useCallback((id: string, action: () => Promise<{ success: boolean; message: string }>) => {
+  const runAction = useCallback(async (
+    id: string,
+    title: string,
+    action: () => Promise<{ success: boolean; message: string }>,
+    updateRows: (currentRows: AdminBlogListItem[]) => AdminBlogListItem[],
+  ) => {
     setActionId(id);
-    startTransition(async () => {
-      try {
-        const result = await action();
-        if (result.success) toast.success(result.message);
-        else toast.error(result.message);
-        router.refresh();
-      } catch {
-        toast.error("Não foi possível concluir a ação. Atualize a página e tente novamente.");
-      } finally {
-        setActionId(null);
+    setProgress({ title, description: "Aguarde enquanto atualizamos o artigo e recarregamos os dados do Blog." });
+    try {
+      const result = await action();
+      if (result.success) {
+        setRows(updateRows);
+        toast.success(result.message);
+      } else {
+        toast.error(result.message);
       }
-    });
-  }, [router]);
+    } catch {
+      toast.error("Não foi possível concluir a ação. Atualize a página e tente novamente.");
+    } finally {
+      setActionId(null);
+      setProgress(null);
+    }
+  }, []);
+
+  const changePage = useCallback((nextPage: number) => {
+    setProgress({ title: "Carregando página...", description: "Organizando os próximos artigos da listagem." });
+    requestedPage.current = nextPage;
+    setPage(nextPage);
+  }, []);
+
+  const pending = actionId !== null;
 
   const columns = useMemo(() => [
     columnHelper.accessor("title", {
@@ -106,7 +130,20 @@ export function AdminBlogTable({ data, categories, canCreate, canUpdate, canPubl
             variant="outline"
             size="sm"
             disabled={pending}
-            onClick={() => runAction(row.original.id, () => setBlogPostPublishedAction(row.original.id, !row.original.published))}
+            onClick={() => runAction(
+              row.original.id,
+              row.original.published ? "Despublicando artigo..." : "Publicando artigo...",
+              () => setBlogPostPublishedAction(row.original.id, !row.original.published),
+              (currentRows) => currentRows.map((post) => post.id === row.original.id
+                ? {
+                    ...post,
+                    published: !row.original.published,
+                    featuredHome: row.original.published ? false : post.featuredHome,
+                    featuredBlog: row.original.published ? false : post.featuredBlog,
+                    updatedAt: new Date().toISOString(),
+                  }
+                : post),
+            )}
           >
             {pending && actionId === row.original.id ? <Loader2 className="size-3.5 animate-spin" /> : null}
             {row.original.published ? "Despublicar" : "Publicar"}
@@ -121,7 +158,12 @@ export function AdminBlogTable({ data, categories, canCreate, canUpdate, canPubl
               disabled={pending}
               onClick={() => {
                 if (!window.confirm(`Excluir definitivamente o rascunho “${row.original.title}” e suas imagens?`)) return;
-                runAction(row.original.id, () => deleteDraftBlogPostAction(row.original.id));
+                runAction(
+                  row.original.id,
+                  "Excluindo rascunho...",
+                  () => deleteDraftBlogPostAction(row.original.id),
+                  (currentRows) => currentRows.filter((post) => post.id !== row.original.id),
+                );
               }}
             >
               <Trash2 className="size-4 text-destructive" />
@@ -145,6 +187,7 @@ export function AdminBlogTable({ data, categories, canCreate, canUpdate, canPubl
 
   return (
     <div className="space-y-5">
+      <BlogActionProgress open={Boolean(progress)} title={progress?.title ?? "Processando..."} description={progress?.description ?? "Aguarde a conclusão desta etapa."} />
       <div className="grid gap-3 rounded-[18px] border border-leehov-border bg-white p-4 shadow-sm lg:grid-cols-[minmax(260px,1fr)_repeat(3,190px)_auto]">
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-leehov-muted" />
@@ -169,8 +212,8 @@ export function AdminBlogTable({ data, categories, canCreate, canUpdate, canPubl
         <footer className="flex flex-col gap-3 border-t border-leehov-border px-5 py-4 text-sm text-leehov-muted sm:flex-row sm:items-center sm:justify-between">
           <p>{filtered.length} {filtered.length === 1 ? "post" : "posts"} · página {page + 1} de {pageCount}</p>
           <div className="flex gap-2">
-            <Button type="button" variant="outline" size="sm" disabled={page === 0} onClick={() => setPage((current) => Math.max(0, current - 1))}><ChevronLeft className="size-4" />Anterior</Button>
-            <Button type="button" variant="outline" size="sm" disabled={page >= pageCount - 1} onClick={() => setPage((current) => Math.min(pageCount - 1, current + 1))}>Próxima<ChevronRight className="size-4" /></Button>
+            <Button type="button" variant="outline" size="sm" disabled={page === 0 || pending} onClick={() => changePage(Math.max(0, page - 1))}><ChevronLeft className="size-4" />Anterior</Button>
+            <Button type="button" variant="outline" size="sm" disabled={page >= pageCount - 1 || pending} onClick={() => changePage(Math.min(pageCount - 1, page + 1))}>Próxima<ChevronRight className="size-4" /></Button>
           </div>
         </footer>
       </Card>

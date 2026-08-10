@@ -48,6 +48,22 @@ export type AdminBlogPost = BlogPostDetail & {
   updatedAt: string;
 };
 
+export type AdminBlogListItem = {
+  id: string;
+  title: string;
+  slug: string;
+  summary: string;
+  category: string;
+  categoryId: string;
+  author: string;
+  readingTime: number;
+  imageUrl: string;
+  published: boolean;
+  featuredHome: boolean;
+  featuredBlog: boolean;
+  updatedAt: string;
+};
+
 export type BlogPostFormValues = {
   id: string;
   title: string;

@@ -150,10 +150,9 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("general");
   const [uploading, setUploading] = useState(false);
-  const [assetPreviews, setAssetPreviews] = useState<Record<"card" | "hero" | "thumbnail" | "leader", string>>(() => ({
+  const [assetPreviews, setAssetPreviews] = useState<Record<"card" | "hero" | "leader", string>>(() => ({
     card: caravan?.imageUrl ?? "",
     hero: caravan?.heroImagePath && caravan.heroImageUrl !== "/images/leehov/hero-fallback.jpg" ? caravan.heroImageUrl : "",
-    thumbnail: caravan?.videoThumbnailUrl ?? "",
     leader: caravan?.leaderImageUrl ?? "",
   }));
   const [galleryPreviews, setGalleryPreviews] = useState<Record<string, string>>(() => Object.fromEntries(caravan?.images.filter((image) => image.imagePath && image.imageUrl).map((image) => [image.imagePath, image.imageUrl]) ?? []));
@@ -253,7 +252,7 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
     await finishFirstUpload(draft.created);
   }
 
-  async function uploadAsset(field: "cardImagePath" | "heroImagePath" | "videoThumbnailPath" | "leaderImagePath", previewKey: "card" | "hero" | "thumbnail" | "leader", file: File | undefined) {
+  async function uploadAsset(field: "cardImagePath" | "heroImagePath" | "leaderImagePath", previewKey: "card" | "hero" | "leader", file: File | undefined) {
     if (!file) return;
     setUploading(true);
     const draft = await ensureDraftForUpload();
@@ -272,7 +271,7 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
     await finishFirstUpload(draft.created);
   }
 
-  function clearAsset(field: "cardImagePath" | "heroImagePath" | "videoThumbnailPath" | "leaderImagePath", previewKey: "card" | "hero" | "thumbnail" | "leader") {
+  function clearAsset(field: "cardImagePath" | "heroImagePath" | "leaderImagePath", previewKey: "card" | "hero" | "leader") {
     form.setValue(field, "", { shouldDirty: true, shouldValidate: true });
     setAssetPreviews((current) => ({ ...current, [previewKey]: "" }));
   }
@@ -348,10 +347,9 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
         </Card></TabsContent>
 
         <TabsContent value="images"><Card className="space-y-6 rounded-[18px] border-leehov-border p-6">
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-5 md:grid-cols-2">
             <PackageImagePicker id="card-image-upload" label="Imagem do card" helper="Usada nos cards do site e como imagem principal do compartilhamento." preview={assetPreviews.card} disabled={uploading} uploading={uploading} onSelect={(file) => uploadAsset("cardImagePath", "card", file)} onClear={() => clearAsset("cardImagePath", "card")} />
-            <PackageImagePicker id="hero-image-upload" label="Imagem principal" helper="Usada no Hero da página do pacote e da Home quando não houver vídeo." preview={assetPreviews.hero} disabled={uploading} uploading={uploading} onSelect={(file) => uploadAsset("heroImagePath", "hero", file)} onClear={() => clearAsset("heroImagePath", "hero")} />
-            <PackageImagePicker id="video-thumbnail-upload" label="Thumbnail do vídeo" helper="Capa exibida antes da reprodução do vídeo, quando aplicável." preview={assetPreviews.thumbnail} disabled={uploading} uploading={uploading} onSelect={(file) => uploadAsset("videoThumbnailPath", "thumbnail", file)} onClear={() => clearAsset("videoThumbnailPath", "thumbnail")} />
+            <PackageImagePicker id="hero-image-upload" label="Imagem principal" helper="Usada no Hero e mantida como fallback quando não houver vídeo ou ele não carregar." preview={assetPreviews.hero} disabled={uploading} uploading={uploading} onSelect={(file) => uploadAsset("heroImagePath", "hero", file)} onClear={() => clearAsset("heroImagePath", "hero")} />
             <Input type="hidden" {...form.register("cardImagePath")} />
             <Input type="hidden" {...form.register("heroImagePath")} />
             <Input type="hidden" {...form.register("videoThumbnailPath")} />

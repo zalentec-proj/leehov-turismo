@@ -19,9 +19,11 @@ export async function generateMetadata({ params }: CaravanPageProps): Promise<Me
   const title = caravan.seoTitle || caravan.title;
   const description = caravan.seoDescription || caravan.summary;
   // `heroImageUrl` always has a visual fallback for the page hero. Metadata must
-  // only use that value when a hero image was actually configured; otherwise the
-  // package card image is the canonical social preview.
-  const image = caravan.heroImagePath ? caravan.heroImageUrl : caravan.imageUrl;
+  // only use a resolved hero URL; otherwise the package card image is the
+  // canonical social preview instead of a generic fallback.
+  const image = caravan.heroImagePath && caravan.heroImageUrl !== "/images/leehov/hero-fallback.jpg"
+    ? caravan.heroImageUrl
+    : caravan.imageUrl;
   return {
     title: caravan.seoTitle ? { absolute: caravan.seoTitle } : caravan.title,
     description,

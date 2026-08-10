@@ -93,6 +93,12 @@ const caravanFormTabs = [
   { value: "publication", fields: ["status", "featuredHome", "featuredHero", "heroTitle", "heroDescription", "heroCtaText", "heroCtaUrl", "heroOrder", "published"] },
 ] as const;
 
+const currencyOptions = [
+  { value: "BRL", label: "Real brasileiro (BRL)" },
+  { value: "USD", label: "Dólar americano (USD)" },
+  { value: "EUR", label: "Euro (EUR)" },
+] as const;
+
 function tabWithFirstError(errors: FieldErrors<CaravanFormInput>) {
   return caravanFormTabs.find((tab) => tab.fields.some((field) => field in errors))?.value ?? "general";
 }
@@ -282,7 +288,14 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
           <Field label="Tipo"><Input {...form.register("type")} placeholder="Cultural, religioso..." /></Field>
           <Field label="Duração" error={errors.duration?.message}><Input {...form.register("duration")} placeholder="14 dias" /></Field>
           <Field label="Preço textual"><Input {...form.register("price")} placeholder="Sob consulta" /></Field>
-          <Field label="Moeda"><Input {...form.register("currency")} maxLength={3} /></Field>
+          <Field label="Moeda" error={errors.currency?.message}>
+            <Controller control={form.control} name="currency" render={({ field }) => (
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger><SelectValue placeholder="Selecione a moeda" /></SelectTrigger>
+                <SelectContent>{currencyOptions.map((currency) => <SelectItem key={currency.value} value={currency.value}>{currency.label}</SelectItem>)}</SelectContent>
+              </Select>
+            )} />
+          </Field>
           <div className="md:col-span-2"><Field label="Resumo" error={errors.summary?.message}><Textarea rows={3} {...form.register("summary")} /></Field></div>
           <div className="md:col-span-2"><Field label="Descrição" error={errors.description?.message}><Textarea rows={7} {...form.register("description")} /></Field></div>
         </Card></TabsContent>

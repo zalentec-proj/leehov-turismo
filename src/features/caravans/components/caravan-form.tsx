@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useFieldArray, useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { ImagePlus, Loader2, Plus, Save, Trash2 } from "lucide-react";
+import { ImagePlus, Loader2, Plus, Save, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { removeCaravanImageAction, saveCaravanAction, uploadCaravanImageAction } from "@/features/caravans/actions";
 import { caravanFormSchema, type CaravanFormInput } from "@/features/caravans/schema";
@@ -82,9 +82,57 @@ function BooleanField({ label, description, checked, onCheckedChange }: { label:
   );
 }
 
+function PackageImagePicker({
+  id,
+  label,
+  helper,
+  preview,
+  disabled,
+  uploading,
+  onSelect,
+  onClear,
+}: {
+  id: string;
+  label: string;
+  helper: string;
+  preview?: string;
+  disabled: boolean;
+  uploading: boolean;
+  onSelect: (file: File | undefined) => void;
+  onClear: () => void;
+}) {
+  return (
+    <div className="rounded-2xl border border-dashed border-leehov-blue-300 bg-leehov-surface/45 p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <Label htmlFor={id}>{label}</Label>
+          <p className="mt-1 text-xs leading-5 text-leehov-muted">{helper}</p>
+        </div>
+        {preview ? <Button type="button" variant="ghost" size="icon" className="size-8 text-leehov-muted hover:text-destructive" aria-label={`Remover ${label.toLowerCase()}`} onClick={onClear}><X className="size-4" /></Button> : null}
+      </div>
+      <label htmlFor={id} className="mt-4 flex cursor-pointer items-center gap-4 rounded-xl border border-leehov-border bg-white p-3 transition hover:border-leehov-blue-400 focus-within:ring-2 focus-within:ring-leehov-blue-300/40">
+        <div className="relative flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-leehov-surface text-leehov-blue-500">
+          {preview ? <Image src={preview} alt="" fill unoptimized={preview.startsWith("http")} sizes="80px" className="object-cover" /> : <ImagePlus className="size-6" />}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-bold text-leehov-navy-950">{preview ? "Trocar imagem" : "Selecionar imagem"}</p>
+          <p className="mt-1 text-xs text-leehov-muted">JPEG, PNG, WebP ou AVIF · até 8 MiB</p>
+        </div>
+        {uploading ? <Loader2 className="size-5 shrink-0 animate-spin text-leehov-blue-500" /> : <ImagePlus className="size-5 shrink-0 text-leehov-blue-500" />}
+      </label>
+      <Input id={id} type="file" className="sr-only" accept="image/jpeg,image/png,image/webp,image/avif" disabled={disabled} onChange={(event) => onSelect(event.target.files?.[0])} />
+    </div>
+  );
+}
+
 export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; categories: CaravanCategory[] }) {
   const router = useRouter();
   const [uploading, setUploading] = useState(false);
+  const [assetPreviews, setAssetPreviews] = useState<Record<"card" | "hero" | "thumbnail", string>>(() => ({
+    card: caravan?.imageUrl ?? "",
+    hero: caravan?.heroImagePath && caravan.heroImageUrl !== "/images/leehov/hero-fallback.jpg" ? caravan.heroImageUrl : "",
+    thumbnail: caravan?.videoThumbnailUrl ?? "",
+  }));
   const [itineraryPreviews, setItineraryPreviews] = useState<Record<string, string>>(() => Object.fromEntries(caravan?.itinerary.filter((day) => day.imagePath && day.imageUrl).map((day) => [day.imagePath, day.imageUrl]) ?? []));
   const [lastResult, setLastResult] = useState("");
   const form = useForm<CaravanFormInput>({ resolver: zodResolver(caravanFormSchema), defaultValues: defaults(caravan), mode: "onBlur" });
@@ -122,6 +170,26 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
     if (!form.getValues("cardImagePath")) form.setValue("cardImagePath", result.path, { shouldDirty: true });
     if (!form.getValues("heroImagePath")) form.setValue("heroImagePath", result.path, { shouldDirty: true });
     toast.success("Imagem adicionada. Salve para confirmar a galeria.");
+  }
+
+  async function uploadAsset(field: "cardImagePath" | "heroImagePath" | "videoThumbnailPath", previewKey: "card" | "hero" | "thumbnail", file: File | undefined) {
+    const caravanId = form.getValues("id");
+    if (!caravanId) return toast.info("Salve o pacote antes de enviar imagens.");
+    if (!file) return;
+    setUploading(true);
+    const data = new FormData();
+    data.set("file", file);
+    const result = await uploadCaravanImageAction(caravanId, data);
+    setUploading(false);
+    if (!result.success || !result.path) return toast.error(result.message);
+    form.setValue(field, result.path, { shouldDirty: true, shouldValidate: true });
+    if (result.url) setAssetPreviews((current) => ({ ...current, [previewKey]: result.url as string }));
+    toast.success("Imagem enviada. Salve o pacote para confirmar a alteração.");
+  }
+
+  function clearAsset(field: "cardImagePath" | "heroImagePath" | "videoThumbnailPath", previewKey: "card" | "hero" | "thumbnail") {
+    form.setValue(field, "", { shouldDirty: true, shouldValidate: true });
+    setAssetPreviews((current) => ({ ...current, [previewKey]: "" }));
   }
 
   async function removeImage(index: number) {
@@ -179,10 +247,13 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
         </Card></TabsContent>
 
         <TabsContent value="images"><Card className="space-y-6 rounded-[18px] border-leehov-border p-6">
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            <PackageImagePicker id="card-image-upload" label="Imagem do card" helper="Usada nos cards do site e como imagem principal do compartilhamento." preview={assetPreviews.card} disabled={!caravan || uploading} uploading={uploading} onSelect={(file) => uploadAsset("cardImagePath", "card", file)} onClear={() => clearAsset("cardImagePath", "card")} />
+            <PackageImagePicker id="hero-image-upload" label="Imagem principal" helper="Usada no Hero da página do pacote e da Home quando não houver vídeo." preview={assetPreviews.hero} disabled={!caravan || uploading} uploading={uploading} onSelect={(file) => uploadAsset("heroImagePath", "hero", file)} onClear={() => clearAsset("heroImagePath", "hero")} />
+            <PackageImagePicker id="video-thumbnail-upload" label="Thumbnail do vídeo" helper="Capa exibida antes da reprodução do vídeo, quando aplicável." preview={assetPreviews.thumbnail} disabled={!caravan || uploading} uploading={uploading} onSelect={(file) => uploadAsset("videoThumbnailPath", "thumbnail", file)} onClear={() => clearAsset("videoThumbnailPath", "thumbnail")} />
+          </div>
+          {!caravan ? <p className="-mt-2 text-xs text-leehov-muted">Salve o rascunho para liberar os uploads de imagens.</p> : null}
           <div className="grid gap-5 md:grid-cols-2">
-            <Field label="Path da imagem do card"><Input {...form.register("cardImagePath")} /></Field>
-            <Field label="Path da imagem principal" error={errors.heroImagePath?.message}><Input {...form.register("heroImagePath")} /></Field>
-            <Field label="Path da thumbnail de vídeo"><Input {...form.register("videoThumbnailPath")} /></Field>
             <Field label="URL do vídeo de fundo da Home" error={errors.videoUrl?.message}><Input {...form.register("videoUrl")} placeholder="YouTube, Vimeo ou arquivo HTTPS" /><p className="text-xs leading-5 text-leehov-muted">O vídeo é reproduzido sem som no Hero da Home; a imagem principal permanece como fallback.</p></Field>
           </div>
           <div className="rounded-xl border border-dashed border-leehov-blue-300 p-5">

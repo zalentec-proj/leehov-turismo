@@ -7,7 +7,7 @@ const states = {
   confirmed: {
     icon: CircleCheck,
     title: "Inscrição confirmada",
-    description: "Boas-vindas à lista da Leehov. Você receberá novidades, inspirações e caravanas em seu e-mail.",
+    description: "Boas-vindas à lista da Leehov. Você receberá novidades, inspirações e pacotes em seu e-mail.",
   },
   expired: {
     icon: Clock3,
@@ -43,7 +43,7 @@ export default async function NewsletterResultPage({ searchParams }: { searchPar
         <p className="mx-auto mt-4 max-w-lg leading-7 text-leehov-muted">{state.description}</p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Button asChild className="rounded-full bg-leehov-blue-600 text-white"><Link href="/">Voltar ao início</Link></Button>
-          <Button asChild variant="outline" className="rounded-full"><Link href="/caravanas">Conhecer caravanas</Link></Button>
+          <Button asChild variant="outline" className="rounded-full"><Link href="/caravanas">Conhecer pacotes</Link></Button>
         </div>
       </Card>
     </section>

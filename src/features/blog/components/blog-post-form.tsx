@@ -408,10 +408,10 @@ export function BlogPostForm({ post, categories, caravans }: { post?: AdminBlogP
 
             <TabsContent value="relationships" className="mt-0">
               <Card className="grid gap-5 rounded-[18px] border-leehov-border p-6 md:grid-cols-2">
-                <div className="md:col-span-2"><p className="font-extrabold text-leehov-navy-950">Conexões editoriais</p><p className="mt-1 text-sm text-leehov-muted">Relacione o artigo a um destino e, quando aplicável, a uma caravana publicada.</p></div>
+                <div className="md:col-span-2"><p className="font-extrabold text-leehov-navy-950">Conexões editoriais</p><p className="mt-1 text-sm text-leehov-muted">Relacione o artigo a um destino e, quando aplicável, a um pacote publicado.</p></div>
                 <Field label="Destino relacionado" htmlFor="related-destination"><Input id="related-destination" {...form.register("relatedDestination")} placeholder="Israel, Egito, Tailândia..." /></Field>
                 <div />
-                <div className="md:col-span-2"><Field label="Caravana relacionada"><Controller control={form.control} name="relatedCaravanId" render={({ field }) => <Select value={field.value || "none"} onValueChange={(value) => field.onChange(value === "none" ? "" : value)}><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger><SelectContent><SelectItem value="none">Nenhuma caravana</SelectItem>{caravans.map((caravan) => <SelectItem key={caravan.id} value={caravan.id}>{caravan.title} · {caravan.destination}</SelectItem>)}</SelectContent></Select>} /></Field></div>
+                <div className="md:col-span-2"><Field label="Pacote relacionado"><Controller control={form.control} name="relatedCaravanId" render={({ field }) => <Select value={field.value || "none"} onValueChange={(value) => field.onChange(value === "none" ? "" : value)}><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger><SelectContent><SelectItem value="none">Nenhum pacote</SelectItem>{caravans.map((caravan) => <SelectItem key={caravan.id} value={caravan.id}>{caravan.title} · {caravan.destination}</SelectItem>)}</SelectContent></Select>} /></Field></div>
               </Card>
             </TabsContent>
 

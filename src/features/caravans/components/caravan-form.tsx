@@ -110,7 +110,7 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
 
   async function upload(file: File | undefined) {
     const caravanId = form.getValues("id");
-    if (!caravanId) return toast.info("Salve a caravana antes de enviar imagens.");
+    if (!caravanId) return toast.info("Salve o pacote antes de enviar imagens.");
     if (!file) return;
     setUploading(true);
     const data = new FormData();
@@ -136,7 +136,7 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
 
   async function uploadItineraryImage(index: number, file: File | undefined) {
     const caravanId = form.getValues("id");
-    if (!caravanId) return toast.info("Salve a caravana antes de enviar imagens.");
+    if (!caravanId) return toast.info("Salve o pacote antes de enviar imagens.");
     if (!file) return;
     setUploading(true);
     const data = new FormData();
@@ -146,7 +146,7 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
     if (!result.success || !result.path) return toast.error(result.message);
     form.setValue(`itinerary.${index}.imagePath`, result.path, { shouldDirty: true, shouldValidate: true });
     if (result.url) setItineraryPreviews((current) => ({ ...current, [result.path as string]: result.url as string }));
-    toast.success(`Imagem do dia ${form.getValues(`itinerary.${index}.day`)} enviada. Salve a caravana para confirmar.`);
+    toast.success(`Imagem do dia ${form.getValues(`itinerary.${index}.day`)} enviada. Salve o pacote para confirmar.`);
   }
 
   const errors = form.formState.errors;
@@ -166,7 +166,7 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
         </TabsList>
 
         <TabsContent value="general"><Card className="grid gap-5 rounded-[18px] border-leehov-border p-6 md:grid-cols-2">
-          <Field label="Nome da caravana" error={errors.title?.message}><Input {...form.register("title")} /></Field>
+          <Field label="Nome do pacote" error={errors.title?.message}><Input {...form.register("title")} /></Field>
           <Field label="Slug" error={errors.slug?.message}><Input {...form.register("slug")} /></Field>
           <Field label="Destino" error={errors.destination?.message}><Input {...form.register("destination")} /></Field>
           <Field label="Categoria"><Controller control={form.control} name="categoryId" render={({ field }) => <Select value={field.value || "none"} onValueChange={(value) => field.onChange(value === "none" ? "" : value)}><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger><SelectContent><SelectItem value="none">Sem categoria</SelectItem>{categories.map((category) => <SelectItem key={category.id} value={category.id}>{category.name}{category.active ? "" : " (inativa)"}</SelectItem>)}</SelectContent></Select>} /></Field>
@@ -250,13 +250,13 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
         <TabsContent value="publication"><Card className="grid gap-5 rounded-[18px] border-leehov-border p-6 md:grid-cols-2">
           <Field label="Status" error={errors.status?.message}><Controller control={form.control} name="status" render={({ field }) => <Select value={field.value} onValueChange={field.onChange}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="draft">Rascunho</SelectItem><SelectItem value="available">Disponível</SelectItem><SelectItem value="coming_soon">Em breve</SelectItem><SelectItem value="waitlist">Lista de espera</SelectItem><SelectItem value="sold_out">Esgotada</SelectItem></SelectContent></Select>} /></Field>
           <Field label="Ordem no Hero"><Input type="number" min={0} {...form.register("heroOrder", { valueAsNumber: true })} /></Field>
-          <Controller control={form.control} name="published" render={({ field }) => <BooleanField label="Publicada" description="Torna a caravana visível no site." checked={field.value} onCheckedChange={field.onChange} />} />
+          <Controller control={form.control} name="published" render={({ field }) => <BooleanField label="Publicado" description="Torna o pacote visível no site." checked={field.value} onCheckedChange={field.onChange} />} />
           <Controller control={form.control} name="featuredHome" render={({ field }) => <BooleanField label="Destaque na Home" checked={field.value} onCheckedChange={field.onChange} />} />
           <Controller control={form.control} name="featuredHero" render={({ field }) => <BooleanField label="Destaque no Hero" checked={field.value} onCheckedChange={field.onChange} />} />
           <div className="md:col-span-2 grid gap-5 md:grid-cols-2"><Field label="Título do Hero" error={errors.heroTitle?.message}><Input {...form.register("heroTitle")} /></Field><Field label="Texto do botão"><Input {...form.register("heroCtaText")} /></Field><Field label="URL do botão"><Input {...form.register("heroCtaUrl")} /></Field><Field label="Descrição do Hero" error={errors.heroDescription?.message}><Textarea {...form.register("heroDescription")} /></Field></div>
         </Card></TabsContent>
       </Tabs>
-      <div className="sticky bottom-5 z-20 flex justify-end"><Button type="submit" size="lg" disabled={form.formState.isSubmitting || uploading} className="rounded-full bg-leehov-blue-600 px-7 text-white shadow-leehov-floating hover:bg-leehov-cyan">{form.formState.isSubmitting ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}{form.formState.isSubmitting ? "Salvando..." : "Salvar caravana"}</Button></div>
+      <div className="sticky bottom-5 z-20 flex justify-end"><Button type="submit" size="lg" disabled={form.formState.isSubmitting || uploading} className="rounded-full bg-leehov-blue-600 px-7 text-white shadow-leehov-floating hover:bg-leehov-cyan">{form.formState.isSubmitting ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}{form.formState.isSubmitting ? "Salvando..." : "Salvar pacote"}</Button></div>
     </form>
   );
 }

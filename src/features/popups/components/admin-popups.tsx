@@ -32,8 +32,8 @@ type FormState = {
 };
 
 const emptyForm: FormState = { id: "", title: "", description: "", imageAssetId: "", buttonText: "", buttonUrl: "", popupType: "campaign", relatedCaravanId: "", displayLocation: "sitewide", frequency: "weekly", active: false };
-const typeLabels: Record<PopupType, string> = { campaign: "Campanha", newsletter: "Newsletter", whatsapp: "WhatsApp", caravan: "Caravana" };
-const locationLabels: Record<PopupDisplayLocation, string> = { home: "Home", blog: "Blog", caravans: "Caravanas", sitewide: "Site inteiro" };
+const typeLabels: Record<PopupType, string> = { campaign: "Campanha", newsletter: "Newsletter", whatsapp: "WhatsApp", caravan: "Pacote" };
+const locationLabels: Record<PopupDisplayLocation, string> = { home: "Home", blog: "Blog", caravans: "Pacotes", sitewide: "Site inteiro" };
 const frequencyLabels: Record<PopupFrequency, string> = { always: "Sempre", session: "Uma vez por sessão", daily: "Uma vez por dia", weekly: "Uma vez por semana" };
 
 function showResult(result: { success: boolean; message: string }) {
@@ -100,7 +100,7 @@ export function AdminPopups({ popups, media, caravans }: { popups: Popup[]; medi
             <Field label="Local"><Select value={form.displayLocation} onValueChange={(displayLocation: PopupDisplayLocation) => setForm({ ...form, displayLocation })}><SelectTrigger className="w-full"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(locationLabels).map(([value, label]) => <SelectItem key={value} value={value}>{label}</SelectItem>)}</SelectContent></Select></Field>
             <Field label="Frequência"><Select value={form.frequency} onValueChange={(frequency: PopupFrequency) => setForm({ ...form, frequency })}><SelectTrigger className="w-full"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(frequencyLabels).map(([value, label]) => <SelectItem key={value} value={value}>{label}</SelectItem>)}</SelectContent></Select></Field>
             <div className="sm:col-span-2"><MediaPicker assets={assets} value={form.imageAssetId} folder="popups" onChange={(asset) => setForm({ ...form, imageAssetId: asset?.id ?? "" })} onAssetCreated={(asset) => setAssets((current) => [asset, ...current])} /></div>
-            {form.popupType === "caravan" ? <Field label="Caravana publicada"><Select value={form.relatedCaravanId || "none"} onValueChange={(value) => setForm({ ...form, relatedCaravanId: value === "none" ? "" : value })}><SelectTrigger className="w-full"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="none">Selecione</SelectItem>{caravans.map((item) => <SelectItem key={item.id} value={item.id}>{item.title}</SelectItem>)}</SelectContent></Select></Field> : null}
+            {form.popupType === "caravan" ? <Field label="Pacote publicado"><Select value={form.relatedCaravanId || "none"} onValueChange={(value) => setForm({ ...form, relatedCaravanId: value === "none" ? "" : value })}><SelectTrigger className="w-full"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="none">Selecione</SelectItem>{caravans.map((item) => <SelectItem key={item.id} value={item.id}>{item.title}</SelectItem>)}</SelectContent></Select></Field> : null}
             {form.popupType !== "newsletter" ? <Field label="Texto do botão"><Input value={form.buttonText} onChange={(event) => setForm({ ...form, buttonText: event.target.value })} /></Field> : null}
             {form.popupType === "campaign" ? <Field label="URL do botão"><Input value={form.buttonUrl} onChange={(event) => setForm({ ...form, buttonUrl: event.target.value })} placeholder="/caravanas ou https://..." /></Field> : null}
             <label className="flex items-center gap-3"><Switch checked={form.active} onCheckedChange={(active) => setForm({ ...form, active })} />Ativar agora</label>

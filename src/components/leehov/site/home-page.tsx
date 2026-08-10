@@ -80,7 +80,7 @@ export function HomePage({
                 Viagens incríveis
               </p>
               <h2 className="mt-[18px] text-[40px] font-extrabold leading-[46px] tracking-normal text-[#153b5b] sm:text-[48px] sm:leading-[54px]">
-                Caravanas em destaque
+                Pacotes em destaque
               </h2>
               <p className="mt-[18px] max-w-[620px] text-[16px] font-normal leading-[26px] text-[#6d879d]">
                 Viagens em grupo selecionadas para você explorar cada destino
@@ -93,7 +93,7 @@ export function HomePage({
               className="h-auto p-0 text-[15px] font-extrabold leading-[18px] text-leehov-blue-500 hover:text-leehov-blue-600"
             >
               <Link href="/caravanas">
-                Ver todas as caravanas
+                Ver todos os pacotes
                 <ArrowRight className="size-4" />
               </Link>
             </Button>
@@ -111,7 +111,7 @@ export function HomePage({
                     {route.imageUrl ? (
                       <Image
                         src={route.imageUrl}
-                        alt={`Imagem da caravana ${route.title}`}
+                        alt={`Imagem do pacote ${route.title}`}
                         fill
                         unoptimized
                         sizes="(min-width: 1280px) 25vw, (min-width: 640px) 50vw, 100vw"
@@ -127,7 +127,7 @@ export function HomePage({
                       {route.title}
                     </h3>
                     <p className="text-[14px] font-normal leading-[18px] text-[#7891a8]">
-                      {route.duration} | {route.category?.name ?? "Caravana"}
+                      {route.duration} | {route.category?.name ?? "Pacote"}
                     </p>
                     <p className="text-[18px] font-extrabold leading-[22px] text-[#0a9fe3]">
                       {route.price ?? "Sob consulta"}
@@ -140,7 +140,7 @@ export function HomePage({
 
           {!caravans.length ? (
             <Card className="mt-12 rounded-[18px] border-leehov-border p-8 text-center text-leehov-muted">
-              Novas caravanas serão publicadas em breve.
+              Novos pacotes serão publicados em breve.
             </Card>
           ) : null}
           <div className="mt-14 flex justify-center gap-3" aria-hidden="true">

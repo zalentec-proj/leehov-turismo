@@ -28,7 +28,7 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: Home, permission: "dashboard.view" },
-  { href: "/admin/caravanas", label: "Caravanas", icon: Plane, permission: "caravans.view" },
+  { href: "/admin/caravanas", label: "Pacotes", icon: Plane, permission: "caravans.view" },
   { href: "/admin/blog", label: "Blog", icon: BookOpen, permission: "blog.view" },
   { href: "/admin/leads", label: "Leads", icon: MessageSquare, permission: "leads.view" },
   { href: "/admin/newsletter", label: "Newsletter", icon: Mail, permission: "newsletter.view" },
@@ -82,7 +82,7 @@ export function AdminShell({ children, profile, permissions }: { children: React
           <Map className="mb-4 size-6 text-leehov-blue-300" />
           <p className="text-sm font-semibold">Próximo destino</p>
           <p className="mt-2 text-xs leading-5 text-white/60">
-            Configure caravanas, leads e conteúdos em um painel simples.
+            Configure pacotes, leads e conteúdos em um painel simples.
           </p>
         </div>
       </aside>

@@ -23,7 +23,7 @@ async function getCaravanRows(options: {
   if (options.featuredHome) query = query.eq("featured_home", true);
   if (options.featuredHero) query = query.eq("featured_hero", true);
   const { data, error } = await query.order(options.featuredHero ? "hero_order" : "published_at", { ascending: options.featuredHero, nullsFirst: false });
-  if (error) throw new Error(`Não foi possível carregar as caravanas: ${error.message}`);
+  if (error) throw new Error(`Não foi possível carregar os pacotes: ${error.message}`);
   return { supabase, rows: (data ?? []) as unknown as CaravanQueryRow[] };
 }
 
@@ -45,7 +45,7 @@ export async function getHeroCaravans(): Promise<CaravanDetail[]> {
 export async function getCaravanBySlug(slug: string): Promise<CaravanDetail | null> {
   const supabase = await createClient();
   const { data, error } = await supabase.from("caravans").select(caravanSelect).eq("slug", slug).eq("published", true).maybeSingle();
-  if (error) throw new Error(`Não foi possível carregar a caravana: ${error.message}`);
+  if (error) throw new Error(`Não foi possível carregar o pacote: ${error.message}`);
   return data ? mapCaravanDetail(supabase, data as unknown as CaravanQueryRow) : null;
 }
 
@@ -57,7 +57,7 @@ export async function getAdminCaravans(): Promise<AdminCaravan[]> {
 export async function getCaravanById(id: string): Promise<AdminCaravan | null> {
   const supabase = await createClient();
   const { data, error } = await supabase.from("caravans").select(caravanSelect).eq("id", id).maybeSingle();
-  if (error) throw new Error(`Não foi possível carregar a caravana: ${error.message}`);
+  if (error) throw new Error(`Não foi possível carregar o pacote: ${error.message}`);
   return data ? mapCaravanDetail(supabase, data as unknown as CaravanQueryRow) : null;
 }
 

@@ -14,7 +14,7 @@ export default async function ContactPage() {
   const settings = await getPublicSiteSettings();
   return (
     <main className="bg-leehov-surface pb-24">
-      <section className="bg-leehov-navy-950 px-5 pb-28 pt-40 text-white sm:px-8 lg:px-12"><div className="mx-auto max-w-[1312px]"><p className="text-xs font-extrabold uppercase tracking-[0.2em] text-leehov-blue-300">Atendimento Leehov</p><h1 className="mt-5 text-4xl font-extrabold sm:text-[58px]">Vamos planejar sua próxima viagem?</h1><p className="mt-6 max-w-2xl text-lg leading-8 text-white/68">Converse com quem entende de caravanas e viagens em grupo acompanhadas.</p></div></section>
+      <section className="bg-leehov-navy-950 px-5 pb-28 pt-40 text-white sm:px-8 lg:px-12"><div className="mx-auto max-w-[1312px]"><p className="text-xs font-extrabold uppercase tracking-[0.2em] text-leehov-blue-300">Atendimento Leehov</p><h1 className="mt-5 text-4xl font-extrabold sm:text-[58px]">Vamos planejar sua próxima viagem?</h1><p className="mt-6 max-w-2xl text-lg leading-8 text-white/68">Converse com quem entende de pacotes e viagens em grupo acompanhadas.</p></div></section>
       <section className="px-5 pt-16 sm:px-8 lg:px-12"><div className="mx-auto grid max-w-[1180px] gap-10 lg:grid-cols-[0.78fr_1.22fr]">
         <div>
           <SectionHeading

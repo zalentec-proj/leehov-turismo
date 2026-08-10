@@ -22,7 +22,7 @@ export async function savePopupAction(input: unknown): Promise<PopupActionResult
   const supabase = await createClient();
   if (value.popupType === "caravan") {
     const { data: caravan } = await supabase.from("caravans").select("id").eq("id", value.relatedCaravanId).eq("published", true).maybeSingle();
-    if (!caravan) return { success: false, message: "Selecione uma caravana publicada." };
+    if (!caravan) return { success: false, message: "Selecione um pacote publicado." };
   }
   if (value.popupType === "whatsapp" && value.active) {
     const settings = await getPublicSiteSettings();
@@ -53,7 +53,7 @@ export async function setPopupActiveAction(id: string, active: boolean): Promise
   if (!popup) return { success: false, message: "Pop-up não encontrado." };
   if (active && popup.popup_type === "caravan") {
     const { data: caravan } = await supabase.from("caravans").select("id").eq("id", popup.related_caravan_id ?? "").eq("published", true).maybeSingle();
-    if (!caravan) return { success: false, message: "A caravana vinculada não está publicada." };
+    if (!caravan) return { success: false, message: "O pacote vinculado não está publicado." };
   }
   if (active && popup.popup_type === "whatsapp" && !(await getPublicSiteSettings()).whatsapp.number) return { success: false, message: "Configure o WhatsApp institucional antes de ativar." };
   const { error } = await supabase.from("popups").update({ active, updated_by: profile.id }).eq("id", id);

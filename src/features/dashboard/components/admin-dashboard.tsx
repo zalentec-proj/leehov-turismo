@@ -36,7 +36,7 @@ function formatMetricValue(value: number) {
 }
 
 function sourceLabel(value: string) {
-  if (value === "caravan_interest") return "Caravana";
+  if (value === "caravan_interest") return "Pacote";
   if (value === "popup") return "Pop-up";
   return "Contato";
 }
@@ -244,13 +244,13 @@ export function AdminDashboard({ data, profileName }: { data: AdminDashboardData
       <p className="rounded-xl border border-dashed border-leehov-border bg-white px-4 py-3 text-xs leading-5 text-[#617692]">Visitas, usuários e conversão serão exibidos aqui quando o GA4 estiver configurado com consentimento. Os números desta tela usam somente dados administrativos já registrados no Supabase.</p>
 
       <section className="grid gap-5 xl:grid-cols-[0.95fr_0.95fr_1.3fr]">
-        <ContentList title="Caravanas recentes" href="/admin/caravanas" items={data.recentCaravans} type="caravan" now={now} />
+        <ContentList title="Pacotes recentes" href="/admin/caravanas" items={data.recentCaravans} type="caravan" now={now} />
         <ContentList title="Posts recentes" href="/admin/blog" items={data.recentPosts} type="post" now={now} />
         <ActivityList activities={data.activities} now={now} />
       </section>
 
       <div className="flex flex-wrap gap-3 border-t border-leehov-border pt-5">
-        <Link href="/admin/caravanas/novo" className="inline-flex items-center gap-2 rounded-xl bg-[#0878DE] px-4 py-2.5 text-sm font-extrabold text-white transition hover:bg-leehov-blue-500"><Plus className="size-4" />Nova caravana</Link>
+        <Link href="/admin/caravanas/novo" className="inline-flex items-center gap-2 rounded-xl bg-[#0878DE] px-4 py-2.5 text-sm font-extrabold text-white transition hover:bg-leehov-blue-500"><Plus className="size-4" />Novo pacote</Link>
         <Link href="/admin/blog/novo" className="inline-flex items-center gap-2 rounded-xl border border-leehov-border bg-white px-4 py-2.5 text-sm font-extrabold text-[#234968] transition hover:border-[#9DD8F0] hover:text-[#0878DE]">Novo post<ChevronRight className="size-4" /></Link>
         <Link href="/admin/leads" className="inline-flex items-center gap-2 rounded-xl border border-leehov-border bg-white px-4 py-2.5 text-sm font-extrabold text-[#234968] transition hover:border-[#9DD8F0] hover:text-[#0878DE]">Gerenciar leads<ChevronRight className="size-4" /></Link>
       </div>

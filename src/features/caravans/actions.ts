@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { caravanCategorySchema, caravanFormSchema, type CaravanFormInput } from "@/features/caravans/schema";
 import { requirePermission } from "@/features/auth/permissions";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { TablesUpdate } from "@/types/database";
 import { emitWebhookEvent } from "@/lib/webhooks/events";
@@ -18,6 +19,47 @@ function revalidateCaravans(slug?: string) {
   revalidatePath("/admin");
   revalidatePath("/admin/caravanas");
   if (slug) revalidatePath(`/caravanas/${slug}`);
+}
+
+export async function deleteDraftCaravanAction(id: string): Promise<CaravanActionResult> {
+  await requirePermission("caravans.update");
+  if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(id)) {
+    return { success: false, message: "Pacote inválido." };
+  }
+
+  const supabase = createAdminClient();
+  const { data: caravan, error: caravanError } = await supabase
+    .from("caravans")
+    .select("id, slug, published, status")
+    .eq("id", id)
+    .maybeSingle();
+  if (caravanError) return { success: false, message: caravanError.message };
+  if (!caravan) return { success: false, message: "Pacote não encontrado." };
+  if (caravan.published || caravan.status !== "draft") {
+    return { success: false, message: "Despublique e mova o pacote para rascunho antes de excluí-lo." };
+  }
+
+  const { count: popupCount, error: popupError } = await supabase
+    .from("popups")
+    .select("id", { count: "exact", head: true })
+    .eq("related_caravan_id", id);
+  if (popupError) return { success: false, message: popupError.message };
+  if (popupCount) {
+    return { success: false, message: "Remova primeiro o vínculo deste pacote nos pop-ups." };
+  }
+
+  const { data: files, error: listError } = await supabase.storage.from("caravan-images").list(id, { limit: 1000 });
+  if (listError) return { success: false, message: listError.message };
+  const paths = (files ?? []).filter((file) => file.name).map((file) => `${id}/${file.name}`);
+  if (paths.length) {
+    const { error: storageError } = await supabase.storage.from("caravan-images").remove(paths);
+    if (storageError) return { success: false, message: `Não foi possível limpar as imagens: ${storageError.message}` };
+  }
+
+  const { error: deleteError } = await supabase.from("caravans").delete().eq("id", id);
+  if (deleteError) return { success: false, message: deleteError.message };
+  revalidateCaravans(caravan.slug);
+  return { success: true, message: "Pacote em rascunho excluído definitivamente." };
 }
 
 async function syncCollections(supabase: Awaited<ReturnType<typeof createClient>>, caravanId: string, input: CaravanFormInput) {
@@ -83,7 +125,7 @@ async function syncCollections(supabase: Awaited<ReturnType<typeof createClient>
 export async function saveCaravanAction(rawInput: CaravanFormInput): Promise<CaravanActionResult> {
   const parsed = caravanFormSchema.safeParse(rawInput);
   if (!parsed.success) {
-    return { success: false, message: parsed.error.issues[0]?.message ?? "Revise os dados da caravana." };
+    return { success: false, message: parsed.error.issues[0]?.message ?? "Revise os dados do pacote." };
   }
   const { profile } = await requirePermission(parsed.data.id ? "caravans.update" : "caravans.create");
   if (parsed.data.published) await requirePermission("caravans.publish");
@@ -91,7 +133,7 @@ export async function saveCaravanAction(rawInput: CaravanFormInput): Promise<Car
   const input = parsed.data;
   const supabase = await createClient();
   const { data: duplicate } = await supabase.from("caravans").select("id").eq("slug", input.slug).neq("id", input.id || "00000000-0000-0000-0000-000000000000").maybeSingle();
-  if (duplicate) return { success: false, message: "Já existe uma caravana com este slug." };
+  if (duplicate) return { success: false, message: "Já existe um pacote com este slug." };
 
   const payload = {
     title: input.title,
@@ -153,9 +195,9 @@ export async function saveCaravanAction(rawInput: CaravanFormInput): Promise<Car
     await emitWebhookEvent(input.id ? "caravan.updated" : "caravan.created", { caravanId, slug: input.slug });
     if (input.published && !wasPublished) await emitWebhookEvent("caravan.published", { caravanId, slug: input.slug });
     revalidateCaravans(input.slug);
-    return { success: true, message: "Caravana salva com sucesso.", id: caravanId };
+    return { success: true, message: "Pacote salvo com sucesso.", id: caravanId };
   } catch (error) {
-    return { success: false, message: error instanceof Error ? error.message : "Não foi possível salvar a caravana." };
+    return { success: false, message: error instanceof Error ? error.message : "Não foi possível salvar o pacote." };
   }
 }
 
@@ -163,7 +205,7 @@ export async function setCaravanPublishedAction(id: string, published: boolean):
   const { profile } = await requirePermission("caravans.publish");
   const supabase = await createClient();
   const { data: caravan, error: loadError } = await supabase.from("caravans").select("id, slug, status, summary, description, duration, hero_image_url").eq("id", id).single();
-  if (loadError) return { success: false, message: "Caravana não encontrada." };
+  if (loadError) return { success: false, message: "Pacote não encontrado." };
   if (published && (caravan.status === "draft" || !caravan.summary || !caravan.description || !caravan.duration || !caravan.hero_image_url)) {
     return { success: false, message: "Complete status, resumo, descrição, duração e imagem principal antes de publicar." };
   }
@@ -171,7 +213,7 @@ export async function setCaravanPublishedAction(id: string, published: boolean):
   if (error) return { success: false, message: error.message };
   if (published) await emitWebhookEvent("caravan.published", { caravanId: id, slug: caravan.slug });
   revalidateCaravans(caravan.slug);
-  return { success: true, message: published ? "Caravana publicada." : "Caravana despublicada." };
+  return { success: true, message: published ? "Pacote publicado." : "Pacote despublicado." };
 }
 
 export async function saveCaravanCategoryAction(formData: FormData): Promise<void> {
@@ -220,7 +262,7 @@ export async function uploadCaravanImageAction(caravanId: string, formData: Form
 
   const supabase = await createClient();
   const { data: caravan } = await supabase.from("caravans").select("id").eq("id", caravanId).maybeSingle();
-  if (!caravan) return { success: false, message: "Salve a caravana antes de enviar imagens." };
+  if (!caravan) return { success: false, message: "Salve o pacote antes de enviar imagens." };
   const path = `${caravanId}/${randomUUID()}.${extension}`;
   const { error } = await supabase.storage.from("caravan-images").upload(path, bytes, { contentType: file.type, upsert: false });
   if (error) return { success: false, message: error.message };
@@ -233,7 +275,7 @@ export async function removeCaravanImageAction(caravanId: string, path: string):
   if (!path.startsWith(`${caravanId}/`)) return { success: false, message: "Caminho de imagem inválido." };
   const supabase = await createClient();
   const { data: caravan } = await supabase.from("caravans").select("slug, card_image_url, hero_image_url, video_thumbnail_url, leader_image_url").eq("id", caravanId).single();
-  if (!caravan) return { success: false, message: "Caravana não encontrada." };
+  if (!caravan) return { success: false, message: "Pacote não encontrado." };
   const { error: storageError } = await supabase.storage.from("caravan-images").remove([path]);
   if (storageError) return { success: false, message: storageError.message };
   await supabase.from("caravan_images").delete().eq("caravan_id", caravanId).eq("image_url", path);

@@ -25,7 +25,7 @@ export const contactLeadSchema = z.object({
 });
 
 export const caravanInterestLeadSchema = z.object({
-  caravanId: z.string().uuid("Caravana inválida."),
+  caravanId: z.string().uuid("Pacote inválido."),
   name: z.string().trim().min(2, "Informe seu nome.").max(100),
   email: z.string().trim().email("Informe um e-mail válido.").max(254),
   phone: phoneSchema,

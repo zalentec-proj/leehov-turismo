@@ -27,7 +27,7 @@ const fallbackSlides: HeroSlide[] = [
   {
     id: "leehov",
     title: "Viaje em grupo com a Leehov",
-    category: "Caravanas acompanhadas",
+    category: "Pacotes acompanhados",
     description:
       "Organização, cuidado e suporte próximo para viver cada destino com confiança.",
     backgroundImage: "/images/leehov/hero-fallback.jpg",
@@ -35,7 +35,7 @@ const fallbackSlides: HeroSlide[] = [
     cardImage: "/images/leehov/hero-card-fallback.jpg",
     cardTitle: "Leehov Turismo",
     primaryHref: "/caravanas",
-    primaryLabel: "Ver caravanas",
+    primaryLabel: "Ver pacotes",
   },
 ];
 
@@ -74,7 +74,7 @@ export function HomeHeroCarousel({ caravans }: { caravans: CaravanDetail[] }) {
   const heroSlides = useMemo<HeroSlide[]>(() => caravans.length ? caravans.map((caravan) => ({
     id: caravan.id,
     title: caravan.heroTitle || caravan.title,
-    category: caravan.category?.name || "Caravana acompanhada",
+    category: caravan.category?.name || "Pacote acompanhado",
     description: caravan.heroDescription || caravan.summary,
     backgroundImage: caravan.heroImageUrl || caravan.imageUrl,
     videoUrl: caravan.videoUrl,
@@ -131,7 +131,7 @@ export function HomeHeroCarousel({ caravans }: { caravans: CaravanDetail[] }) {
 
   return (
     <section
-      aria-label="Caravanas em destaque"
+      aria-label="Pacotes em destaque"
       aria-roledescription="carousel"
       className="relative isolate h-[850px] max-h-[100svh] min-h-[760px] overflow-hidden bg-leehov-navy-950 text-white"
       onBlur={() => setIsPaused(false)}
@@ -199,7 +199,7 @@ export function HomeHeroCarousel({ caravans }: { caravans: CaravanDetail[] }) {
 
           {heroSlides.length > 1 ? <div className="mt-6 flex items-center gap-3">
             <Button
-              aria-label="Caravana anterior"
+              aria-label="Pacote anterior"
               className="size-10 rounded-full border border-white/40 bg-white/8 text-white hover:bg-white/16 hover:text-white"
               onClick={prevSlide}
               size="icon"
@@ -209,7 +209,7 @@ export function HomeHeroCarousel({ caravans }: { caravans: CaravanDetail[] }) {
               <ArrowLeft className="size-4" />
             </Button>
             <Button
-              aria-label="Próxima caravana"
+              aria-label="Próximo pacote"
               className="size-10 rounded-full border border-white/40 bg-white/8 text-white hover:bg-white/16 hover:text-white"
               onClick={nextSlide}
               size="icon"

@@ -10,7 +10,7 @@ const footerColumns = [
     title: "A Leehov",
     links: [
       { href: "/quem-somos", label: "Quem Somos" },
-      { href: "/caravanas", label: "Caravanas" },
+      { href: "/caravanas", label: "Pacotes" },
       { href: "/blog", label: "Inspirações de viagem" },
     ],
   },
@@ -33,7 +33,7 @@ export function SiteFooter({ settings }: { settings: PublicSiteSettings }) {
             <Image src="/images/leehov/logo-site.webp" alt="Leehov Turismo" width={500} height={158} unoptimized sizes="176px" className="h-auto w-[176px]" />
           </Link>
           <p className="max-w-sm text-sm leading-7 text-white/70">
-            Caravanas e viagens em grupo acompanhadas, com atendimento humano,
+            Pacotes e viagens em grupo acompanhadas, com atendimento humano,
             roteiros planejados e suporte em cada etapa da experiência.
           </p>
           {socialLinks.length ? <div className="mt-6 flex gap-3 text-white/75">{socialLinks.map((item) => <a key={item.label} href={item.href} target="_blank" rel="noreferrer" aria-label={item.label} className="transition hover:text-white"><item.icon className="size-5" /></a>)}</div> : null}

@@ -26,7 +26,7 @@ export function EmailLayout({ children, preview }: { children: ReactNode; previe
         </p>
         {children}
         <p style={{ borderTop: "1px solid #DDEAF5", color: "#5F6F84", fontSize: "12px", lineHeight: "20px", margin: "28px 0 0", paddingTop: "20px" }}>
-          Caravanas e viagens em grupo acompanhadas, com suporte antes, durante e depois da viagem.
+          Pacotes e viagens em grupo acompanhadas, com suporte antes, durante e depois da viagem.
         </p>
       </div>
     </div>

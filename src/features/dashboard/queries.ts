@@ -67,8 +67,8 @@ function makeActivities(caravans: CaravanRow[], posts: PostRow[], leads: LeadRow
       id: `caravan-${caravan.id}`,
       kind: "caravan" as const,
       description: caravan.published
-        ? `Caravana “${caravan.title}” atualizada`
-        : `Rascunho da caravana “${caravan.title}” atualizado`,
+        ? `Pacote “${caravan.title}” atualizado`
+        : `Rascunho do pacote “${caravan.title}” atualizado`,
       occurredAt: caravan.updated_at,
     })),
     ...posts.map((post) => ({
@@ -124,7 +124,7 @@ export async function getAdminDashboardData(): Promise<AdminDashboardData> {
   const metrics: DashboardMetric[] = [
     {
       id: "caravans",
-      label: "Caravanas ativas",
+      label: "Pacotes ativos",
       value: activeCaravans.length,
       trend: calculateTrend(activeCaravans.map((item) => item.published_at), now),
     },

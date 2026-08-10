@@ -9,7 +9,7 @@ import { resolveEffectivePermissions } from "@/features/auth/permission-policy";
 
 export const permissionGroups = [
   { module: "dashboard", label: "Dashboard", permissions: [{ key: "dashboard.view", label: "Visualizar" }] },
-  { module: "caravans", label: "Caravanas", permissions: [
+  { module: "caravans", label: "Pacotes", permissions: [
     { key: "caravans.view", label: "Visualizar" }, { key: "caravans.create", label: "Criar" },
     { key: "caravans.update", label: "Editar" }, { key: "caravans.publish", label: "Publicar" },
     { key: "caravans.manage_media", label: "Gerenciar imagens" }, { key: "caravans.manage_categories", label: "Gerenciar categorias" },

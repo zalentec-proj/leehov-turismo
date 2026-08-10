@@ -139,7 +139,7 @@ export function AdminSettingsForm({
                 }),
             )}
             {input(
-              "Mensagem de caravana",
+              "Mensagem de pacote",
               form.whatsapp.caravanMessage,
               (caravanMessage) =>
                 setForm({
@@ -148,7 +148,7 @@ export function AdminSettingsForm({
                 }),
             )}
             {input("Modelo geral do CRM", form.whatsapp.generalTemplate, (generalTemplate) => setForm({ ...form, whatsapp: { ...form.whatsapp, generalTemplate } }), "Use {{nome}} e {{consultor}}")}
-            {input("Modelo para caravana", form.whatsapp.caravanTemplate, (caravanTemplate) => setForm({ ...form, whatsapp: { ...form.whatsapp, caravanTemplate } }), "Use {{nome}}, {{caravana}} e {{consultor}}")}
+            {input("Modelo para pacote", form.whatsapp.caravanTemplate, (caravanTemplate) => setForm({ ...form, whatsapp: { ...form.whatsapp, caravanTemplate } }), "Use {{nome}}, {{caravana}} (pacote) e {{consultor}}")}
             {input("URL HTTPS da Evolution", form.whatsapp.evolutionBaseUrl, (evolutionBaseUrl) => setForm({ ...form, whatsapp: { ...form.whatsapp, evolutionBaseUrl } }))}
             {input("Nome da instância", form.whatsapp.evolutionInstance, (evolutionInstance) => setForm({ ...form, whatsapp: { ...form.whatsapp, evolutionInstance } }))}
             <div className="md:col-span-2 rounded-2xl border border-leehov-border bg-leehov-surface p-4 text-sm text-leehov-muted">

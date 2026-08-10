@@ -15,7 +15,7 @@ type CaravanPageProps = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: CaravanPageProps): Promise<Metadata> {
   const { slug } = await params;
   const caravan = await getCaravanBySlug(slug);
-  if (!caravan) return { title: "Caravana não encontrada" };
+  if (!caravan) return { title: "Pacote não encontrado" };
   const title = caravan.seoTitle || caravan.title;
   const description = caravan.seoDescription || caravan.summary;
   const image = caravan.heroImageUrl || caravan.imageUrl;
@@ -61,7 +61,7 @@ export default async function CaravanPage({ params }: CaravanPageProps) {
 
         <div className="relative mx-auto grid min-h-[520px] max-w-[1312px] items-end gap-10 lg:grid-cols-[minmax(0,720px)_360px] lg:justify-between">
           <div className="self-center lg:pb-12">
-            <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#59DAFF]">{caravan.category?.name || "Caravana acompanhada"}</p>
+            <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#59DAFF]">{caravan.category?.name || "Pacote acompanhado"}</p>
             <h1 className="mt-[18px] max-w-[760px] text-[clamp(44px,5.2vw,72px)] font-extrabold leading-[1.03] tracking-[-0.035em] text-white">{caravan.heroTitle || caravan.title}</h1>
             <p className="mt-[18px] max-w-[640px] text-[18px] leading-[30px] text-white/82">{caravan.heroDescription || caravan.summary}</p>
 
@@ -73,7 +73,7 @@ export default async function CaravanPage({ params }: CaravanPageProps) {
           </div>
 
           <Card className="rounded-[18px] border-white/18 bg-[#051B2BEA] p-7 text-white shadow-[0_22px_42px_rgb(0_0_0_/_22%)] backdrop-blur-md">
-            <p className="text-xs font-extrabold uppercase tracking-[0.1em] text-[#67DCF8]">Caravana completa</p>
+            <p className="text-xs font-extrabold uppercase tracking-[0.1em] text-[#67DCF8]">Pacote completo</p>
             <p className="mt-3 text-[27px] font-extrabold leading-[33px] text-white">{caravan.price || "Valores sob consulta"}</p>
             <p className="mt-3 text-[13px] leading-5 text-white/72">Roteiro organizado, suporte próximo e acompanhamento Leehov durante a experiência.</p>
             <Button asChild className="mt-6 h-12 w-full rounded-full bg-gradient-to-r from-leehov-blue-300 to-leehov-blue-600 text-sm font-extrabold text-white">
@@ -83,7 +83,7 @@ export default async function CaravanPage({ params }: CaravanPageProps) {
         </div>
       </section>
 
-      <nav aria-label="Navegação desta caravana" className="sticky top-[82px] z-40 border-b border-[#DDEAF5] bg-white/96 shadow-sm backdrop-blur">
+      <nav aria-label="Navegação deste pacote" className="sticky top-[82px] z-40 border-b border-[#DDEAF5] bg-white/96 shadow-sm backdrop-blur">
         <div className="scrollbar-none mx-auto flex h-[66px] max-w-[1312px] items-center gap-7 overflow-x-auto px-5 text-sm font-bold text-[#496980] sm:px-8 lg:px-0">
           <Link className="whitespace-nowrap text-[#0077C8]" href="#visao-geral">Visão geral</Link>
           <Link className="whitespace-nowrap hover:text-[#0077C8]" href="#roteiro">Roteiro dia a dia</Link>
@@ -161,7 +161,7 @@ export default async function CaravanPage({ params }: CaravanPageProps) {
 
       <section id="interesse" className="scroll-mt-32 px-5 py-20 sm:px-8 lg:px-12">
         <div className="mx-auto grid max-w-[1312px] gap-10 rounded-[24px] bg-[linear-gradient(110deg,#083C5A,#0877B8)] px-7 py-12 text-white sm:px-10 lg:grid-cols-[minmax(0,510px)_minmax(0,1fr)] lg:items-center lg:px-[58px]">
-          <div><p className="text-xs font-extrabold uppercase tracking-[0.11em] text-[#70E6FF]">Fale com um especialista</p><h2 className="mt-3 text-[clamp(36px,4vw,48px)] font-extrabold leading-tight tracking-[-0.03em] text-white">Quer viajar com a Leehov?</h2><p className="mt-4 max-w-lg text-base leading-7 text-white/78">Receba a apresentação completa e tire todas as dúvidas sobre esta caravana.</p></div>
+          <div><p className="text-xs font-extrabold uppercase tracking-[0.11em] text-[#70E6FF]">Fale com um especialista</p><h2 className="mt-3 text-[clamp(36px,4vw,48px)] font-extrabold leading-tight tracking-[-0.03em] text-white">Quer viajar com a Leehov?</h2><p className="mt-4 max-w-lg text-base leading-7 text-white/78">Receba a apresentação completa e tire todas as dúvidas sobre este pacote.</p></div>
           <Card className="rounded-[18px] border-white/18 bg-white p-6 text-leehov-text shadow-xl"><CaravanInterestForm caravanId={caravan.id} caravanTitle={caravan.title} /></Card>
         </div>
       </section>
@@ -178,7 +178,7 @@ function ListPanel({ title, items, tone }: { title: string; items: string[]; ton
   return (
     <div className={included ? "min-h-[280px] rounded-[16px] border border-[#CBEBDD] bg-[#EFF9F4] p-7" : "min-h-[280px] rounded-[16px] border border-[#F5DEC4] bg-[#FFF8F1] p-7"}>
       <h3 className={included ? "text-xl font-extrabold text-[#16754D]" : "text-xl font-extrabold text-[#A85D10]"}>{title}</h3>
-      {items.length ? <ul className={included ? "mt-5 grid gap-x-8 gap-y-3 text-sm leading-6 text-[#416A5C] sm:grid-cols-2" : "mt-5 space-y-3 text-sm leading-6 text-[#785F48]"}>{items.map((item) => <li key={item} className="flex gap-2">{included ? <Check className="mt-1 size-4 shrink-0" /> : <X className="mt-1 size-4 shrink-0" />}{item}</li>)}</ul> : <p className="mt-5 text-sm text-[#668098]">Os itens serão apresentados na proposta da caravana.</p>}
+      {items.length ? <ul className={included ? "mt-5 grid gap-x-8 gap-y-3 text-sm leading-6 text-[#416A5C] sm:grid-cols-2" : "mt-5 space-y-3 text-sm leading-6 text-[#785F48]"}>{items.map((item) => <li key={item} className="flex gap-2">{included ? <Check className="mt-1 size-4 shrink-0" /> : <X className="mt-1 size-4 shrink-0" />}{item}</li>)}</ul> : <p className="mt-5 text-sm text-[#668098]">Os itens serão apresentados na proposta do pacote.</p>}
     </div>
   );
 }

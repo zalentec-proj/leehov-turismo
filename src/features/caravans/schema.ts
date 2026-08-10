@@ -74,7 +74,7 @@ export const caravanCategorySchema = z.object({
 
 export const caravanFormSchema = z.object({
   id: optionalUuid,
-  title: z.string().trim().min(3, "Informe o nome da caravana.").max(160),
+  title: z.string().trim().min(3, "Informe o nome do pacote.").max(160),
   slug: z.string().trim().min(3, "Informe o slug.").regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use apenas letras minúsculas, números e hífens."),
   destination: z.string().trim().min(2, "Informe o destino.").max(180),
   categoryId: optionalUuid,

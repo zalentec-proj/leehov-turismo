@@ -8,9 +8,9 @@ export function NewsletterWelcomeEmail({ name = "viajante", caravansUrl, unsubsc
         Você está na lista da Leehov Turismo
       </h1>
       <p style={{ fontSize: "16px", lineHeight: "26px", margin: 0 }}>
-        Olá, {name}. Sua inscrição foi confirmada. Em breve você receberá inspirações de viagem, novas caravanas e orientações da equipe Leehov.
+        Olá, {name}. Sua inscrição foi confirmada. Em breve você receberá inspirações de viagem, novos pacotes e orientações da equipe Leehov.
       </p>
-      <EmailButton href={caravansUrl}>Conhecer caravanas</EmailButton>
+      <EmailButton href={caravansUrl}>Conhecer pacotes</EmailButton>
       <p style={{ color: "#5F6F84", fontSize: "12px", lineHeight: "19px", marginTop: "24px" }}>
         Não quer mais receber? <a href={unsubscribeUrl} style={{ color: "#0077C8" }}>Cancelar inscrição</a>.
       </p>

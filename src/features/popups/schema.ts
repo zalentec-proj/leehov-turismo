@@ -19,8 +19,8 @@ export const popupSchema = z.object({
   frequency: z.enum(["always", "session", "daily", "weekly"]),
   active: z.boolean().default(false),
 }).superRefine((value, context) => {
-  if (value.popupType === "caravan" && !value.relatedCaravanId) context.addIssue({ code: "custom", path: ["relatedCaravanId"], message: "Selecione uma caravana publicada." });
-  if (value.popupType !== "caravan" && value.relatedCaravanId) context.addIssue({ code: "custom", path: ["relatedCaravanId"], message: "Somente pop-ups de caravana podem ter esse vínculo." });
+  if (value.popupType === "caravan" && !value.relatedCaravanId) context.addIssue({ code: "custom", path: ["relatedCaravanId"], message: "Selecione um pacote publicado." });
+  if (value.popupType !== "caravan" && value.relatedCaravanId) context.addIssue({ code: "custom", path: ["relatedCaravanId"], message: "Somente pop-ups de pacote podem ter esse vínculo." });
   if (value.popupType === "campaign" && (!value.buttonText || !value.buttonUrl)) context.addIssue({ code: "custom", path: ["buttonText"], message: "A campanha precisa de texto e URL do botão." });
   if (["whatsapp", "caravan"].includes(value.popupType) && (!value.buttonText || value.buttonUrl)) context.addIssue({ code: "custom", path: ["buttonText"], message: "Informe o texto do botão; a URL será criada automaticamente." });
   if (value.popupType === "newsletter" && (value.buttonText || value.buttonUrl)) context.addIssue({ code: "custom", path: ["buttonText"], message: "O pop-up de newsletter usa o formulário integrado e não aceita botão manual." });

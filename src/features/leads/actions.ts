@@ -98,13 +98,13 @@ async function sendCaravanInterestEmails(input: {
   const emailSettings = await getServerEmailSettings();
   const teamRecipients = emailSettings.leadRecipients.length ? emailSettings.leadRecipients : parseEmailRecipients(process.env.ADMIN_LEADS_EMAIL);
   const internalRecipients = teamRecipients.length ? teamRecipients : [undefined];
-  const visitorWhatsapp = await whatsappUrl(`Olá, gostaria de mais informações sobre a caravana ${input.caravanTitle}.`);
+  const visitorWhatsapp = await whatsappUrl(`Olá, gostaria de mais informações sobre o pacote ${input.caravanTitle}.`);
 
   await Promise.allSettled([
     ...internalRecipients.map((recipient) => sendTransactionalEmail({
       templateKey: "admin_caravan_lead",
       to: recipient,
-      subject: `Novo interesse em caravana: ${input.caravanTitle}`,
+      subject: `Novo interesse em pacote: ${input.caravanTitle}`,
       react: createElement(AdminCaravanLeadEmail, { ...input, adminUrl }),
       replyTo: input.email,
       relatedEntityType: "lead",
@@ -113,7 +113,7 @@ async function sendCaravanInterestEmails(input: {
     sendTransactionalEmail({
       templateKey: "visitor_caravan_lead_confirmation",
       to: input.email,
-      subject: `Recebemos seu interesse na caravana ${input.caravanTitle}`,
+      subject: `Recebemos seu interesse no pacote ${input.caravanTitle}`,
       react: createElement(VisitorCaravanLeadConfirmationEmail, {
         name: input.name,
         caravanTitle: input.caravanTitle,
@@ -198,7 +198,7 @@ export async function createCaravanInterestAction(rawInput: CaravanInterestLeadI
       .eq("published", true)
       .maybeSingle();
     if (caravanError) throw caravanError;
-    if (!caravan) return { success: false, message: "Esta caravana não está disponível para receber interesses." };
+    if (!caravan) return { success: false, message: "Este pacote não está disponível para receber interesses." };
 
     const { data: lead, error } = await admin
       .from("leads")
@@ -237,7 +237,7 @@ export async function createCaravanInterestAction(rawInput: CaravanInterestLeadI
       success: true,
       message: "Interesse enviado. A equipe Leehov falará com você em breve.",
       id: lead.id,
-      whatsappUrl: await whatsappUrl(`Olá, gostaria de mais informações sobre a caravana ${caravan.title}.`),
+      whatsappUrl: await whatsappUrl(`Olá, gostaria de mais informações sobre o pacote ${caravan.title}.`),
     };
   } catch {
     return { success: false, message: genericFailure };

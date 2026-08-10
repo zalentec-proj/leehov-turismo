@@ -10,7 +10,7 @@ export default function PrivacyPage() {
       <section className="px-5 pt-16 sm:px-8 lg:px-12"><div className="mx-auto max-w-3xl">
         <div className="space-y-6 leading-8 text-leehov-muted">
           <p>
-            A Leehov usa os dados informados nos formulários para responder contatos, registrar interesses em caravanas e, quando solicitado, enviar a newsletter. Dados de atendimento ficam acessíveis somente à equipe autorizada.
+            A Leehov usa os dados informados nos formulários para responder contatos, registrar interesses em pacotes e, quando solicitado, enviar a newsletter. Dados de atendimento ficam acessíveis somente à equipe autorizada.
           </p>
           <p>
             A newsletter exige confirmação por e-mail e pode ser cancelada pelo link enviado ao inscrito. Não usamos a inscrição para ocultar se um endereço já existe em nossa base.

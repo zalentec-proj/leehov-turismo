@@ -19,13 +19,13 @@ const contactFallback = {
 const whatsappFallback = {
   number: LEEHOV_WHATSAPP_NUMBER,
   defaultMessage: "Olá! Gostaria de falar com a equipe Leehov.",
-  caravanMessage: "Olá! Gostaria de saber mais sobre esta caravana.",
+  caravanMessage: "Olá! Gostaria de saber mais sobre este pacote.",
   provider: "manual" as const,
   evolutionBaseUrl: "",
   evolutionInstance: "",
   apiKeyConfigured: false,
   generalTemplate: "Olá, {{nome}}! Aqui é {{consultor}} da Leehov Turismo.",
-  caravanTemplate: "Olá, {{nome}}! Vimos seu interesse na caravana {{caravana}}. Aqui é {{consultor}} da Leehov Turismo.",
+  caravanTemplate: "Olá, {{nome}}! Vimos seu interesse no pacote {{caravana}}. Aqui é {{consultor}} da Leehov Turismo.",
 };
 const homeFallback = {
   videoUrl: "https://www.youtube.com/watch?v=976sGxAluKk",
@@ -36,7 +36,7 @@ const seoFallback = {
   siteName: "Leehov Turismo",
   titleTemplate: "%s | Leehov Turismo",
   defaultDescription:
-    "Caravanas e viagens em grupo acompanhadas pela Leehov Turismo.",
+    "Pacotes e viagens em grupo acompanhadas pela Leehov Turismo.",
   ogImageAssetId: "",
   ogImageUrl: "",
 };

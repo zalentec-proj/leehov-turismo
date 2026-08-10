@@ -89,7 +89,7 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
 
       <section className="px-5 py-12 sm:px-8 lg:px-12">
         <div className="mx-auto grid max-w-[1180px] gap-8 rounded-[24px] bg-leehov-surface p-7 shadow-leehov-card sm:p-10 md:grid-cols-[1fr_480px] md:items-center">
-          <div><p className="text-xs font-extrabold uppercase tracking-[0.18em] text-leehov-blue-600">Newsletter</p><h2 className="mt-3 text-2xl font-extrabold text-leehov-navy-950">Receba novas inspirações de viagem</h2><p className="mt-3 text-sm leading-6 text-leehov-muted">Confirme seu e-mail e acompanhe destinos, dicas e próximas caravanas.</p></div>
+          <div><p className="text-xs font-extrabold uppercase tracking-[0.18em] text-leehov-blue-600">Newsletter</p><h2 className="mt-3 text-2xl font-extrabold text-leehov-navy-950">Receba novas inspirações de viagem</h2><p className="mt-3 text-sm leading-6 text-leehov-muted">Confirme seu e-mail e acompanhe destinos, dicas e próximos pacotes.</p></div>
           <NewsletterSignup source="blog" />
         </div>
       </section>

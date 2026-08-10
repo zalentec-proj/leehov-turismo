@@ -117,12 +117,12 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         <aside className="bg-white px-5 pb-20 pt-2 sm:px-8 lg:px-12 lg:pb-24">
           <div className="mx-auto flex min-h-[206px] max-w-[1312px] flex-col justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-leehov-navy-950 via-leehov-navy-800 to-leehov-blue-600 p-8 text-white shadow-leehov-floating sm:p-10 lg:flex-row lg:items-center lg:justify-between lg:px-14">
             <div className="max-w-3xl">
-              <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-leehov-blue-300">Caravana relacionada</p>
+              <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-leehov-blue-300">Pacote relacionado</p>
               <h2 className="mt-3 text-[30px] font-extrabold leading-tight">{post.relatedCaravan.title}</h2>
               <p className="mt-4 text-sm leading-6 text-white/70 sm:text-base">Transforme a inspiração em uma experiência em grupo acompanhada pela Leehov.</p>
             </div>
             <Button asChild size="lg" className="mt-7 self-start rounded-full bg-white px-6 text-leehov-navy-950 hover:bg-leehov-surface lg:mt-0 lg:self-auto">
-              <Link href={`/caravanas/${post.relatedCaravan.slug}`}>Ver caravana <ArrowRight className="size-4" /></Link>
+              <Link href={`/caravanas/${post.relatedCaravan.slug}`}>Ver pacote <ArrowRight className="size-4" /></Link>
             </Button>
           </div>
         </aside>
@@ -162,13 +162,13 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           <div>
             <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-leehov-blue-300">Próxima viagem</p>
             <h2 className="mt-3 text-3xl font-extrabold">Continue viajando com a Leehov</h2>
-            <p className="mt-3 text-sm leading-6 text-white/65">Receba novos conteúdos e próximas caravanas após confirmar seu e-mail.</p>
+            <p className="mt-3 text-sm leading-6 text-white/65">Receba novos conteúdos e próximos pacotes após confirmar seu e-mail.</p>
           </div>
           <NewsletterSignup source="blog_post" variant="dark" />
         </div>
         <div className="mx-auto mt-16 max-w-3xl text-center">
           <h2 className="text-3xl font-extrabold text-leehov-navy-950">Quer conversar sobre sua próxima viagem?</h2>
-          <p className="mx-auto mt-4 max-w-xl text-leehov-muted">A equipe Leehov ajuda você a encontrar uma caravana com o acompanhamento certo.</p>
+          <p className="mx-auto mt-4 max-w-xl text-leehov-muted">A equipe Leehov ajuda você a encontrar um pacote com o acompanhamento certo.</p>
           <Button asChild size="lg" className="mt-7 rounded-full bg-leehov-blue-600 px-6 text-white"><a href={LEEHOV_WHATSAPP_URL} target="_blank" rel="noreferrer">Falar com um consultor</a></Button>
         </div>
       </aside>

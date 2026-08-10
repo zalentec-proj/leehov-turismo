@@ -11,7 +11,7 @@ import { LEEHOV_WHATSAPP_URL } from "@/features/settings/utils";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/caravanas", label: "Caravanas" },
+  { href: "/caravanas", label: "Pacotes" },
   { href: "/quem-somos", label: "Quem Somos" },
   { href: "/blog", label: "Blog" },
   { href: "/contato", label: "Contato" },
@@ -108,7 +108,7 @@ export function SiteHeader() {
             <SheetContent className="w-[min(88vw,390px)] border-white/10 bg-leehov-navy-950 p-0 text-white" showCloseButton={false}>
               <SheetHeader className="border-b border-white/10 px-6 py-7 text-left">
                 <SheetTitle className="text-xl font-extrabold text-white">Leehov Turismo</SheetTitle>
-                <SheetDescription className="text-white/58">Caravanas e viagens em grupo acompanhadas.</SheetDescription>
+                <SheetDescription className="text-white/58">Pacotes e viagens em grupo acompanhadas.</SheetDescription>
               </SheetHeader>
               <nav aria-label="Menu principal" className="flex flex-col gap-2 px-4 py-6">
                 {navItems.map((item) => (

@@ -18,7 +18,10 @@ export async function generateMetadata({ params }: CaravanPageProps): Promise<Me
   if (!caravan) return { title: "Pacote não encontrado" };
   const title = caravan.seoTitle || caravan.title;
   const description = caravan.seoDescription || caravan.summary;
-  const image = caravan.heroImageUrl || caravan.imageUrl;
+  // `heroImageUrl` always has a visual fallback for the page hero. Metadata must
+  // only use that value when a hero image was actually configured; otherwise the
+  // package card image is the canonical social preview.
+  const image = caravan.heroImagePath ? caravan.heroImageUrl : caravan.imageUrl;
   return {
     title: caravan.seoTitle ? { absolute: caravan.seoTitle } : caravan.title,
     description,

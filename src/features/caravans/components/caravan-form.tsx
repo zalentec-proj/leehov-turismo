@@ -7,8 +7,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { ImagePlus, Loader2, Plus, Save, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
-import { removeCaravanImageAction, saveCaravanAction, uploadCaravanImageAction } from "@/features/caravans/actions";
+import {
+  confirmCaravanImageUploadAction,
+  createCaravanImageUploadAction,
+  removeCaravanImageAction,
+  saveCaravanAction,
+} from "@/features/caravans/actions";
 import { caravanFormSchema, type CaravanFormInput } from "@/features/caravans/schema";
+import { validateCaravanImage } from "@/features/caravans/image-validation";
+import { createClient as createBrowserClient } from "@/lib/supabase/client";
 import type { AdminCaravan, CaravanCategory } from "@/features/caravans/types";
 import { slugifyCaravanTitle } from "@/features/caravans/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -141,7 +148,7 @@ function PackageImagePicker({
         </div>
         {uploading ? <Loader2 className="size-5 shrink-0 animate-spin text-leehov-blue-500" /> : <ImagePlus className="size-5 shrink-0 text-leehov-blue-500" />}
       </label>
-      <Input id={id} type="file" className="sr-only" accept="image/jpeg,image/png,image/webp,image/avif" disabled={disabled} onChange={(event) => onSelect(event.target.files?.[0])} />
+      <Input id={id} type="file" className="sr-only" accept="image/jpeg,image/png,image/webp,image/avif" disabled={disabled} onChange={(event) => { const file = event.currentTarget.files?.[0]; event.currentTarget.value = ""; onSelect(file); }} />
     </div>
   );
 }
@@ -231,44 +238,60 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
     router.refresh();
   }
 
+  async function sendCaravanImage(caravanId: string, file: File) {
+    const header = new Uint8Array(await file.slice(0, 32).arrayBuffer());
+    const validation = validateCaravanImage(file.type, file.size, header);
+    if (!validation.success) return validation;
+
+    const ticket = await createCaravanImageUploadAction(caravanId, { type: file.type, size: file.size });
+    if (!ticket.success || !ticket.path || !ticket.token) return ticket;
+    const supabase = createBrowserClient();
+    const { error } = await supabase.storage.from("caravan-images").uploadToSignedUrl(ticket.path, ticket.token, file, {
+      cacheControl: "31536000",
+      contentType: file.type,
+    });
+    if (error) return { success: false as const, message: error.message };
+    return confirmCaravanImageUploadAction(caravanId, ticket.path);
+  }
+
   async function upload(file: File | undefined) {
     if (!file) return;
     setUploading(true);
-    const draft = await ensureDraftForUpload();
-    if (!draft) {
+    try {
+      const draft = await ensureDraftForUpload();
+      if (!draft) return;
+      const result = await sendCaravanImage(draft.id, file);
+      if (!result.success || !result.path) return toast.error(result.message);
+      images.append({ id: "", imagePath: result.path, altText: title, caption: "", orderIndex: images.fields.length * 10 });
+      if (result.url) setGalleryPreviews((current) => ({ ...current, [result.path as string]: result.url as string }));
+      if (!form.getValues("cardImagePath")) form.setValue("cardImagePath", result.path, { shouldDirty: true });
+      if (!form.getValues("heroImagePath")) form.setValue("heroImagePath", result.path, { shouldDirty: true });
+      toast.success("Imagem adicionada. Salve para confirmar a galeria.");
+      await finishFirstUpload(draft.created);
+    } catch {
+      toast.error("Não foi possível enviar a imagem. Verifique sua conexão e tente novamente.");
+    } finally {
       setUploading(false);
-      return;
     }
-    const data = new FormData();
-    data.set("file", file);
-    const result = await uploadCaravanImageAction(draft.id, data);
-    setUploading(false);
-    if (!result.success || !result.path) return toast.error(result.message);
-    images.append({ id: "", imagePath: result.path, altText: title, caption: "", orderIndex: images.fields.length * 10 });
-    if (result.url) setGalleryPreviews((current) => ({ ...current, [result.path as string]: result.url as string }));
-    if (!form.getValues("cardImagePath")) form.setValue("cardImagePath", result.path, { shouldDirty: true });
-    if (!form.getValues("heroImagePath")) form.setValue("heroImagePath", result.path, { shouldDirty: true });
-    toast.success("Imagem adicionada. Salve para confirmar a galeria.");
-    await finishFirstUpload(draft.created);
   }
 
   async function uploadAsset(field: "cardImagePath" | "heroImagePath" | "leaderImagePath", previewKey: "card" | "hero" | "leader", file: File | undefined) {
     if (!file) return;
     setUploading(true);
-    const draft = await ensureDraftForUpload();
-    if (!draft) {
+    try {
+      const draft = await ensureDraftForUpload();
+      if (!draft) return;
+      const result = await sendCaravanImage(draft.id, file);
+      if (!result.success || !result.path) return toast.error(result.message);
+      form.setValue(field, result.path, { shouldDirty: true, shouldValidate: true });
+      if (result.url) setAssetPreviews((current) => ({ ...current, [previewKey]: result.url as string }));
+      toast.success("Imagem enviada. Salve o pacote para confirmar a alteração.");
+      await finishFirstUpload(draft.created);
+    } catch {
+      toast.error("Não foi possível enviar a imagem. Verifique sua conexão e tente novamente.");
+    } finally {
       setUploading(false);
-      return;
     }
-    const data = new FormData();
-    data.set("file", file);
-    const result = await uploadCaravanImageAction(draft.id, data);
-    setUploading(false);
-    if (!result.success || !result.path) return toast.error(result.message);
-    form.setValue(field, result.path, { shouldDirty: true, shouldValidate: true });
-    if (result.url) setAssetPreviews((current) => ({ ...current, [previewKey]: result.url as string }));
-    toast.success("Imagem enviada. Salve o pacote para confirmar a alteração.");
-    await finishFirstUpload(draft.created);
   }
 
   function clearAsset(field: "cardImagePath" | "heroImagePath" | "leaderImagePath", previewKey: "card" | "hero" | "leader") {
@@ -294,20 +317,20 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
   async function uploadItineraryImage(index: number, file: File | undefined) {
     if (!file) return;
     setUploading(true);
-    const draft = await ensureDraftForUpload();
-    if (!draft) {
+    try {
+      const draft = await ensureDraftForUpload();
+      if (!draft) return;
+      const result = await sendCaravanImage(draft.id, file);
+      if (!result.success || !result.path) return toast.error(result.message);
+      form.setValue(`itinerary.${index}.imagePath`, result.path, { shouldDirty: true, shouldValidate: true });
+      if (result.url) setItineraryPreviews((current) => ({ ...current, [result.path as string]: result.url as string }));
+      toast.success(`Imagem do dia ${form.getValues(`itinerary.${index}.day`)} enviada. Salve o pacote para confirmar.`);
+      await finishFirstUpload(draft.created);
+    } catch {
+      toast.error("Não foi possível enviar a imagem do roteiro. Verifique sua conexão e tente novamente.");
+    } finally {
       setUploading(false);
-      return;
     }
-    const data = new FormData();
-    data.set("file", file);
-    const result = await uploadCaravanImageAction(draft.id, data);
-    setUploading(false);
-    if (!result.success || !result.path) return toast.error(result.message);
-    form.setValue(`itinerary.${index}.imagePath`, result.path, { shouldDirty: true, shouldValidate: true });
-    if (result.url) setItineraryPreviews((current) => ({ ...current, [result.path as string]: result.url as string }));
-    toast.success(`Imagem do dia ${form.getValues(`itinerary.${index}.day`)} enviada. Salve o pacote para confirmar.`);
-    await finishFirstUpload(draft.created);
   }
 
   const errors = form.formState.errors;
@@ -360,7 +383,7 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
           </div>
           <div className="rounded-xl border border-dashed border-leehov-blue-300 p-5">
             <Label htmlFor="caravan-upload">Enviar JPEG, PNG, WebP ou AVIF (até 8 MiB)</Label>
-            <div className="mt-3 flex items-center gap-3"><Input id="caravan-upload" type="file" accept="image/jpeg,image/png,image/webp,image/avif" disabled={uploading} onChange={(event) => upload(event.target.files?.[0])} />{uploading ? <Loader2 className="size-5 animate-spin" /> : <ImagePlus className="size-5 text-leehov-blue-500" />}</div>
+            <div className="mt-3 flex items-center gap-3"><Input id="caravan-upload" type="file" accept="image/jpeg,image/png,image/webp,image/avif" disabled={uploading} onChange={(event) => { const file = event.currentTarget.files?.[0]; event.currentTarget.value = ""; void upload(file); }} />{uploading ? <Loader2 className="size-5 animate-spin" /> : <ImagePlus className="size-5 text-leehov-blue-500" />}</div>
           </div>
           <div className="space-y-3">
             <Label>Galeria</Label>
@@ -403,7 +426,7 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
                       {preview ? <Image src={preview} alt="" fill unoptimized={preview.startsWith("http")} sizes="220px" className="object-cover" /> : <div className="flex size-full items-center justify-center text-center text-xs text-leehov-muted"><ImagePlus className="mr-2 size-4" />Imagem do dia</div>}
                     </div>
                     <Label htmlFor={`itinerary-upload-${index}`} className="mt-3 inline-flex cursor-pointer items-center gap-2 text-xs font-bold text-leehov-blue-600"><ImagePlus className="size-4" />Enviar imagem</Label>
-                    <Input id={`itinerary-upload-${index}`} type="file" className="sr-only" accept="image/jpeg,image/png,image/webp,image/avif" disabled={uploading} onChange={(event) => uploadItineraryImage(index, event.target.files?.[0])} />
+                    <Input id={`itinerary-upload-${index}`} type="file" className="sr-only" accept="image/jpeg,image/png,image/webp,image/avif" disabled={uploading} onChange={(event) => { const file = event.currentTarget.files?.[0]; event.currentTarget.value = ""; void uploadItineraryImage(index, file); }} />
                     {!formCaravanId ? <p className="mt-2 text-xs text-leehov-muted">O rascunho será criado no primeiro envio.</p> : null}
                   </div>
 

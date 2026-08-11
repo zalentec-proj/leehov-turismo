@@ -8,8 +8,14 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { TablesUpdate } from "@/types/database";
 import { emitWebhookEvent } from "@/lib/webhooks/events";
+import {
+  CARAVAN_IMAGE_MAX_BYTES,
+  getCaravanImageTypeFromPath,
+  hasValidCaravanImageSignature,
+  validateCaravanImageMetadata,
+} from "@/features/caravans/image-validation";
 
-type CaravanActionResult = { success: boolean; message: string; id?: string; path?: string; url?: string };
+type CaravanActionResult = { success: boolean; message: string; id?: string; path?: string; token?: string; url?: string };
 
 const emptyToNull = (value: string) => value.trim() || null;
 
@@ -241,33 +247,52 @@ export async function saveCaravanCategoryAction(formData: FormData): Promise<voi
   revalidatePath("/admin/caravanas/novo");
 }
 
-function validImageSignature(type: string, bytes: Uint8Array) {
-  if (type === "image/jpeg") return bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
-  if (type === "image/png") return [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a].every((value, index) => bytes[index] === value);
-  if (type === "image/webp") return new TextDecoder().decode(bytes.slice(0, 4)) === "RIFF" && new TextDecoder().decode(bytes.slice(8, 12)) === "WEBP";
-  if (type === "image/avif") return new TextDecoder().decode(bytes.slice(4, 8)) === "ftyp" && ["avif", "avis", "mif1"].includes(new TextDecoder().decode(bytes.slice(8, 12)));
-  return false;
+export async function createCaravanImageUploadAction(caravanId: string, file: { type: string; size: number }): Promise<CaravanActionResult> {
+  await requirePermission("caravans.manage_media");
+  const validation = validateCaravanImageMetadata(file.type, file.size);
+  if (!validation.success) return validation;
+  const supabase = createAdminClient();
+  const { data: caravan, error: caravanError } = await supabase.from("caravans").select("id").eq("id", caravanId).maybeSingle();
+  if (caravanError || !caravan) return { success: false, message: "Salve o pacote antes de enviar imagens." };
+  const path = `${caravanId}/${randomUUID()}.${validation.extension}`;
+  const { data, error } = await supabase.storage.from("caravan-images").createSignedUploadUrl(path);
+  if (error || !data?.token) return { success: false, message: error?.message ?? "Não foi possível preparar o envio da imagem." };
+  return { success: true, message: "Envio autorizado.", path, token: data.token };
 }
 
-export async function uploadCaravanImageAction(caravanId: string, formData: FormData): Promise<CaravanActionResult> {
+export async function confirmCaravanImageUploadAction(caravanId: string, path: string): Promise<CaravanActionResult> {
   await requirePermission("caravans.manage_media");
-  const file = formData.get("file");
-  if (!(file instanceof File)) return { success: false, message: "Selecione uma imagem." };
-  if (file.size > 8 * 1024 * 1024) return { success: false, message: "A imagem deve ter no máximo 8 MiB." };
-  const allowed = new Map([["image/jpeg", "jpg"], ["image/png", "png"], ["image/webp", "webp"], ["image/avif", "avif"]]);
-  const extension = allowed.get(file.type);
-  if (!extension) return { success: false, message: "Use uma imagem JPEG, PNG, WebP ou AVIF." };
-  const bytes = new Uint8Array(await file.arrayBuffer());
-  if (!validImageSignature(file.type, bytes)) return { success: false, message: "O conteúdo do arquivo não corresponde ao formato informado." };
+  if (!path.startsWith(`${caravanId}/`)) return { success: false, message: "Caminho de imagem inválido." };
+  const type = getCaravanImageTypeFromPath(path);
+  if (!type) return { success: false, message: "Formato de imagem inválido." };
 
-  const supabase = await createClient();
-  const { data: caravan } = await supabase.from("caravans").select("id").eq("id", caravanId).maybeSingle();
-  if (!caravan) return { success: false, message: "Salve o pacote antes de enviar imagens." };
-  const path = `${caravanId}/${randomUUID()}.${extension}`;
-  const { error } = await supabase.storage.from("caravan-images").upload(path, bytes, { contentType: file.type, upsert: false });
-  if (error) return { success: false, message: error.message };
-  const { data } = await supabase.storage.from("caravan-images").createSignedUrl(path, 3600);
-  return { success: true, message: "Imagem enviada com sucesso.", path, url: data?.signedUrl };
+  const supabase = createAdminClient();
+  const filename = path.slice(caravanId.length + 1);
+  const { data: objects, error: listError } = await supabase.storage.from("caravan-images").list(caravanId, { limit: 1, search: filename });
+  const object = objects?.find((item) => item.name === filename);
+  const objectSize = Number(object?.metadata?.size ?? 0);
+  const objectType = String(object?.metadata?.mimetype ?? "");
+  if (listError || !object || objectSize <= 0 || objectSize > CARAVAN_IMAGE_MAX_BYTES || objectType !== type) {
+    await supabase.storage.from("caravan-images").remove([path]);
+    return { success: false, message: "A imagem enviada não passou pela validação de tamanho ou formato." };
+  }
+
+  const { data: signed, error: signedError } = await supabase.storage.from("caravan-images").createSignedUrl(path, 3600);
+  if (signedError || !signed?.signedUrl) return { success: false, message: signedError?.message ?? "Não foi possível validar a imagem enviada." };
+
+  try {
+    const response = await fetch(signed.signedUrl, { cache: "no-store", headers: { Range: "bytes=0-31" } });
+    if (!response.ok || !response.body) throw new Error("Imagem indisponível");
+    const reader = response.body.getReader();
+    const firstChunk = await reader.read();
+    await reader.cancel();
+    if (!firstChunk.value || !hasValidCaravanImageSignature(type, firstChunk.value)) throw new Error("Assinatura inválida");
+  } catch {
+    await supabase.storage.from("caravan-images").remove([path]);
+    return { success: false, message: "O conteúdo do arquivo não corresponde ao formato informado." };
+  }
+
+  return { success: true, message: "Imagem enviada com sucesso.", path, url: signed.signedUrl };
 }
 
 export async function removeCaravanImageAction(caravanId: string, path: string): Promise<CaravanActionResult> {

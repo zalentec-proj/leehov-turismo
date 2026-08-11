@@ -14,13 +14,28 @@ export type AdminBlogListRow = Pick<Database["public"]["Tables"]["blog_posts"]["
   category: Pick<Database["public"]["Tables"]["blog_categories"]["Row"], "name"> | null;
 };
 
+export type BlogAssetUrlMap = ReadonlyMap<string, string>;
+
 export async function resolveBlogAssetUrl(supabase: SupabaseClient<Database>, path: string | null): Promise<string> {
   if (!path) return "";
   const { data } = await supabase.storage.from("blog-images").createSignedUrl(path, 3600);
   return data?.signedUrl ?? "";
 }
 
-export async function mapBlogSummary(supabase: SupabaseClient<Database>, row: BlogQueryRow): Promise<BlogPostSummary> {
+export async function resolveBlogAssetUrls(
+  supabase: SupabaseClient<Database>,
+  paths: Array<string | null | undefined>,
+): Promise<BlogAssetUrlMap> {
+  const uniquePaths = [...new Set(paths.filter((path): path is string => Boolean(path)))];
+  if (!uniquePaths.length) return new Map();
+
+  const { data, error } = await supabase.storage.from("blog-images").createSignedUrls(uniquePaths, 3600);
+  if (error || !data) return new Map();
+
+  return new Map(data.flatMap((asset) => asset.path && asset.signedUrl ? [[asset.path, asset.signedUrl] as const] : []));
+}
+
+export async function mapBlogSummary(supabase: SupabaseClient<Database>, row: BlogQueryRow, assetUrls?: BlogAssetUrlMap): Promise<BlogPostSummary> {
   return {
     id: row.id,
     title: row.title,
@@ -31,7 +46,9 @@ export async function mapBlogSummary(supabase: SupabaseClient<Database>, row: Bl
     summary: row.summary ?? "",
     readingTime: row.reading_time ?? 1,
     imagePath: row.cover_image_url ?? "",
-    imageUrl: await resolveBlogAssetUrl(supabase, row.cover_image_url),
+    imageUrl: row.cover_image_url && assetUrls
+      ? assetUrls.get(row.cover_image_url) ?? ""
+      : await resolveBlogAssetUrl(supabase, row.cover_image_url),
     coverAltText: row.cover_alt_text ?? row.title,
     author: row.author ?? "Equipe Leehov",
     publishedAt: row.published_at ?? row.created_at,
@@ -41,22 +58,26 @@ export async function mapBlogSummary(supabase: SupabaseClient<Database>, row: Bl
   };
 }
 
-export async function mapBlogDetail(supabase: SupabaseClient<Database>, row: BlogQueryRow): Promise<BlogPostDetail> {
-  const summary = await mapBlogSummary(supabase, row);
+export async function mapBlogDetail(supabase: SupabaseClient<Database>, row: BlogQueryRow, assetUrls?: BlogAssetUrlMap): Promise<BlogPostDetail> {
+  const urls = assetUrls ?? await resolveBlogAssetUrls(supabase, [
+    row.cover_image_url,
+    ...(row.images ?? []).map((image) => image.image_url),
+  ]);
+  const summary = await mapBlogSummary(supabase, row, urls);
   return {
     ...summary,
     content: row.content ?? "",
     seoTitle: row.seo_title ?? "",
     seoDescription: row.seo_description ?? "",
     relatedCaravan: row.relatedCaravan,
-    images: await Promise.all([...(row.images ?? [])].sort((a, b) => a.order_index - b.order_index).map(async (image) => ({
+    images: [...(row.images ?? [])].sort((a, b) => a.order_index - b.order_index).map((image) => ({
       id: image.id,
       imagePath: image.image_url,
-      imageUrl: await resolveBlogAssetUrl(supabase, image.image_url),
+      imageUrl: urls.get(image.image_url) ?? "",
       altText: image.alt_text ?? "",
       caption: image.caption ?? "",
       orderIndex: image.order_index,
-    }))),
+    })),
   };
 }
 
@@ -70,7 +91,7 @@ export async function mapAdminBlogPost(supabase: SupabaseClient<Database>, row: 
   };
 }
 
-export async function mapAdminBlogListItem(supabase: SupabaseClient<Database>, row: AdminBlogListRow): Promise<AdminBlogListItem> {
+export async function mapAdminBlogListItem(supabase: SupabaseClient<Database>, row: AdminBlogListRow, assetUrls?: BlogAssetUrlMap): Promise<AdminBlogListItem> {
   return {
     id: row.id,
     title: row.title,
@@ -80,7 +101,9 @@ export async function mapAdminBlogListItem(supabase: SupabaseClient<Database>, r
     categoryId: row.category_id ?? "",
     author: row.author ?? "Equipe Leehov",
     readingTime: row.reading_time ?? 1,
-    imageUrl: await resolveBlogAssetUrl(supabase, row.cover_image_url),
+    imageUrl: row.cover_image_url && assetUrls
+      ? assetUrls.get(row.cover_image_url) ?? ""
+      : await resolveBlogAssetUrl(supabase, row.cover_image_url),
     published: row.published,
     featuredHome: row.featured_home,
     featuredBlog: row.featured_blog,

@@ -11,10 +11,13 @@ export async function emitWebhookEvent(event: WebhookEvent, data: Record<string,
   // never make the action that created the primary record fail after it has
   // already committed (for example, a blog post that was just published).
   try {
-    const deliveryIds = await createWebhookDeliveries(event, data);
-    if (!deliveryIds.length) return;
     after(async () => {
-      await Promise.allSettled(deliveryIds.map((id) => deliverWebhookLog(id)));
+      try {
+        const deliveryIds = await createWebhookDeliveries(event, data);
+        await Promise.allSettled(deliveryIds.map((id) => deliverWebhookLog(id)));
+      } catch {
+        console.error(`Não foi possível processar o webhook ${event}.`);
+      }
     });
   } catch {
     console.error(`Não foi possível enfileirar o webhook ${event}.`);

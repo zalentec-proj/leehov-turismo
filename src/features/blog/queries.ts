@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
-import { mapAdminBlogListItem, mapAdminBlogPost, mapBlogDetail, mapBlogSummary, type AdminBlogListRow, type BlogQueryRow } from "@/features/blog/mappers";
+import { mapAdminBlogListItem, mapAdminBlogPost, mapBlogDetail, mapBlogSummary, resolveBlogAssetUrls, type AdminBlogListRow, type BlogQueryRow } from "@/features/blog/mappers";
 import type { AdminBlogListItem, AdminBlogPost, BlogCategory, BlogPostDetail, BlogPostSummary } from "@/features/blog/types";
 
 const blogSelect = `
@@ -26,7 +26,8 @@ export async function getPublishedPosts(options: { search?: string; category?: s
   const search = options.search?.trim().toLocaleLowerCase("pt-BR");
   const categoryFiltered = options.category ? rows.filter((row) => row.category?.slug === options.category) : rows;
   const filtered = search ? categoryFiltered.filter((row) => `${row.title} ${row.summary ?? ""} ${row.related_destination ?? ""}`.toLocaleLowerCase("pt-BR").includes(search)) : categoryFiltered;
-  return Promise.all(filtered.map((row) => mapBlogSummary(supabase, row)));
+  const assetUrls = await resolveBlogAssetUrls(supabase, filtered.map((row) => row.cover_image_url));
+  return Promise.all(filtered.map((row) => mapBlogSummary(supabase, row, assetUrls)));
 }
 
 export async function getFeaturedPosts(): Promise<BlogPostSummary[]> {
@@ -39,7 +40,9 @@ export async function getFeaturedPosts(): Promise<BlogPostSummary[]> {
     .order("published_at", { ascending: false })
     .limit(3);
   if (error) throw new Error(`Não foi possível carregar os destaques do Blog: ${error.message}`);
-  return Promise.all(((data ?? []) as unknown as BlogQueryRow[]).map((row) => mapBlogSummary(supabase, row)));
+  const rows = (data ?? []) as unknown as BlogQueryRow[];
+  const assetUrls = await resolveBlogAssetUrls(supabase, rows.map((row) => row.cover_image_url));
+  return Promise.all(rows.map((row) => mapBlogSummary(supabase, row, assetUrls)));
 }
 
 export async function getFeaturedBlogPost(): Promise<BlogPostSummary | null> {
@@ -65,14 +68,18 @@ export async function getRelatedPosts(post: BlogPostDetail, limit = 3): Promise<
   if (post.categoryId) query = query.eq("category_id", post.categoryId);
   const { data, error } = await query;
   if (error) throw new Error(`Não foi possível carregar os artigos relacionados: ${error.message}`);
-  return Promise.all(((data ?? []) as unknown as BlogQueryRow[]).map((row) => mapBlogSummary(supabase, row)));
+  const rows = (data ?? []) as unknown as BlogQueryRow[];
+  const assetUrls = await resolveBlogAssetUrls(supabase, rows.map((row) => row.cover_image_url));
+  return Promise.all(rows.map((row) => mapBlogSummary(supabase, row, assetUrls)));
 }
 
 export async function getAdminPosts(): Promise<AdminBlogListItem[]> {
   const supabase = await createClient();
   const { data, error } = await supabase.from("blog_posts").select(adminBlogListSelect).order("updated_at", { ascending: false });
   if (error) throw new Error(`Não foi possível carregar os posts: ${error.message}`);
-  return Promise.all(((data ?? []) as unknown as AdminBlogListRow[]).map((row) => mapAdminBlogListItem(supabase, row)));
+  const rows = (data ?? []) as unknown as AdminBlogListRow[];
+  const assetUrls = await resolveBlogAssetUrls(supabase, rows.map((row) => row.cover_image_url));
+  return Promise.all(rows.map((row) => mapAdminBlogListItem(supabase, row, assetUrls)));
 }
 
 export async function getAdminPostById(id: string): Promise<AdminBlogPost | null> {

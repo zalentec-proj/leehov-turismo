@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { createColumnHelper, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { ChevronLeft, ChevronRight, Edit3, Loader2, Plus, Search, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
@@ -32,7 +32,6 @@ export function AdminBlogTable({ data, categories, canCreate, canUpdate, canPubl
   const [page, setPage] = useState(0);
   const [actionId, setActionId] = useState<string | null>(null);
   const [progress, setProgress] = useState<{ title: string; description: string } | null>(null);
-  const requestedPage = useRef<number | null>(null);
 
   useEffect(() => setRows(data), [data]);
 
@@ -49,11 +48,6 @@ export function AdminBlogTable({ data, categories, canCreate, canUpdate, canPubl
   }), [category, highlight, query, rows, status]);
 
   useEffect(() => setPage(0), [category, highlight, query, status]);
-  useEffect(() => {
-    if (requestedPage.current !== page) return;
-    requestedPage.current = null;
-    setProgress(null);
-  }, [page]);
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageRows = filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
@@ -84,8 +78,6 @@ export function AdminBlogTable({ data, categories, canCreate, canUpdate, canPubl
   }, []);
 
   const changePage = useCallback((nextPage: number) => {
-    setProgress({ title: "Carregando página...", description: "Organizando os próximos artigos da listagem." });
-    requestedPage.current = nextPage;
     setPage(nextPage);
   }, []);
 

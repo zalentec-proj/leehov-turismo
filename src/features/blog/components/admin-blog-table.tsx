@@ -8,6 +8,7 @@ import { ChevronLeft, ChevronRight, Edit3, Loader2, Plus, Search, Trash2, X } fr
 import { toast } from "sonner";
 import { deleteDraftBlogPostAction, setBlogPostPublishedAction } from "@/features/blog/actions";
 import { BlogActionProgress } from "@/features/blog/components/blog-action-progress";
+import { formatBlogAdminDate } from "@/features/blog/date";
 import type { AdminBlogListItem, BlogCategory } from "@/features/blog/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,10 +19,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 const columnHelper = createColumnHelper<AdminBlogListItem>();
 const PAGE_SIZE = 8;
-
-function formatUpdatedAt(value: string) {
-  return new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(new Date(value));
-}
 
 export function AdminBlogTable({ data, categories, canCreate, canUpdate, canPublish, canDeleteDraft }: { data: AdminBlogListItem[]; categories: BlogCategory[]; canCreate: boolean; canUpdate: boolean; canPublish: boolean; canDeleteDraft: boolean }) {
   const [query, setQuery] = useState("");
@@ -111,7 +108,7 @@ export function AdminBlogTable({ data, categories, canCreate, canUpdate, canPubl
         </div>
       ),
     }),
-    columnHelper.accessor("updatedAt", { header: "Atualizado", cell: ({ getValue }) => <time dateTime={getValue()} className="whitespace-nowrap text-xs text-leehov-muted">{formatUpdatedAt(getValue())}</time> }),
+    columnHelper.accessor("updatedAt", { header: "Atualizado", cell: ({ getValue }) => <time dateTime={getValue()} className="whitespace-nowrap text-xs text-leehov-muted">{formatBlogAdminDate(getValue())}</time> }),
     columnHelper.display({
       id: "actions",
       header: "Ações",

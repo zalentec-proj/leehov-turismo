@@ -40,6 +40,7 @@ import { toast } from "sonner";
 import { removeBlogImageAction, saveBlogPostAction, uploadBlogImageAction } from "@/features/blog/actions";
 import { BlogEditor } from "@/features/blog/components/blog-editor";
 import { BlogActionProgress } from "@/features/blog/components/blog-action-progress";
+import { formatBlogDateTimeInput } from "@/features/blog/date";
 import { blogPostFormSchema, type BlogPostFormInput } from "@/features/blog/schema";
 import { slugifyBlogTitle } from "@/features/blog/sanitize";
 import { normalizeBlogGalleryOrder } from "@/features/blog/gallery";
@@ -59,13 +60,6 @@ type RelatedCaravan = { id: string; title: string; destination: string };
 type UploadResult = { key: string; name: string; status: "uploading" | "success" | "error"; message: string };
 type SortableImage = BlogPostFormInput["images"][number] & { formKey: string };
 
-function localDateTime(value: string) {
-  if (!value) return "";
-  const date = new Date(value);
-  const shifted = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
-  return shifted.toISOString().slice(0, 16);
-}
-
 function defaults(post?: AdminBlogPost): BlogPostFormInput {
   return {
     id: post?.id ?? "",
@@ -79,7 +73,7 @@ function defaults(post?: AdminBlogPost): BlogPostFormInput {
     relatedCaravanId: post?.relatedCaravan?.id ?? "",
     relatedDestination: post?.relatedDestination ?? "",
     author: post?.author ?? "Bruna Moraes",
-    publishedAt: localDateTime(post?.publishedAt ?? ""),
+    publishedAt: formatBlogDateTimeInput(post?.publishedAt ?? ""),
     featuredHome: post?.featuredHome ?? false,
     featuredBlog: post?.featuredBlog ?? false,
     published: post?.published ?? false,

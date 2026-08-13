@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { requirePermission } from "@/features/auth/permissions";
 import { blogCategorySchema, blogPostFormSchema, type BlogPostFormInput } from "@/features/blog/schema";
 import { calculateReadingTime, sanitizeBlogHtml } from "@/features/blog/sanitize";
+import { parseBlogDateTimeInput } from "@/features/blog/date";
 import { normalizeBlogGalleryOrder } from "@/features/blog/gallery";
 import { validateBlogImage, validateBlogImageDimensions } from "@/features/blog/image-validation";
 import type { BlogActionResult } from "@/features/blog/types";
@@ -54,7 +55,7 @@ export async function saveBlogPostAction(rawInput: BlogPostFormInput): Promise<B
   if (duplicateError) return { success: false, message: duplicateError.message };
   if (duplicate) return { success: false, message: "Já existe um post com este slug." };
 
-  const publishedAt = input.publishedAt ? new Date(input.publishedAt).toISOString() : null;
+  const publishedAt = parseBlogDateTimeInput(input.publishedAt);
   const payload = {
     title: input.title,
     slug: input.slug,

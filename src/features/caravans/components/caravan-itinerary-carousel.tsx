@@ -40,17 +40,18 @@ export function CaravanItineraryCarousel({ days }: { days: CaravanItineraryDay[]
             key={day.id || `${day.day}-${index}`}
             type="button"
             role="tab"
+            aria-label={`Dia ${String(day.day).padStart(2, "0")}`}
             aria-selected={index === activeIndex}
             aria-controls="itinerary-active-day"
             onClick={() => select(index)}
             className={cn(
-              "min-w-16 snap-start rounded-full border px-4 py-2.5 text-sm font-extrabold transition focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-leehov-blue-300 motion-reduce:transition-none",
+              "flex size-11 shrink-0 snap-start items-center justify-center rounded-full border text-sm font-extrabold tabular-nums transition focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-leehov-blue-300 motion-reduce:transition-none sm:size-12",
               index === activeIndex
                 ? "border-[#0077C8] bg-[#0077C8] text-white"
                 : "border-[#CBE4F4] bg-white text-[#496980] hover:border-[#0077C8] hover:text-[#0077C8]",
             )}
           >
-            Dia {String(day.day).padStart(2, "0")}
+            {String(day.day).padStart(2, "0")}
           </button>
         ))}
       </div>

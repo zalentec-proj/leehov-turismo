@@ -8,14 +8,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { TablesUpdate } from "@/types/database";
 import { emitWebhookEvent } from "@/lib/webhooks/events";
-import {
-  CARAVAN_IMAGE_MAX_BYTES,
-  getCaravanImageTypeFromPath,
-  hasValidCaravanImageSignature,
-  validateCaravanImageMetadata,
-} from "@/features/caravans/image-validation";
+import { validateCaravanImage } from "@/features/caravans/image-validation";
 
-type CaravanActionResult = { success: boolean; message: string; id?: string; path?: string; token?: string; url?: string };
+type CaravanActionResult = { success: boolean; message: string; id?: string; path?: string; url?: string };
 
 const emptyToNull = (value: string) => value.trim() || null;
 
@@ -247,51 +242,38 @@ export async function saveCaravanCategoryAction(formData: FormData): Promise<voi
   revalidatePath("/admin/caravanas/novo");
 }
 
-export async function createCaravanImageUploadAction(caravanId: string, file: { type: string; size: number }): Promise<CaravanActionResult> {
+export async function uploadCaravanImageAction(caravanId: string, formData: FormData): Promise<CaravanActionResult> {
+  const startedAt = Date.now();
   await requirePermission("caravans.manage_media");
-  const validation = validateCaravanImageMetadata(file.type, file.size);
+  const file = formData.get("file");
+  if (!(file instanceof File)) return { success: false, message: "Selecione uma imagem." };
+
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const validation = validateCaravanImage(file.type, file.size, bytes.subarray(0, 32));
   if (!validation.success) return validation;
+
   const supabase = createAdminClient();
   const { data: caravan, error: caravanError } = await supabase.from("caravans").select("id").eq("id", caravanId).maybeSingle();
   if (caravanError || !caravan) return { success: false, message: "Salve o pacote antes de enviar imagens." };
   const path = `${caravanId}/${randomUUID()}.${validation.extension}`;
-  const { data, error } = await supabase.storage.from("caravan-images").createSignedUploadUrl(path);
-  if (error || !data?.token) return { success: false, message: error?.message ?? "Não foi possível preparar o envio da imagem." };
-  return { success: true, message: "Envio autorizado.", path, token: data.token };
-}
-
-export async function confirmCaravanImageUploadAction(caravanId: string, path: string): Promise<CaravanActionResult> {
-  await requirePermission("caravans.manage_media");
-  if (!path.startsWith(`${caravanId}/`)) return { success: false, message: "Caminho de imagem inválido." };
-  const type = getCaravanImageTypeFromPath(path);
-  if (!type) return { success: false, message: "Formato de imagem inválido." };
-
-  const supabase = createAdminClient();
-  const filename = path.slice(caravanId.length + 1);
-  const { data: objects, error: listError } = await supabase.storage.from("caravan-images").list(caravanId, { limit: 1, search: filename });
-  const object = objects?.find((item) => item.name === filename);
-  const objectSize = Number(object?.metadata?.size ?? 0);
-  const objectType = String(object?.metadata?.mimetype ?? "");
-  if (listError || !object || objectSize <= 0 || objectSize > CARAVAN_IMAGE_MAX_BYTES || objectType !== type) {
-    await supabase.storage.from("caravan-images").remove([path]);
-    return { success: false, message: "A imagem enviada não passou pela validação de tamanho ou formato." };
+  const { error: uploadError } = await supabase.storage.from("caravan-images").upload(path, bytes, {
+    cacheControl: "31536000",
+    contentType: file.type,
+    upsert: false,
+  });
+  if (uploadError) {
+    console.error(JSON.stringify({ level: "error", message: "caravan image upload failed", caravanId, error: uploadError.message, durationMs: Date.now() - startedAt }));
+    return { success: false, message: "Não foi possível enviar a imagem. Tente novamente." };
   }
 
   const { data: signed, error: signedError } = await supabase.storage.from("caravan-images").createSignedUrl(path, 3600);
-  if (signedError || !signed?.signedUrl) return { success: false, message: signedError?.message ?? "Não foi possível validar a imagem enviada." };
-
-  try {
-    const response = await fetch(signed.signedUrl, { cache: "no-store", headers: { Range: "bytes=0-31" } });
-    if (!response.ok || !response.body) throw new Error("Imagem indisponível");
-    const reader = response.body.getReader();
-    const firstChunk = await reader.read();
-    await reader.cancel();
-    if (!firstChunk.value || !hasValidCaravanImageSignature(type, firstChunk.value)) throw new Error("Assinatura inválida");
-  } catch {
+  if (signedError || !signed?.signedUrl) {
     await supabase.storage.from("caravan-images").remove([path]);
-    return { success: false, message: "O conteúdo do arquivo não corresponde ao formato informado." };
+    console.error(JSON.stringify({ level: "error", message: "caravan image signing failed", caravanId, error: signedError?.message ?? "signed URL unavailable", durationMs: Date.now() - startedAt }));
+    return { success: false, message: signedError?.message ?? "Não foi possível preparar a visualização da imagem." };
   }
 
+  console.info(JSON.stringify({ level: "info", message: "caravan image uploaded", caravanId, size: file.size, type: file.type, durationMs: Date.now() - startedAt }));
   return { success: true, message: "Imagem enviada com sucesso.", path, url: signed.signedUrl };
 }
 

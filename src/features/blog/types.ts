@@ -95,6 +95,7 @@ export type BlogActionResult = {
   success: boolean;
   message: string;
   id?: string;
+  assetId?: string;
   path?: string;
   url?: string;
 };

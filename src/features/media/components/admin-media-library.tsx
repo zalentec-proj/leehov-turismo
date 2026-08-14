@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Search, Trash2, Upload } from "lucide-react";
 import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -14,7 +15,7 @@ import type { MediaAsset, MediaFolder } from "@/features/media/types";
 import { mediaFolders } from "@/features/media/types";
 import { formatFileSize } from "@/features/media/utils";
 
-const folderLabels: Record<string, string> = { general: "Geral", testimonials: "Depoimentos", popups: "Pop-ups", seo: "SEO", home: "Home" };
+const folderLabels: Record<string, string> = { general: "Geral", packages: "Pacotes", blog: "Blog", testimonials: "Depoimentos", popups: "Pop-ups", seo: "SEO", home: "Home" };
 const showResult = (result: { success: boolean; message: string }) => { if (result.success) toast.success(result.message); else toast.error(result.message); };
 
 export function AdminMediaLibrary({ assets }: { assets: MediaAsset[] }) {
@@ -22,7 +23,7 @@ export function AdminMediaLibrary({ assets }: { assets: MediaAsset[] }) {
   const [query, setQuery] = useState("");
   const [folder, setFolder] = useState("all");
   const [pending, startTransition] = useTransition();
-  const filtered = assets.filter((asset) => (folder === "all" || asset.folder === folder) && `${asset.fileName} ${asset.altText} ${asset.caption}`.toLocaleLowerCase("pt-BR").includes(query.toLocaleLowerCase("pt-BR")));
+  const filtered = assets.filter((asset) => (folder === "all" || asset.folder === folder) && `${asset.fileName} ${asset.altText} ${asset.caption} ${asset.sourceLabel} ${asset.tags.join(" ")}`.toLocaleLowerCase("pt-BR").includes(query.toLocaleLowerCase("pt-BR")));
 
   function upload(formData: FormData) {
     startTransition(async () => {
@@ -40,5 +41,5 @@ function MediaCard({ asset }: { asset: MediaAsset }) {
   const [caption, setCaption] = useState(asset.caption);
   const [folder, setFolder] = useState(asset.folder as MediaFolder);
   const [pending, startTransition] = useTransition();
-  return <Card className="rounded-[18px] border-leehov-border p-0 shadow-leehov-card"><div className="h-52 bg-cover bg-center" style={{ backgroundImage: `url(${asset.signedUrl})` }} role="img" aria-label={asset.altText || asset.fileName} /><div className="space-y-4 p-5"><div><p className="truncate font-bold text-leehov-navy-950" title={asset.fileName}>{asset.fileName}</p><p className="mt-1 text-xs text-leehov-muted">{asset.mimeType} · {formatFileSize(asset.fileSize)}</p></div><Input value={altText} onChange={(event) => setAltText(event.target.value)} placeholder="Texto alternativo" aria-label="Texto alternativo" /><Textarea value={caption} onChange={(event) => setCaption(event.target.value)} placeholder="Legenda" aria-label="Legenda" rows={2} /><Select value={folder} onValueChange={(value) => setFolder(value as MediaFolder)}><SelectTrigger className="w-full"><SelectValue /></SelectTrigger><SelectContent>{mediaFolders.map((item) => <SelectItem key={item} value={item}>{folderLabels[item]}</SelectItem>)}</SelectContent></Select>{asset.usage.length ? <p className="rounded-lg bg-leehov-surface p-3 text-xs text-leehov-muted">Em uso: {asset.usage.map((item) => item.label).join(", ")}</p> : <p className="text-xs text-leehov-muted">Imagem sem vínculos.</p>}<div className="flex gap-2"><Button disabled={pending} onClick={() => startTransition(async () => { const result = await updateMediaAssetAction({ id: asset.id, altText, caption, folder }); showResult(result); })} className="flex-1 bg-leehov-blue-600">Salvar</Button><Button variant="destructive" size="icon" disabled={pending || asset.usage.length > 0} onClick={() => { if (!window.confirm("Excluir esta imagem da biblioteca?")) return; startTransition(async () => { const result = await deleteMediaAssetAction(asset.id); showResult(result); if (result.success) window.location.reload(); }); }}><Trash2 /></Button></div></div></Card>;
+  return <Card className="rounded-[18px] border-leehov-border p-0 shadow-leehov-card"><div className="relative h-52 overflow-hidden bg-leehov-surface">{asset.signedUrl ? <Image src={asset.signedUrl} alt={asset.altText || asset.fileName} fill sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw" className="object-cover" /> : null}</div><div className="space-y-4 p-5"><div><p className="truncate font-bold text-leehov-navy-950" title={asset.fileName}>{asset.fileName}</p><p className="mt-1 text-xs text-leehov-muted">{asset.mimeType} · {formatFileSize(asset.fileSize)}</p>{asset.sourceLabel ? <p className="mt-2 text-xs font-semibold text-leehov-blue-700">Origem: {asset.sourceLabel}</p> : null}{asset.tags.length ? <div className="mt-2 flex flex-wrap gap-1">{asset.tags.map((tag) => <span key={tag} className="rounded-full bg-leehov-surface px-2 py-1 text-[11px] text-leehov-muted">{tag}</span>)}</div> : null}</div><Input value={altText} onChange={(event) => setAltText(event.target.value)} placeholder="Texto alternativo" aria-label="Texto alternativo" /><Textarea value={caption} onChange={(event) => setCaption(event.target.value)} placeholder="Legenda" aria-label="Legenda" rows={2} /><Select value={folder} onValueChange={(value) => setFolder(value as MediaFolder)}><SelectTrigger className="w-full"><SelectValue /></SelectTrigger><SelectContent>{mediaFolders.map((item) => <SelectItem key={item} value={item}>{folderLabels[item]}</SelectItem>)}</SelectContent></Select>{asset.usage.length ? <p className="rounded-lg bg-leehov-surface p-3 text-xs text-leehov-muted">Em uso: {asset.usage.map((item) => item.label).join(", ")}</p> : <p className="text-xs text-leehov-muted">Imagem sem vínculos.</p>}<div className="flex gap-2"><Button disabled={pending} onClick={() => startTransition(async () => { const result = await updateMediaAssetAction({ id: asset.id, altText, caption, folder }); showResult(result); })} className="flex-1 bg-leehov-blue-600">Salvar</Button><Button variant="destructive" size="icon" disabled={pending || asset.usage.length > 0} onClick={() => { if (!window.confirm("Excluir esta imagem da biblioteca?")) return; startTransition(async () => { const result = await deleteMediaAssetAction(asset.id); showResult(result); if (result.success) window.location.reload(); }); }}><Trash2 /></Button></div></div></Card>;
 }

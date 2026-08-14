@@ -7,11 +7,12 @@ import { getAdminCaravans } from "@/features/caravans/queries";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { requirePermission } from "@/features/auth/permissions";
+import { getMediaAssetOptions } from "@/features/media/queries";
 
 export default async function EditBlogPostPage({ params }: { params: Promise<{ id: string }> }) {
   await requirePermission("blog.update");
   const { id } = await params;
-  const [post, categories, caravans] = await Promise.all([getAdminPostById(id), getBlogCategories(), getAdminCaravans()]);
+  const [post, categories, caravans, mediaAssets] = await Promise.all([getAdminPostById(id), getBlogCategories(), getAdminCaravans(), getMediaAssetOptions()]);
   if (!post) notFound();
   return (
     <div className="space-y-8">
@@ -23,7 +24,7 @@ export default async function EditBlogPostPage({ params }: { params: Promise<{ i
         </div>
         <p className="mt-2 text-sm text-leehov-muted">Última atualização: {new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(post.updatedAt))}</p>
       </header>
-      <BlogPostForm post={post} categories={categories} caravans={caravans.map(({ id: caravanId, title, destination }) => ({ id: caravanId, title, destination }))} />
+      <BlogPostForm post={post} categories={categories} caravans={caravans.map(({ id: caravanId, title, destination }) => ({ id: caravanId, title, destination }))} mediaAssets={mediaAssets} />
     </div>
   );
 }

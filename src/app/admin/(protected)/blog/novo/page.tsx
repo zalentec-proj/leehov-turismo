@@ -5,10 +5,11 @@ import { getBlogCategories } from "@/features/blog/queries";
 import { getAdminCaravans } from "@/features/caravans/queries";
 import { Button } from "@/components/ui/button";
 import { requirePermission } from "@/features/auth/permissions";
+import { getMediaAssetOptions } from "@/features/media/queries";
 
 export default async function NewBlogPostPage() {
   await requirePermission("blog.create");
-  const [categories, caravans] = await Promise.all([getBlogCategories(), getAdminCaravans()]);
+  const [categories, caravans, mediaAssets] = await Promise.all([getBlogCategories(), getAdminCaravans(), getMediaAssetOptions()]);
   return (
     <div className="space-y-8">
       <header>
@@ -17,7 +18,7 @@ export default async function NewBlogPostPage() {
         <h2 className="mt-3 text-3xl font-extrabold text-leehov-navy-950">Novo post</h2>
         <p className="mt-2 text-sm text-leehov-muted">Comece pelo conteúdo e salve o rascunho antes de enviar imagens.</p>
       </header>
-      <BlogPostForm categories={categories} caravans={caravans.map(({ id, title, destination }) => ({ id, title, destination }))} />
+      <BlogPostForm categories={categories} caravans={caravans.map(({ id, title, destination }) => ({ id, title, destination }))} mediaAssets={mediaAssets} />
     </div>
   );
 }

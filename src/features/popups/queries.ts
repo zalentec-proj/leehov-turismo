@@ -5,14 +5,14 @@ import type { Popup } from "@/features/popups/types";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
-const popupSelect = "*, image:media_assets(storage_path, alt_text), caravan:caravans(id, title, slug, published)";
+const popupSelect = "*, image:media_assets(storage_bucket, storage_path, alt_text), caravan:caravans(id, title, slug, published)";
 
 async function mapPopup(row: Record<string, unknown>): Promise<Popup> {
-  const image = row.image as { storage_path?: string; alt_text?: string | null } | null;
+  const image = row.image as { storage_bucket?: "site-media" | "caravan-images" | "blog-images"; storage_path?: string; alt_text?: string | null } | null;
   const caravan = row.caravan as { id?: string; title?: string; slug?: string; published?: boolean } | null;
   let imageUrl = "";
   if (image?.storage_path) {
-    const { data } = await createAdminClient().storage.from("site-media").createSignedUrl(image.storage_path, 3600);
+    const { data } = await createAdminClient().storage.from(image.storage_bucket ?? "site-media").createSignedUrl(image.storage_path, 3600);
     imageUrl = data?.signedUrl ?? "";
   }
   return {

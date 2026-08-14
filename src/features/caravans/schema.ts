@@ -72,7 +72,7 @@ export const caravanCategorySchema = z.object({
   sortOrder: z.number().int().nonnegative(),
 });
 
-export const caravanFormSchema = z.object({
+const caravanFormBaseSchema = z.object({
   id: optionalUuid,
   title: z.string().trim().min(3, "Informe o nome do pacote.").max(160),
   slug: z.string().trim().min(3, "Informe o slug.").regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use apenas letras minúsculas, números e hífens."),
@@ -116,31 +116,48 @@ export const caravanFormSchema = z.object({
   departures: z.array(caravanDepartureSchema),
   itinerary: z.array(caravanItineraryDaySchema),
   images: z.array(caravanImageSchema),
-}).superRefine((caravan, context) => {
+});
+
+export type CaravanValidationIssue = {
+  path: string;
+  message: string;
+};
+
+export function getCaravanPublicationIssues(caravan: z.infer<typeof caravanFormBaseSchema>): CaravanValidationIssue[] {
+  if (!caravan.published) return [];
+
+  const issues: CaravanValidationIssue[] = [];
+  const required: Array<[keyof typeof caravan, string]> = [
+    ["summary", "Inclua um resumo antes de publicar."],
+    ["description", "Inclua a descrição antes de publicar."],
+    ["duration", "Informe a duração antes de publicar."],
+    ["heroImagePath", "Inclua uma imagem principal antes de publicar."],
+  ];
+  required.forEach(([field, message]) => {
+    if (!caravan[field]) issues.push({ path: String(field), message });
+  });
+  if (caravan.status === "draft") {
+    issues.push({ path: "status", message: "Escolha um status público antes de publicar." });
+  }
+  return issues;
+}
+
+export function getCaravanHeroIssues(caravan: z.infer<typeof caravanFormBaseSchema>): CaravanValidationIssue[] {
+  if (!caravan.featuredHero) return [];
+
+  const issues: CaravanValidationIssue[] = [];
+  if (!caravan.heroTitle) issues.push({ path: "heroTitle", message: "Informe o título do Hero." });
+  if (!caravan.heroDescription) issues.push({ path: "heroDescription", message: "Informe a descrição do Hero." });
+  if (!caravan.heroImagePath) issues.push({ path: "heroImagePath", message: "Informe a imagem do Hero." });
+  return issues;
+}
+
+export const caravanFormSchema = caravanFormBaseSchema.superRefine((caravan, context) => {
   if (caravan.minPeople && caravan.maxPeople && caravan.minPeople > caravan.maxPeople) {
     context.addIssue({ code: "custom", path: ["maxPeople"], message: "O máximo deve ser maior que o mínimo." });
   }
   if (new Set(caravan.itinerary.map((item) => item.day)).size !== caravan.itinerary.length) {
     context.addIssue({ code: "custom", path: ["itinerary"], message: "Não repita números de dia no roteiro." });
-  }
-  if (caravan.published) {
-    const required: Array<[keyof typeof caravan, string]> = [
-      ["summary", "Inclua um resumo antes de publicar."],
-      ["description", "Inclua a descrição antes de publicar."],
-      ["duration", "Informe a duração antes de publicar."],
-      ["heroImagePath", "Inclua uma imagem principal antes de publicar."],
-    ];
-    required.forEach(([field, message]) => {
-      if (!caravan[field]) context.addIssue({ code: "custom", path: [field], message });
-    });
-    if (caravan.status === "draft") {
-      context.addIssue({ code: "custom", path: ["status"], message: "Escolha um status público antes de publicar." });
-    }
-  }
-  if (caravan.featuredHero) {
-    if (!caravan.heroTitle) context.addIssue({ code: "custom", path: ["heroTitle"], message: "Informe o título do Hero." });
-    if (!caravan.heroDescription) context.addIssue({ code: "custom", path: ["heroDescription"], message: "Informe a descrição do Hero." });
-    if (!caravan.heroImagePath) context.addIssue({ code: "custom", path: ["heroImagePath"], message: "Informe a imagem do Hero." });
   }
 });
 

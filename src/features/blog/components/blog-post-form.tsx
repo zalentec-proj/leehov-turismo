@@ -55,6 +55,8 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { MediaLibrarySelect } from "@/features/media/components/media-library-select";
+import type { MediaAsset } from "@/features/media/types";
 
 type RelatedCaravan = { id: string; title: string; destination: string };
 type UploadResult = { key: string; name: string; status: "uploading" | "success" | "error"; message: string };
@@ -183,7 +185,7 @@ function SortableGalleryCard({
   );
 }
 
-export function BlogPostForm({ post, categories, caravans }: { post?: AdminBlogPost; categories: BlogCategory[]; caravans: RelatedCaravan[] }) {
+export function BlogPostForm({ post, categories, caravans, mediaAssets }: { post?: AdminBlogPost; categories: BlogCategory[]; caravans: RelatedCaravan[]; mediaAssets: MediaAsset[] }) {
   const router = useRouter();
   const [progress, setProgress] = useState<{ title: string; description: string } | null>(null);
   const [uploadingCover, setUploadingCover] = useState(false);
@@ -192,6 +194,7 @@ export function BlogPostForm({ post, categories, caravans }: { post?: AdminBlogP
   const [galleryPreviews, setGalleryPreviews] = useState<Record<string, string>>(() =>
     Object.fromEntries(post?.images.map((image) => [image.imagePath, image.imageUrl]) ?? []),
   );
+  const [libraryTarget, setLibraryTarget] = useState<"cover" | "gallery" | null>(null);
   const form = useForm<BlogPostFormInput>({ resolver: zodResolver(blogPostFormSchema), defaultValues: defaults(post), mode: "onBlur" });
   const images = useFieldArray({ control: form.control, name: "images", keyName: "formKey" });
   const sensors = useSensors(
@@ -322,6 +325,19 @@ export function BlogPostForm({ post, categories, caravans }: { post?: AdminBlogP
     setCoverPreview("");
   }
 
+  function chooseLibraryAsset(asset: MediaAsset) {
+    if (libraryTarget === "cover") {
+      form.setValue("coverImagePath", asset.storagePath, { shouldDirty: true, shouldValidate: true });
+      form.setValue("coverAltText", asset.altText || title, { shouldDirty: true, shouldValidate: true });
+      setCoverPreview(asset.signedUrl);
+    } else if (libraryTarget === "gallery") {
+      if (form.getValues("images").some((image) => image.imagePath === asset.storagePath)) return toast.info("Esta imagem já está na galeria.");
+      images.append({ id: "", imagePath: asset.storagePath, altText: asset.altText, caption: asset.caption, orderIndex: images.fields.length * 10 });
+      setGalleryPreviews((current) => ({ ...current, [asset.storagePath]: asset.signedUrl }));
+    }
+    toast.success("Imagem vinculada sem duplicar o arquivo.");
+  }
+
   const errors = form.formState.errors;
   const isBusy = form.formState.isSubmitting || uploadingCover || isUploadingGallery || Boolean(progress);
 
@@ -331,6 +347,7 @@ export function BlogPostForm({ post, categories, caravans }: { post?: AdminBlogP
       className="space-y-6"
     >
       <BlogActionProgress open={Boolean(progress)} title={progress?.title ?? "Processando artigo..."} description={progress?.description ?? "Aguarde a conclusão desta etapa."} />
+      <MediaLibrarySelect open={Boolean(libraryTarget)} onOpenChange={(open) => { if (!open) setLibraryTarget(null); }} assets={mediaAssets} onSelect={chooseLibraryAsset} />
       <Tabs defaultValue="content" className="space-y-6">
         <TabsList className="h-auto w-full justify-start overflow-x-auto rounded-[16px] border border-leehov-border bg-white p-2 shadow-sm">
           <TabsTrigger value="content">Conteúdo</TabsTrigger>
@@ -362,6 +379,7 @@ export function BlogPostForm({ post, categories, caravans }: { post?: AdminBlogP
                     </Field>
                     {!post ? <p className="rounded-xl bg-leehov-surface p-3 text-xs text-leehov-muted">Salve o rascunho para liberar uploads.</p> : null}
                     {uploadingCover ? <p className="inline-flex items-center gap-2 text-sm font-semibold text-leehov-blue-600"><Loader2 className="size-4 animate-spin" />Enviando capa...</p> : null}
+                    <Button type="button" variant="outline" disabled={isBusy} onClick={() => setLibraryTarget("cover")}>Escolher da Biblioteca de Mídia</Button>
                     <Field label="Texto alternativo da capa" error={errors.coverAltText?.message} htmlFor="cover-alt"><Input id="cover-alt" {...form.register("coverAltText")} /></Field>
                     <Input type="hidden" {...form.register("coverImagePath")} />
                     {coverImagePath ? <Button type="button" variant="outline" onClick={removeCover}><Trash2 className="size-4" />Remover capa</Button> : null}
@@ -380,6 +398,7 @@ export function BlogPostForm({ post, categories, caravans }: { post?: AdminBlogP
                     Enviar imagens
                     <Input className="sr-only" type="file" multiple accept="image/jpeg,image/png,image/webp,image/avif" disabled={!post || isBusy} onChange={(event) => { void uploadGallery(Array.from(event.target.files ?? [])); event.currentTarget.value = ""; }} />
                   </Label>
+                  <Button type="button" variant="outline" disabled={isBusy} onClick={() => setLibraryTarget("gallery")}>Adicionar da Biblioteca</Button>
                 </div>
 
                 {uploadResults.length ? (

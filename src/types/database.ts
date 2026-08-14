@@ -1003,7 +1003,12 @@ export type Database = {
           folder: string
           id: string
           mime_type: string
+          source_id: string | null
+          source_label: string | null
+          source_type: string
+          storage_bucket: string
           storage_path: string
+          tags: string[]
           updated_at: string
         }
         Insert: {
@@ -1016,7 +1021,12 @@ export type Database = {
           folder?: string
           id?: string
           mime_type: string
+          source_id?: string | null
+          source_label?: string | null
+          source_type?: string
+          storage_bucket?: string
           storage_path: string
+          tags?: string[]
           updated_at?: string
         }
         Update: {
@@ -1029,7 +1039,12 @@ export type Database = {
           folder?: string
           id?: string
           mime_type?: string
+          source_id?: string | null
+          source_label?: string | null
+          source_type?: string
+          storage_bucket?: string
           storage_path?: string
+          tags?: string[]
           updated_at?: string
         }
         Relationships: [

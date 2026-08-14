@@ -15,11 +15,15 @@ type MediaPickerProps = {
   assets: MediaAsset[];
   value: string;
   folder?: string;
+  sourceType?: string;
+  sourceId?: string;
+  sourceLabel?: string;
+  tags?: string[];
   onChange: (asset: MediaAsset | null) => void;
   onAssetCreated?: (asset: MediaAsset) => void;
 };
 
-export function MediaPicker({ assets, value, folder = "general", onChange, onAssetCreated }: MediaPickerProps) {
+export function MediaPicker({ assets, value, folder = "general", sourceType = "general", sourceId = "", sourceLabel = "", tags = [], onChange, onAssetCreated }: MediaPickerProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [altText, setAltText] = useState("");
@@ -37,6 +41,10 @@ export function MediaPicker({ assets, value, folder = "general", onChange, onAss
     formData.set("altText", altText.trim());
     formData.set("caption", "");
     formData.set("folder", folder);
+    formData.set("sourceType", sourceType);
+    formData.set("sourceId", sourceId);
+    formData.set("sourceLabel", sourceLabel);
+    formData.set("tags", tags.join(","));
     startTransition(async () => {
       const result = await uploadMediaAssetAction(formData);
       if (!result.success || !result.asset) {

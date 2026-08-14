@@ -5,6 +5,8 @@ import { afterEach, vi } from "vitest";
 
 afterEach(() => cleanup());
 
+vi.mock("server-only", () => ({}));
+
 vi.mock("next/image", () => ({
   default: (props: React.ImgHTMLAttributes<HTMLImageElement> & { fill?: boolean; priority?: boolean; unoptimized?: boolean }) => {
     const imageProps = { ...props };

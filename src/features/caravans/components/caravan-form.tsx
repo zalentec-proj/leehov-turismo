@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { useFieldArray, useForm, Controller, useWatch, type FieldErrors } from "react-hook-form";
+import { useFieldArray, useForm, Controller, useWatch, type FieldErrors, type Path } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { ImagePlus, Loader2, Plus, Save, Trash2, X } from "lucide-react";
@@ -12,7 +12,7 @@ import {
   saveCaravanAction,
   uploadCaravanImageAction,
 } from "@/features/caravans/actions";
-import { caravanFormSchema, type CaravanFormInput } from "@/features/caravans/schema";
+import { caravanFormSchema, type CaravanFormInput, type CaravanValidationIssue } from "@/features/caravans/schema";
 import { validateCaravanImage } from "@/features/caravans/image-validation";
 import type { AdminCaravan, CaravanCategory } from "@/features/caravans/types";
 import { slugifyCaravanTitle } from "@/features/caravans/utils";
@@ -25,6 +25,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { MediaLibrarySelect } from "@/features/media/components/media-library-select";
+import type { MediaAsset } from "@/features/media/types";
 
 function defaults(caravan?: AdminCaravan): CaravanFormInput {
   return {
@@ -108,6 +110,57 @@ function tabWithFirstError(errors: FieldErrors<CaravanFormInput>) {
   return caravanFormTabs.find((tab) => tab.fields.some((field) => field in errors))?.value ?? "general";
 }
 
+function tabForIssuePath(path: string) {
+  const root = path.split(".")[0];
+  return caravanFormTabs.find((tab) => tab.fields.some((field) => field === root))?.value ?? "general";
+}
+
+function collectFormIssues(errors: FieldErrors<CaravanFormInput>, prefix = ""): CaravanValidationIssue[] {
+  const issues: CaravanValidationIssue[] = [];
+  Object.entries(errors).forEach(([key, value]) => {
+    if (!value) return;
+    const path = prefix ? `${prefix}.${key}` : key;
+    if (typeof value === "object" && "message" in value && typeof value.message === "string") {
+      issues.push({ path, message: value.message });
+      return;
+    }
+    if (typeof value === "object") issues.push(...collectFormIssues(value as FieldErrors<CaravanFormInput>, path));
+  });
+  return issues;
+}
+
+function issueContext(path: string) {
+  const [root, index, field] = path.split(".");
+  const labels: Record<string, string> = {
+    title: "Nome do pacote",
+    slug: "Slug",
+    destination: "Destino",
+    currency: "Moeda",
+    summary: "Resumo",
+    description: "Descrição",
+    duration: "Duração",
+    heroImagePath: "Imagem principal",
+    status: "Status",
+    heroTitle: "Título do Hero",
+    heroDescription: "Descrição do Hero",
+    maxPeople: "Máximo de pessoas",
+    videoUrl: "URL do vídeo",
+    images: "Galeria",
+  };
+  const nestedLabels: Record<string, string> = {
+    day: "número do dia",
+    title: "título",
+    startDate: "data inicial",
+    endDate: "data final",
+    imagePath: "imagem",
+    altText: "texto alternativo",
+  };
+  if (root === "itinerary" && index !== undefined) return `Roteiro — dia ${Number(index) + 1}${field ? `, ${nestedLabels[field] ?? field}` : ""}`;
+  if (root === "departures" && index !== undefined) return `Saídas — item ${Number(index) + 1}${field ? `, ${nestedLabels[field] ?? field}` : ""}`;
+  if (root === "images" && index !== undefined) return `Galeria — imagem ${Number(index) + 1}${field ? `, ${nestedLabels[field] ?? field}` : ""}`;
+  return labels[root] ?? "Dados do pacote";
+}
+
 function PackageImagePicker({
   id,
   label,
@@ -117,6 +170,7 @@ function PackageImagePicker({
   uploading,
   onSelect,
   onClear,
+  onChoose,
 }: {
   id: string;
   label: string;
@@ -126,6 +180,7 @@ function PackageImagePicker({
   uploading: boolean;
   onSelect: (file: File | undefined) => void;
   onClear: () => void;
+  onChoose: () => void;
 }) {
   return (
     <div className="rounded-2xl border border-dashed border-leehov-blue-300 bg-leehov-surface/45 p-4">
@@ -147,15 +202,22 @@ function PackageImagePicker({
         {uploading ? <Loader2 className="size-5 shrink-0 animate-spin text-leehov-blue-500" /> : <ImagePlus className="size-5 shrink-0 text-leehov-blue-500" />}
       </label>
       <Input id={id} type="file" className="sr-only" accept="image/jpeg,image/png,image/webp,image/avif" disabled={disabled} onChange={(event) => { const file = event.currentTarget.files?.[0]; event.currentTarget.value = ""; onSelect(file); }} />
+      <Button type="button" variant="ghost" size="sm" className="mt-2 w-full text-leehov-blue-700" disabled={disabled} onClick={onChoose}>Escolher da Biblioteca de Mídia</Button>
     </div>
   );
 }
 
-export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; categories: CaravanCategory[] }) {
+type LibraryTarget =
+  | { type: "asset"; field: "cardImagePath" | "heroImagePath" | "leaderImagePath"; previewKey: "card" | "hero" | "leader" }
+  | { type: "gallery" }
+  | { type: "itinerary"; index: number };
+
+export function CaravanForm({ caravan, categories, mediaAssets }: { caravan?: AdminCaravan; categories: CaravanCategory[]; mediaAssets: MediaAsset[] }) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("general");
   const [uploading, setUploading] = useState(false);
   const [uploadingItineraryIndex, setUploadingItineraryIndex] = useState<number | null>(null);
+  const [libraryTarget, setLibraryTarget] = useState<LibraryTarget | null>(null);
   const [assetPreviews, setAssetPreviews] = useState<Record<"card" | "hero" | "leader", string>>(() => ({
     card: caravan?.imageUrl ?? "",
     hero: caravan?.heroImagePath && caravan.heroImageUrl !== "/images/leehov/hero-fallback.jpg" ? caravan.heroImageUrl : "",
@@ -164,6 +226,8 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
   const [galleryPreviews, setGalleryPreviews] = useState<Record<string, string>>(() => Object.fromEntries(caravan?.images.filter((image) => image.imagePath && image.imageUrl).map((image) => [image.imagePath, image.imageUrl]) ?? []));
   const [itineraryPreviews, setItineraryPreviews] = useState<Record<string, string>>(() => Object.fromEntries(caravan?.itinerary.filter((day) => day.imagePath && day.imageUrl).map((day) => [day.imagePath, day.imageUrl]) ?? []));
   const [lastError, setLastError] = useState("");
+  const [validationIssues, setValidationIssues] = useState<CaravanValidationIssue[]>([]);
+  const [saveNotice, setSaveNotice] = useState("");
   const form = useForm<CaravanFormInput>({ resolver: zodResolver(caravanFormSchema), defaultValues: defaults(caravan), mode: "onBlur" });
   const departures = useFieldArray({ control: form.control, name: "departures" });
   const itinerary = useFieldArray({ control: form.control, name: "itinerary" });
@@ -179,13 +243,23 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
 
   async function onSubmit(input: CaravanFormInput) {
     setLastError("");
+    setSaveNotice("");
+    setValidationIssues([]);
     try {
       const result = await saveCaravanAction(input);
       if (!result.success) {
         setLastError(result.message);
+        setValidationIssues(result.issues ?? []);
+        result.issues?.forEach((issue) => form.setError(issue.path as Path<CaravanFormInput>, { type: "server", message: issue.message }));
+        if (result.issues?.[0]) setActiveTab(tabForIssuePath(result.issues[0].path));
         return toast.error(result.message);
       }
-      toast.success(result.message);
+      if (result.savedAsDraft) form.setValue("published", false, { shouldDirty: false });
+      if (result.disabledFeaturedHero) form.setValue("featuredHero", false, { shouldDirty: false });
+      setValidationIssues(result.issues ?? []);
+      setSaveNotice(result.issues?.length ? result.message : "");
+      if (result.issues?.length) toast.warning(result.message);
+      else toast.success(result.message);
       if (!caravan && result.id) router.push(`/admin/caravanas/${result.id}`);
       else router.refresh();
     } catch {
@@ -197,9 +271,12 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
 
   function onInvalid(errors: FieldErrors<CaravanFormInput>) {
     const targetTab = tabWithFirstError(errors);
-    const message = "Revise os campos destacados antes de salvar. Abrimos a aba que contém o primeiro erro.";
+    const issues = collectFormIssues(errors);
+    const message = issues.length === 1 ? "Existe 1 campo que precisa ser corrigido antes de salvar." : `Existem ${issues.length} campos que precisam ser corrigidos antes de salvar.`;
     setActiveTab(targetTab);
     setLastError(message);
+    setSaveNotice("");
+    setValidationIssues(issues);
     toast.error(message);
   }
 
@@ -207,6 +284,8 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
     const currentId = form.getValues("id");
     if (currentId) return { id: currentId, created: false };
 
+    form.setValue("status", "draft", { shouldDirty: true });
+    form.setValue("published", false, { shouldDirty: true });
     const valid = await form.trigger();
     if (!valid) {
       onInvalid(form.formState.errors);
@@ -214,8 +293,6 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
       return null;
     }
 
-    form.setValue("status", "draft", { shouldDirty: true });
-    form.setValue("published", false, { shouldDirty: true });
     const result = await saveCaravanAction(form.getValues());
     if (!result.success || !result.id) {
       toast.error(result.message);
@@ -237,13 +314,14 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
     router.refresh();
   }
 
-  async function sendCaravanImage(caravanId: string, file: File) {
+  async function sendCaravanImage(caravanId: string, file: File, role: "card" | "hero" | "leader" | "gallery" | "itinerary") {
     const header = new Uint8Array(await file.slice(0, 32).arrayBuffer());
     const validation = validateCaravanImage(file.type, file.size, header);
     if (!validation.success) return validation;
 
     const data = new FormData();
     data.set("file", file);
+    data.set("role", role);
     return uploadCaravanImageAction(caravanId, data);
   }
 
@@ -253,7 +331,7 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
     try {
       const draft = await ensureDraftForUpload();
       if (!draft) return;
-      const result = await sendCaravanImage(draft.id, file);
+      const result = await sendCaravanImage(draft.id, file, "gallery");
       if (!result.success || !result.path) return toast.error(result.message);
       images.append({ id: "", imagePath: result.path, altText: title, caption: "", orderIndex: images.fields.length * 10 });
       if (result.url) setGalleryPreviews((current) => ({ ...current, [result.path as string]: result.url as string }));
@@ -274,7 +352,7 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
     try {
       const draft = await ensureDraftForUpload();
       if (!draft) return;
-      const result = await sendCaravanImage(draft.id, file);
+      const result = await sendCaravanImage(draft.id, file, previewKey);
       if (!result.success || !result.path) return toast.error(result.message);
       form.setValue(field, result.path, { shouldDirty: true, shouldValidate: true });
       if (result.url) setAssetPreviews((current) => ({ ...current, [previewKey]: result.url as string }));
@@ -290,6 +368,22 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
   function clearAsset(field: "cardImagePath" | "heroImagePath" | "leaderImagePath", previewKey: "card" | "hero" | "leader") {
     form.setValue(field, "", { shouldDirty: true, shouldValidate: true });
     setAssetPreviews((current) => ({ ...current, [previewKey]: "" }));
+  }
+
+  function chooseLibraryAsset(asset: MediaAsset) {
+    if (!libraryTarget) return;
+    if (libraryTarget.type === "asset") {
+      form.setValue(libraryTarget.field, asset.storagePath, { shouldDirty: true, shouldValidate: true });
+      setAssetPreviews((current) => ({ ...current, [libraryTarget.previewKey]: asset.signedUrl }));
+    } else if (libraryTarget.type === "gallery") {
+      if (form.getValues("images").some((image) => image.imagePath === asset.storagePath)) return toast.info("Esta imagem já está na galeria.");
+      images.append({ id: "", imagePath: asset.storagePath, altText: asset.altText || title, caption: asset.caption, orderIndex: images.fields.length * 10 });
+      setGalleryPreviews((current) => ({ ...current, [asset.storagePath]: asset.signedUrl }));
+    } else {
+      form.setValue(`itinerary.${libraryTarget.index}.imagePath`, asset.storagePath, { shouldDirty: true, shouldValidate: true });
+      setItineraryPreviews((current) => ({ ...current, [asset.storagePath]: asset.signedUrl }));
+    }
+    toast.success("Imagem vinculada sem duplicar o arquivo.");
   }
 
   async function removeImage(index: number) {
@@ -314,7 +408,7 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
     try {
       const draft = await ensureDraftForUpload();
       if (!draft) return;
-      const result = await sendCaravanImage(draft.id, file);
+      const result = await sendCaravanImage(draft.id, file, "itinerary");
       if (!result.success || !result.path) return toast.error(result.message);
       form.setValue(`itinerary.${index}.imagePath`, result.path, { shouldDirty: true, shouldValidate: true });
       if (result.url) setItineraryPreviews((current) => ({ ...current, [result.path as string]: result.url as string }));
@@ -331,7 +425,40 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
   const errors = form.formState.errors;
   return (
     <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-6">
-      {lastError ? <Alert variant="destructive"><AlertDescription>{lastError}</AlertDescription></Alert> : null}
+      {lastError ? (
+        <Alert variant="destructive" aria-live="assertive">
+          <AlertDescription>
+            <p className="font-semibold">{lastError}</p>
+            {validationIssues.length ? (
+              <ul className="mt-2 space-y-1">
+                {validationIssues.map((issue, index) => (
+                  <li key={`${issue.path}-${index}`}>
+                    <button type="button" className="text-left underline underline-offset-2" onClick={() => setActiveTab(tabForIssuePath(issue.path))}>
+                      {issueContext(issue.path)}: {issue.message}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </AlertDescription>
+        </Alert>
+      ) : null}
+      {saveNotice ? (
+        <Alert className="border-amber-300 bg-amber-50 text-amber-950" aria-live="polite">
+          <AlertDescription>
+            <p className="font-semibold">{saveNotice}</p>
+            <ul className="mt-2 space-y-1">
+              {validationIssues.map((issue, index) => (
+                <li key={`${issue.path}-${index}`}>
+                  <button type="button" className="text-left underline underline-offset-2" onClick={() => setActiveTab(tabForIssuePath(issue.path))}>
+                    {issueContext(issue.path)}: {issue.message}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </AlertDescription>
+        </Alert>
+      ) : null}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="h-auto w-full justify-start overflow-x-auto rounded-[16px] bg-white p-2">
           <TabsTrigger value="general">1. Informações gerais</TabsTrigger>
@@ -366,8 +493,8 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
 
         <TabsContent value="images"><Card className="space-y-6 rounded-[18px] border-leehov-border p-6">
           <div className="grid gap-5 md:grid-cols-2">
-            <PackageImagePicker id="card-image-upload" label="Imagem do card" helper="Usada nos cards do site e como imagem principal do compartilhamento." preview={assetPreviews.card} disabled={uploading} uploading={uploading} onSelect={(file) => uploadAsset("cardImagePath", "card", file)} onClear={() => clearAsset("cardImagePath", "card")} />
-            <PackageImagePicker id="hero-image-upload" label="Imagem principal" helper="Usada no Hero e mantida como fallback quando não houver vídeo ou ele não carregar." preview={assetPreviews.hero} disabled={uploading} uploading={uploading} onSelect={(file) => uploadAsset("heroImagePath", "hero", file)} onClear={() => clearAsset("heroImagePath", "hero")} />
+            <PackageImagePicker id="card-image-upload" label="Imagem do card" helper="Usada nos cards do site e como imagem principal do compartilhamento." preview={assetPreviews.card} disabled={uploading} uploading={uploading} onSelect={(file) => uploadAsset("cardImagePath", "card", file)} onClear={() => clearAsset("cardImagePath", "card")} onChoose={() => setLibraryTarget({ type: "asset", field: "cardImagePath", previewKey: "card" })} />
+            <PackageImagePicker id="hero-image-upload" label="Imagem principal" helper="Usada no Hero e mantida como fallback quando não houver vídeo ou ele não carregar." preview={assetPreviews.hero} disabled={uploading} uploading={uploading} onSelect={(file) => uploadAsset("heroImagePath", "hero", file)} onClear={() => clearAsset("heroImagePath", "hero")} onChoose={() => setLibraryTarget({ type: "asset", field: "heroImagePath", previewKey: "hero" })} />
             <Input type="hidden" {...form.register("cardImagePath")} />
             <Input type="hidden" {...form.register("heroImagePath")} />
             <Input type="hidden" {...form.register("videoThumbnailPath")} />
@@ -379,6 +506,7 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
           <div className="rounded-xl border border-dashed border-leehov-blue-300 p-5">
             <Label htmlFor="caravan-upload">Enviar JPEG, PNG, WebP ou AVIF (até 8 MiB)</Label>
             <div className="mt-3 flex items-center gap-3"><Input id="caravan-upload" type="file" accept="image/jpeg,image/png,image/webp,image/avif" disabled={uploading} onChange={(event) => { const file = event.currentTarget.files?.[0]; event.currentTarget.value = ""; void upload(file); }} />{uploading ? <Loader2 className="size-5 animate-spin" /> : <ImagePlus className="size-5 text-leehov-blue-500" />}</div>
+            <Button type="button" variant="outline" className="mt-3" disabled={uploading} onClick={() => setLibraryTarget({ type: "gallery" })}>Adicionar da Biblioteca de Mídia</Button>
           </div>
           <div className="space-y-3">
             <Label>Galeria</Label>
@@ -425,6 +553,7 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
                       {uploadingItineraryIndex === index ? "Enviando imagem..." : preview ? "Trocar imagem" : "Enviar imagem"}
                     </Label>
                     <Input id={`itinerary-upload-${index}`} type="file" className="sr-only" accept="image/jpeg,image/png,image/webp,image/avif" disabled={uploading} onChange={(event) => { const file = event.currentTarget.files?.[0]; event.currentTarget.value = ""; void uploadItineraryImage(index, file); }} />
+                    <Button type="button" variant="ghost" size="sm" className="mt-1 px-0 text-xs text-leehov-blue-700" disabled={uploading} onClick={() => setLibraryTarget({ type: "itinerary", index })}>Escolher da biblioteca</Button>
                     {!formCaravanId ? <p className="mt-2 text-xs text-leehov-muted">O rascunho será criado no primeiro envio.</p> : null}
                   </div>
 
@@ -454,7 +583,7 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
           {([ ["isGroupTrip", "Viagem em grupo"], ["isAccompanied", "Roteiro acompanhado"], ["hasPortugueseGuide", "Guia em português"], ["hasLeehovRepresentative", "Representante Leehov"], ["hasTravelKit", "Kit de viagem"], ["hasTravelInsurance", "Seguro-viagem"] ] as const).map(([name, label]) => <Controller key={name} control={form.control} name={name} render={({ field }) => <BooleanField label={label} checked={field.value} onCheckedChange={field.onChange} />} />)}
           <Field label="Mínimo de pessoas"><Input type="number" min={1} {...form.register("minPeople", { setValueAs: (value) => value === "" ? null : Number(value) })} /></Field><Field label="Máximo de pessoas"><Input type="number" min={1} {...form.register("maxPeople", { setValueAs: (value) => value === "" ? null : Number(value) })} /></Field>
           <Field label="Líder / acompanhamento"><Input {...form.register("leaderName")} /></Field>
-          <PackageImagePicker id="leader-image-upload" label="Foto do líder" helper="Imagem exibida na apresentação do acompanhamento deste pacote." preview={assetPreviews.leader} disabled={uploading} uploading={uploading} onSelect={(file) => uploadAsset("leaderImagePath", "leader", file)} onClear={() => clearAsset("leaderImagePath", "leader")} />
+          <PackageImagePicker id="leader-image-upload" label="Foto do líder" helper="Imagem exibida na apresentação do acompanhamento deste pacote." preview={assetPreviews.leader} disabled={uploading} uploading={uploading} onSelect={(file) => uploadAsset("leaderImagePath", "leader", file)} onClear={() => clearAsset("leaderImagePath", "leader")} onChoose={() => setLibraryTarget({ type: "asset", field: "leaderImagePath", previewKey: "leader" })} />
           <Input type="hidden" {...form.register("leaderImagePath")} />
           <div className="md:col-span-2"><Field label="Apresentação do líder"><Textarea rows={5} {...form.register("leaderBio")} /></Field></div>
         </Card></TabsContent>
@@ -472,6 +601,7 @@ export function CaravanForm({ caravan, categories }: { caravan?: AdminCaravan; c
           <div className="md:col-span-2 grid gap-5 md:grid-cols-2"><Field label="Título do Hero" error={errors.heroTitle?.message}><Input {...form.register("heroTitle")} /></Field><Field label="Texto do botão"><Input {...form.register("heroCtaText")} /></Field><Field label="URL do botão"><Input {...form.register("heroCtaUrl")} /></Field><Field label="Descrição do Hero" error={errors.heroDescription?.message}><Textarea {...form.register("heroDescription")} /></Field></div>
         </Card></TabsContent>
       </Tabs>
+      <MediaLibrarySelect open={Boolean(libraryTarget)} onOpenChange={(open) => { if (!open) setLibraryTarget(null); }} assets={mediaAssets} onSelect={chooseLibraryAsset} />
       <div className="sticky bottom-5 z-20 flex justify-end"><Button type="submit" size="lg" disabled={form.formState.isSubmitting || uploading} className="rounded-full bg-leehov-blue-600 px-7 text-white shadow-leehov-floating hover:bg-leehov-cyan">{form.formState.isSubmitting ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}{form.formState.isSubmitting ? "Salvando..." : "Salvar pacote"}</Button></div>
     </form>
   );

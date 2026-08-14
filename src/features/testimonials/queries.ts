@@ -17,13 +17,13 @@ import {
 import { getGooglePlacesPublicConfiguration } from "@/lib/google/places";
 import { getGooglePlacesReviews } from "@/features/testimonials/google-places";
 
-const manualSelect = "*, image:media_assets(id, storage_path)";
+const manualSelect = "*, image:media_assets(id, storage_bucket, storage_path)";
 
-async function signPath(path: string | null | undefined) {
+async function signPath(path: string | null | undefined, bucket: "site-media" | "caravan-images" | "blog-images" = "site-media") {
   if (!path) return "";
   const supabase = createAdminClient();
   const { data } = await supabase.storage
-    .from("site-media")
+    .from(bucket)
     .createSignedUrl(path, 3600);
   return data?.signedUrl ?? "";
 }
@@ -178,8 +178,8 @@ export async function getFeaturedTestimonials(): Promise<TestimonialSummary[]> {
   const manualItems = await Promise.all(
     ((manual.data ?? []) as unknown as Array<Record<string, unknown>>).map(
       async (row) => {
-        const image = row.image as { storage_path?: string } | null;
-        return mapManual(row, await signPath(image?.storage_path));
+        const image = row.image as { storage_bucket?: "site-media" | "caravan-images" | "blog-images"; storage_path?: string } | null;
+        return mapManual(row, await signPath(image?.storage_path, image?.storage_bucket));
       },
     ),
   );
@@ -212,8 +212,8 @@ export async function getAdminTestimonials(): Promise<Testimonial[]> {
   return Promise.all(
     ((data ?? []) as unknown as Array<Record<string, unknown>>).map(
       async (row) => {
-        const image = row.image as { storage_path?: string } | null;
-        return mapManual(row, await signPath(image?.storage_path));
+        const image = row.image as { storage_bucket?: "site-media" | "caravan-images" | "blog-images"; storage_path?: string } | null;
+        return mapManual(row, await signPath(image?.storage_path, image?.storage_bucket));
       },
     ),
   );

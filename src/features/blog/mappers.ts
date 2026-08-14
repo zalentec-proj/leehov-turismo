@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 import type { AdminBlogListItem, AdminBlogPost, BlogPostDetail, BlogPostSummary } from "@/features/blog/types";
+import { resolveMediaUrl, resolveMediaUrls } from "@/features/media/resolve";
 
 export type BlogQueryRow = Database["public"]["Tables"]["blog_posts"]["Row"] & {
   category: Database["public"]["Tables"]["blog_categories"]["Row"] | null;
@@ -18,8 +19,7 @@ export type BlogAssetUrlMap = ReadonlyMap<string, string>;
 
 export async function resolveBlogAssetUrl(supabase: SupabaseClient<Database>, path: string | null): Promise<string> {
   if (!path) return "";
-  const { data } = await supabase.storage.from("blog-images").createSignedUrl(path, 3600);
-  return data?.signedUrl ?? "";
+  return resolveMediaUrl(path, "blog-images");
 }
 
 export async function resolveBlogAssetUrls(
@@ -29,10 +29,7 @@ export async function resolveBlogAssetUrls(
   const uniquePaths = [...new Set(paths.filter((path): path is string => Boolean(path)))];
   if (!uniquePaths.length) return new Map();
 
-  const { data, error } = await supabase.storage.from("blog-images").createSignedUrls(uniquePaths, 3600);
-  if (error || !data) return new Map();
-
-  return new Map(data.flatMap((asset) => asset.path && asset.signedUrl ? [[asset.path, asset.signedUrl] as const] : []));
+  return resolveMediaUrls(uniquePaths, "blog-images");
 }
 
 export async function mapBlogSummary(supabase: SupabaseClient<Database>, row: BlogQueryRow, assetUrls?: BlogAssetUrlMap): Promise<BlogPostSummary> {

@@ -1,32 +1,37 @@
 import { describe, expect, it, vi } from "vitest";
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { resolveBlogAssetUrls } from "@/features/blog/mappers";
-import type { Database } from "@/types/database";
+
+const mocks = vi.hoisted(() => ({
+  createSignedUrls: vi.fn(),
+  mediaIn: vi.fn(),
+}));
+
+vi.mock("@/lib/supabase/admin", () => ({
+  createAdminClient: () => ({
+    from: vi.fn().mockReturnValue({ select: vi.fn().mockReturnValue({ in: mocks.mediaIn }) }),
+    storage: { from: vi.fn().mockReturnValue({ createSignedUrls: mocks.createSignedUrls }) },
+  }),
+}));
 
 describe("resolveBlogAssetUrls", () => {
   it("assina caminhos únicos do Blog em uma única requisição", async () => {
-    const createSignedUrls = vi.fn().mockResolvedValue({
+    mocks.mediaIn.mockResolvedValue({ data: [], error: null });
+    mocks.createSignedUrls.mockResolvedValue({
       data: [
         { path: "post/capa.webp", signedUrl: "https://storage.test/capa" },
         { path: "post/galeria.webp", signedUrl: "https://storage.test/galeria" },
       ],
       error: null,
     });
-    const supabase = {
-      storage: {
-        from: vi.fn().mockReturnValue({ createSignedUrls }),
-      },
-    } as unknown as SupabaseClient<Database>;
-
-    const urls = await resolveBlogAssetUrls(supabase, [
+    const urls = await resolveBlogAssetUrls({} as never, [
       "post/capa.webp",
       "post/capa.webp",
       null,
       "post/galeria.webp",
     ]);
 
-    expect(createSignedUrls).toHaveBeenCalledTimes(1);
-    expect(createSignedUrls).toHaveBeenCalledWith(["post/capa.webp", "post/galeria.webp"], 3600);
+    expect(mocks.createSignedUrls).toHaveBeenCalledTimes(1);
+    expect(mocks.createSignedUrls).toHaveBeenCalledWith(["post/capa.webp", "post/galeria.webp"], 3600);
     expect(urls.get("post/capa.webp")).toBe("https://storage.test/capa");
     expect(urls.get("post/galeria.webp")).toBe("https://storage.test/galeria");
   });

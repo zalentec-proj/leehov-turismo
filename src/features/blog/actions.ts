@@ -8,8 +8,10 @@ import { calculateReadingTime, sanitizeBlogHtml } from "@/features/blog/sanitize
 import { parseBlogDateTimeInput } from "@/features/blog/date";
 import { normalizeBlogGalleryOrder } from "@/features/blog/gallery";
 import { validateBlogImage, validateBlogImageDimensions } from "@/features/blog/image-validation";
+import { createMediaAsset } from "@/features/media/service";
 import type { BlogActionResult } from "@/features/blog/types";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { TablesUpdate } from "@/types/database";
 import { emitWebhookEvent } from "@/lib/webhooks/events";
 
@@ -134,7 +136,10 @@ export async function deleteDraftBlogPostAction(id: string): Promise<BlogActionR
   if (post.published) return { success: false, message: "Despublique o post antes de excluí-lo." };
   const paths = [post.cover_image_url, ...(post.blog_post_images ?? []).map((image) => image.image_url)].filter((path): path is string => Boolean(path));
   if (paths.length) {
-    const { error: storageError } = await supabase.storage.from("blog-images").remove(paths);
+    const { data: catalogued } = await createAdminClient().from("media_assets").select("storage_path").eq("storage_bucket", "blog-images").in("storage_path", paths);
+    const preserved = new Set((catalogued ?? []).map((asset) => asset.storage_path));
+    const removablePaths = paths.filter((path) => !preserved.has(path));
+    const { error: storageError } = removablePaths.length ? await supabase.storage.from("blog-images").remove(removablePaths) : { error: null };
     if (storageError) return { success: false, message: storageError.message };
   }
   const { error: deleteError } = await supabase.from("blog_posts").delete().eq("id", id).eq("published", false);
@@ -161,7 +166,7 @@ export async function saveBlogCategoryAction(formData: FormData): Promise<void> 
 }
 
 export async function uploadBlogImageAction(postId: string, kind: "cover" | "gallery", formData: FormData): Promise<BlogActionResult> {
-  await requirePermission("blog.manage_media");
+  const { profile } = await requirePermission("blog.manage_media");
   const file = formData.get("file");
   if (!(file instanceof File)) return { success: false, message: "Selecione uma imagem." };
   const bytes = new Uint8Array(await file.arrayBuffer());
@@ -170,29 +175,48 @@ export async function uploadBlogImageAction(postId: string, kind: "cover" | "gal
   const dimensionValidation = await validateBlogImageDimensions(kind, bytes);
   if (!dimensionValidation.success) return dimensionValidation;
   const supabase = await createClient();
-  const { data: post } = await supabase.from("blog_posts").select("id").eq("id", postId).maybeSingle();
+  const { data: post } = await supabase.from("blog_posts").select("id, title, slug").eq("id", postId).maybeSingle();
   if (!post) return { success: false, message: "Salve o rascunho antes de enviar imagens." };
-  const path = `${postId}/${kind}/${randomUUID()}.${validation.extension}`;
-  const { error } = await supabase.storage.from("blog-images").upload(path, bytes, {
-    cacheControl: "31536000",
-    contentType: file.type,
-    upsert: false,
-  });
-  if (error) return { success: false, message: error.message };
-  const { data } = await supabase.storage.from("blog-images").createSignedUrl(path, 3600);
-  return { success: true, message: "Imagem enviada com sucesso.", path, url: data?.signedUrl };
+  try {
+    const asset = await createMediaAsset({
+      bytes,
+      extension: validation.extension,
+      fileName: file.name,
+      mimeType: file.type,
+      altText: post.title,
+      folder: "blog",
+      sourceType: "blog_post",
+      sourceId: post.id,
+      sourceLabel: post.title,
+      tags: [post.slug, kind],
+      createdBy: profile.id,
+    });
+    revalidatePath("/admin/midia");
+    return { success: true, message: "Imagem enviada e adicionada à Biblioteca de Mídia.", assetId: asset.id, path: asset.storagePath, url: asset.signedUrl };
+  } catch (error) {
+    return { success: false, message: error instanceof Error ? error.message : "Não foi possível enviar a imagem." };
+  }
 }
 
 export async function removeBlogImageAction(postId: string, path: string): Promise<BlogActionResult> {
   const { profile } = await requirePermission("blog.manage_media");
-  if (!path.startsWith(`${postId}/cover/`) && !path.startsWith(`${postId}/gallery/`)) return { success: false, message: "Caminho de imagem inválido." };
+  const admin = createAdminClient();
+  const { data: catalogued } = await admin
+    .from("media_assets")
+    .select("id, storage_bucket")
+    .eq("storage_path", path)
+    .maybeSingle();
+  const isLegacyBlogPath = path.startsWith(`${postId}/cover/`) || path.startsWith(`${postId}/gallery/`);
+  if (!catalogued && !isLegacyBlogPath) return { success: false, message: "Caminho de imagem inválido." };
   const supabase = await createClient();
   const { data: post } = await supabase.from("blog_posts").select("slug, cover_image_url").eq("id", postId).maybeSingle();
   if (!post) return { success: false, message: "Post não encontrado." };
-  const { error } = await supabase.storage.from("blog-images").remove([path]);
-  if (error) return { success: false, message: error.message };
+  if (!catalogued) {
+    const { error } = await supabase.storage.from("blog-images").remove([path]);
+    if (error) return { success: false, message: error.message };
+  }
   await supabase.from("blog_post_images").delete().eq("blog_post_id", postId).eq("image_url", path);
   if (post.cover_image_url === path) await supabase.from("blog_posts").update({ cover_image_url: null, cover_alt_text: null, updated_by: profile.id }).eq("id", postId);
   revalidateBlog(post.slug);
-  return { success: true, message: "Imagem removida." };
+  return { success: true, message: catalogued ? "Imagem desvinculada. O arquivo continua disponível na Biblioteca de Mídia." : "Imagem removida." };
 }

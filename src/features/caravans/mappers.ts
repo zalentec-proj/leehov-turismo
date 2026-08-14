@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Json } from "@/types/database";
 import type { AdminCaravan, CaravanCategory, CaravanSummary } from "@/features/caravans/types";
+import { resolveMediaUrl } from "@/features/media/resolve";
 
 export type CaravanQueryRow = Database["public"]["Tables"]["caravans"]["Row"] & {
   caravan_categories: Database["public"]["Tables"]["caravan_categories"]["Row"] | null;
@@ -32,8 +33,7 @@ export async function resolveCaravanAssetUrl(
       return "";
     }
   }
-  const { data } = await supabase.storage.from("caravan-images").createSignedUrl(value, 3600);
-  return data?.signedUrl ?? "";
+  return resolveMediaUrl(value, "caravan-images");
 }
 
 function mapCategory(row: CaravanSummaryQueryRow["caravan_categories"]): CaravanCategory | null {

@@ -88,11 +88,11 @@ const safeHttpsUrl = (value: string) => {
 const validTrackingId = (value: string, pattern: RegExp) =>
   pattern.test(value) ? value : "";
 
-async function signOgImage(path?: string | null) {
+async function signOgImage(path?: string | null, bucket: "site-media" | "caravan-images" | "blog-images" = "site-media") {
   if (!path) return "";
   const admin = createAdminClient();
   const { data } = await admin.storage
-    .from("site-media")
+    .from(bucket)
     .createSignedUrl(path, 3600);
   return data?.signedUrl ?? "";
 }
@@ -130,13 +130,15 @@ export async function getPublicSiteSettings(): Promise<PublicSiteSettings> {
   const seoRow = rows.get("seo_global") as
     { media_asset_id?: string | null } | undefined;
   let ogStoragePath = "";
+  let ogStorageBucket: "site-media" | "caravan-images" | "blog-images" = "site-media";
   if (seoRow?.media_asset_id) {
     const { data: media } = await createAdminClient()
       .from("media_assets")
-      .select("storage_path")
+      .select("storage_bucket, storage_path")
       .eq("id", seoRow.media_asset_id)
       .maybeSingle();
     ogStoragePath = media?.storage_path ?? "";
+    ogStorageBucket = (media?.storage_bucket as typeof ogStorageBucket | undefined) ?? "site-media";
   }
   const resolved = {
     contact: {
@@ -195,7 +197,7 @@ export async function getPublicSiteSettings(): Promise<PublicSiteSettings> {
         seoFallback.defaultDescription,
       ),
       ogImageAssetId: seoRow?.media_asset_id ?? "",
-      ogImageUrl: await signOgImage(ogStoragePath),
+      ogImageUrl: await signOgImage(ogStoragePath, ogStorageBucket),
     },
     consent: {
       enabled: boolValue(consent, "enabled", true),

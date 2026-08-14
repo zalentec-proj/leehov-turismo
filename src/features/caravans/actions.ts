@@ -17,6 +17,7 @@ import type { TablesUpdate } from "@/types/database";
 import { emitWebhookEvent } from "@/lib/webhooks/events";
 import { validateCaravanImage } from "@/features/caravans/image-validation";
 import { createMediaAsset } from "@/features/media/service";
+import { formatDepartureLabel } from "@/features/caravans/utils";
 
 export type CaravanActionResult = {
   success: boolean;
@@ -129,7 +130,7 @@ async function syncCollections(supabase: Awaited<ReturnType<typeof createClient>
   const departures = input.departures.map((item, index) => ({
     id: item.id || randomUUID(),
     caravan_id: caravanId,
-    label: emptyToNull(item.label),
+    label: emptyToNull(formatDepartureLabel(item.startDate, item.endDate)),
     start_date: emptyToNull(item.startDate),
     end_date: emptyToNull(item.endDate),
     available_spots: item.availableSpots,

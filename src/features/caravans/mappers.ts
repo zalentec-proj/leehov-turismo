@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Json } from "@/types/database";
 import type { AdminCaravan, CaravanCategory, CaravanSummary } from "@/features/caravans/types";
 import { resolveMediaUrl } from "@/features/media/resolve";
+import { formatDepartureLabel } from "@/features/caravans/utils";
 
 export type CaravanQueryRow = Database["public"]["Tables"]["caravans"]["Row"] & {
   caravan_categories: Database["public"]["Tables"]["caravan_categories"]["Row"] | null;
@@ -63,7 +64,7 @@ export async function mapCaravanSummary(
     destination: row.destination,
     category: mapCategory(row.caravan_categories),
     duration: row.duration ?? "Duração a confirmar",
-    departureLabel: firstDeparture?.label || firstDeparture?.start_date || "Saídas a confirmar",
+    departureLabel: firstDeparture?.label || formatDepartureLabel(firstDeparture?.start_date ?? "", firstDeparture?.end_date ?? "") || "Saídas a confirmar",
     nextDeparture: firstDeparture?.start_date ?? null,
     status: row.status,
     price: row.price ?? "Sob consulta",

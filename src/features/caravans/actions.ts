@@ -18,6 +18,7 @@ import { emitWebhookEvent } from "@/lib/webhooks/events";
 import { validateCaravanImage } from "@/features/caravans/image-validation";
 import { createMediaAsset } from "@/features/media/service";
 import { formatDepartureLabel } from "@/features/caravans/utils";
+import { resolveStableCollectionIds } from "@/features/caravans/collection-sync";
 
 export type CaravanActionResult = {
   success: boolean;
@@ -127,6 +128,17 @@ export async function deleteDraftCaravanAction(id: string): Promise<CaravanActio
 }
 
 async function syncCollections(supabase: Awaited<ReturnType<typeof createClient>>, caravanId: string, input: CaravanFormInput) {
+  const { data: existingItinerary, error: existingItineraryError } = await supabase
+    .from("caravan_itinerary_days")
+    .select("id, day_number")
+    .eq("caravan_id", caravanId);
+  if (existingItineraryError) throw new CaravanCollectionError("Roteiro", existingItineraryError);
+
+  const itineraryIds = resolveStableCollectionIds(
+    input.itinerary.map((item) => ({ id: item.id, key: item.day })),
+    (existingItinerary ?? []).map((item) => ({ id: item.id, key: item.day_number })),
+    randomUUID,
+  );
   const departures = input.departures.map((item, index) => ({
     id: item.id || randomUUID(),
     caravan_id: caravanId,
@@ -139,7 +151,7 @@ async function syncCollections(supabase: Awaited<ReturnType<typeof createClient>
     order_index: item.orderIndex || index * 10,
   }));
   const itinerary = input.itinerary.map((item, index) => ({
-    id: item.id || randomUUID(),
+    id: itineraryIds[index],
     caravan_id: caravanId,
     day_number: item.day,
     title: item.title,

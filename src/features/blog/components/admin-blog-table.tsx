@@ -2,8 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { createColumnHelper, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
+import { useCallback, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Edit3, Loader2, Plus, Search, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { deleteDraftBlogPostAction, setBlogPostPublishedAction } from "@/features/blog/actions";
@@ -17,7 +16,6 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-const columnHelper = createColumnHelper<AdminBlogListItem>();
 const PAGE_SIZE = 8;
 
 export function AdminBlogTable({ data, categories, canCreate, canUpdate, canPublish, canDeleteDraft }: { data: AdminBlogListItem[]; categories: BlogCategory[]; canCreate: boolean; canUpdate: boolean; canPublish: boolean; canDeleteDraft: boolean }) {
@@ -25,12 +23,10 @@ export function AdminBlogTable({ data, categories, canCreate, canUpdate, canPubl
   const [status, setStatus] = useState("all");
   const [category, setCategory] = useState("all");
   const [highlight, setHighlight] = useState("all");
-  const [rows, setRows] = useState(data);
+  const [rows, setRows] = useState(() => data);
   const [page, setPage] = useState(0);
   const [actionId, setActionId] = useState<string | null>(null);
   const [progress, setProgress] = useState<{ title: string; description: string } | null>(null);
-
-  useEffect(() => setRows(data), [data]);
 
   const filtered = useMemo(() => rows.filter((post) => {
     const matchesStatus = status === "all" || (status === "published" ? post.published : !post.published);
@@ -43,8 +39,6 @@ export function AdminBlogTable({ data, categories, canCreate, canUpdate, canPubl
     const matchesSearch = `${post.title} ${post.summary} ${post.author}`.toLocaleLowerCase("pt-BR").includes(query.toLocaleLowerCase("pt-BR"));
     return matchesStatus && matchesCategory && matchesHighlight && matchesSearch;
   }), [category, highlight, query, rows, status]);
-
-  useEffect(() => setPage(0), [category, highlight, query, status]);
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const pageRows = filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
@@ -80,98 +74,12 @@ export function AdminBlogTable({ data, categories, canCreate, canUpdate, canPubl
 
   const pending = actionId !== null;
 
-  const columns = useMemo(() => [
-    columnHelper.accessor("title", {
-      header: "Post",
-      cell: ({ row }) => (
-        <div className="flex min-w-[330px] items-center gap-4">
-          <div className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-leehov-surface">
-            {row.original.imageUrl ? <Image src={row.original.imageUrl} alt="" fill unoptimized sizes="64px" className="object-cover" /> : null}
-          </div>
-          <div className="min-w-0">
-            <p className="line-clamp-2 font-extrabold leading-5 text-leehov-navy-950">{row.original.title}</p>
-            <p className="mt-1 text-xs text-leehov-muted">{row.original.author} · {row.original.readingTime} min</p>
-          </div>
-        </div>
-      ),
-    }),
-    columnHelper.accessor("category", { header: "Categoria", cell: ({ getValue }) => <span className="whitespace-nowrap text-sm font-medium text-leehov-text">{getValue()}</span> }),
-    columnHelper.display({ id: "status", header: "Status", cell: ({ row }) => <Badge variant={row.original.published ? "default" : "outline"}>{row.original.published ? "Publicado" : "Rascunho"}</Badge> }),
-    columnHelper.display({
-      id: "featured",
-      header: "Destaques",
-      cell: ({ row }) => (
-        <div className="flex min-w-24 flex-wrap gap-1.5">
-          {row.original.featuredBlog ? <Badge className="bg-leehov-blue-600">Blog</Badge> : null}
-          {row.original.featuredHome ? <Badge variant="secondary">Home</Badge> : null}
-          {!row.original.featuredBlog && !row.original.featuredHome ? <span className="text-xs text-leehov-muted">Nenhum</span> : null}
-        </div>
-      ),
-    }),
-    columnHelper.accessor("updatedAt", { header: "Atualizado", cell: ({ getValue }) => <time dateTime={getValue()} className="whitespace-nowrap text-xs text-leehov-muted">{formatBlogAdminDate(getValue())}</time> }),
-    columnHelper.display({
-      id: "actions",
-      header: "Ações",
-      cell: ({ row }) => (
-        <div className="flex min-w-[210px] justify-end gap-2">
-          {canPublish ? <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={pending}
-            onClick={() => runAction(
-              row.original.id,
-              row.original.published ? "Despublicando artigo..." : "Publicando artigo...",
-              () => setBlogPostPublishedAction(row.original.id, !row.original.published),
-              (currentRows) => currentRows.map((post) => post.id === row.original.id
-                ? {
-                    ...post,
-                    published: !row.original.published,
-                    featuredHome: row.original.published ? false : post.featuredHome,
-                    featuredBlog: row.original.published ? false : post.featuredBlog,
-                    updatedAt: new Date().toISOString(),
-                  }
-                : post),
-            )}
-          >
-            {pending && actionId === row.original.id ? <Loader2 className="size-3.5 animate-spin" /> : null}
-            {row.original.published ? "Despublicar" : "Publicar"}
-          </Button> : null}
-          {canUpdate ? <Button asChild variant="ghost" size="icon"><Link href={`/admin/blog/${row.original.id}`} aria-label={`Editar ${row.original.title}`}><Edit3 className="size-4" /></Link></Button> : null}
-          {canDeleteDraft && !row.original.published ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label={`Excluir ${row.original.title}`}
-              disabled={pending}
-              onClick={() => {
-                if (!window.confirm(`Excluir definitivamente o rascunho “${row.original.title}” e suas imagens?`)) return;
-                runAction(
-                  row.original.id,
-                  "Excluindo rascunho...",
-                  () => deleteDraftBlogPostAction(row.original.id),
-                  (currentRows) => currentRows.filter((post) => post.id !== row.original.id),
-                );
-              }}
-            >
-              <Trash2 className="size-4 text-destructive" />
-            </Button>
-          ) : null}
-        </div>
-      ),
-    }),
-  ], [actionId, canDeleteDraft, canPublish, canUpdate, pending, runAction]);
-
-  // TanStack Table intentionally exposes non-memoizable functions.
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const table = useReactTable({ data: pageRows, columns, getCoreRowModel: getCoreRowModel() });
-
   function clearFilters() {
     setQuery("");
     setStatus("all");
     setCategory("all");
     setHighlight("all");
+    setPage(0);
   }
 
   return (
@@ -180,21 +88,21 @@ export function AdminBlogTable({ data, categories, canCreate, canUpdate, canPubl
       <div className="grid gap-3 rounded-[18px] border border-leehov-border bg-white p-4 shadow-sm lg:grid-cols-[minmax(260px,1fr)_repeat(3,190px)_auto]">
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-leehov-muted" />
-          <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar por título, resumo ou autora" className="pl-9" aria-label="Buscar posts" />
+          <Input value={query} onChange={(event) => { setQuery(event.target.value); setPage(0); }} placeholder="Buscar por título, resumo ou autora" className="pl-9" aria-label="Buscar posts" />
         </div>
-        <Select value={category} onValueChange={setCategory}><SelectTrigger aria-label="Filtrar por categoria"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Todas as categorias</SelectItem>{categories.map((item) => <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>)}</SelectContent></Select>
-        <Select value={status} onValueChange={setStatus}><SelectTrigger aria-label="Filtrar por status"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Todos os status</SelectItem><SelectItem value="draft">Rascunhos</SelectItem><SelectItem value="published">Publicados</SelectItem></SelectContent></Select>
-        <Select value={highlight} onValueChange={setHighlight}><SelectTrigger aria-label="Filtrar por destaque"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Todos os destaques</SelectItem><SelectItem value="featured">Com destaque</SelectItem><SelectItem value="none">Sem destaque</SelectItem><SelectItem value="blog">Destaque no Blog</SelectItem><SelectItem value="home">Destaque na Home</SelectItem></SelectContent></Select>
+        <Select value={category} onValueChange={(value) => { setCategory(value); setPage(0); }}><SelectTrigger aria-label="Filtrar por categoria"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Todas as categorias</SelectItem>{categories.map((item) => <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>)}</SelectContent></Select>
+        <Select value={status} onValueChange={(value) => { setStatus(value); setPage(0); }}><SelectTrigger aria-label="Filtrar por status"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Todos os status</SelectItem><SelectItem value="draft">Rascunhos</SelectItem><SelectItem value="published">Publicados</SelectItem></SelectContent></Select>
+        <Select value={highlight} onValueChange={(value) => { setHighlight(value); setPage(0); }}><SelectTrigger aria-label="Filtrar por destaque"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Todos os destaques</SelectItem><SelectItem value="featured">Com destaque</SelectItem><SelectItem value="none">Sem destaque</SelectItem><SelectItem value="blog">Destaque no Blog</SelectItem><SelectItem value="home">Destaque na Home</SelectItem></SelectContent></Select>
         {hasFilters ? <Button type="button" variant="ghost" onClick={clearFilters}><X className="size-4" />Limpar</Button> : <span />}
       </div>
 
       <Card className="overflow-hidden rounded-[18px] border-leehov-border p-0">
         <div className="overflow-x-auto">
           <Table>
-            <TableHeader>{table.getHeaderGroups().map((group) => <TableRow key={group.id} className="bg-leehov-surface/80">{group.headers.map((header) => <TableHead key={header.id} className="h-12 text-xs font-bold uppercase tracking-[0.08em] text-leehov-muted">{flexRender(header.column.columnDef.header, header.getContext())}</TableHead>)}</TableRow>)}</TableHeader>
+            <TableHeader><TableRow className="bg-leehov-surface/80"><TableHead className="h-12 text-xs font-bold uppercase tracking-[0.08em] text-leehov-muted">Post</TableHead><TableHead className="h-12 text-xs font-bold uppercase tracking-[0.08em] text-leehov-muted">Categoria</TableHead><TableHead className="h-12 text-xs font-bold uppercase tracking-[0.08em] text-leehov-muted">Status</TableHead><TableHead className="h-12 text-xs font-bold uppercase tracking-[0.08em] text-leehov-muted">Destaques</TableHead><TableHead className="h-12 text-xs font-bold uppercase tracking-[0.08em] text-leehov-muted">Atualizado</TableHead><TableHead className="h-12 text-xs font-bold uppercase tracking-[0.08em] text-leehov-muted">Ações</TableHead></TableRow></TableHeader>
             <TableBody>
-              {table.getRowModel().rows.map((row) => <TableRow key={row.id} className="h-[88px]">{row.getVisibleCells().map((cell) => <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>)}</TableRow>)}
-              {!table.getRowModel().rows.length ? <TableRow><TableCell colSpan={columns.length} className="h-48 text-center"><p className="font-bold text-leehov-navy-950">Nenhum post encontrado</p><p className="mt-2 text-sm text-leehov-muted">Ajuste os filtros ou crie um novo conteúdo.</p>{canCreate ? <Button asChild className="mt-5 rounded-full"><Link href="/admin/blog/novo"><Plus className="size-4" />Novo post</Link></Button> : null}</TableCell></TableRow> : null}
+              {pageRows.map((post) => <TableRow key={post.id} className="h-[88px]"><TableCell><div className="flex min-w-[330px] items-center gap-4"><div className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-leehov-surface">{post.imageUrl ? <Image src={post.imageUrl} alt="" fill unoptimized sizes="64px" className="object-cover" /> : null}</div><div className="min-w-0"><p className="line-clamp-2 font-extrabold leading-5 text-leehov-navy-950">{post.title}</p><p className="mt-1 text-xs text-leehov-muted">{post.author} · {post.readingTime} min</p></div></div></TableCell><TableCell><span className="whitespace-nowrap text-sm font-medium text-leehov-text">{post.category}</span></TableCell><TableCell><Badge variant={post.published ? "default" : "outline"}>{post.published ? "Publicado" : "Rascunho"}</Badge></TableCell><TableCell><div className="flex min-w-24 flex-wrap gap-1.5">{post.featuredBlog ? <Badge className="bg-leehov-blue-600">Blog</Badge> : null}{post.featuredHome ? <Badge variant="secondary">Home</Badge> : null}{!post.featuredBlog && !post.featuredHome ? <span className="text-xs text-leehov-muted">Nenhum</span> : null}</div></TableCell><TableCell><time dateTime={post.updatedAt} className="whitespace-nowrap text-xs text-leehov-muted">{formatBlogAdminDate(post.updatedAt)}</time></TableCell><TableCell><div className="flex min-w-[210px] justify-end gap-2">{canPublish ? <Button type="button" variant="outline" size="sm" disabled={pending} onClick={() => runAction(post.id, post.published ? "Despublicando artigo..." : "Publicando artigo...", () => setBlogPostPublishedAction(post.id, !post.published), (currentRows) => currentRows.map((item) => item.id === post.id ? { ...item, published: !post.published, featuredHome: post.published ? false : item.featuredHome, featuredBlog: post.published ? false : item.featuredBlog, updatedAt: new Date().toISOString() } : item))}>{pending && actionId === post.id ? <Loader2 className="size-3.5 animate-spin" /> : null}{post.published ? "Despublicar" : "Publicar"}</Button> : null}{canUpdate ? <Button asChild variant="ghost" size="icon"><Link href={`/admin/blog/${post.id}`} aria-label={`Editar ${post.title}`}><Edit3 className="size-4" /></Link></Button> : null}{canDeleteDraft && !post.published ? <Button type="button" variant="ghost" size="icon" aria-label={`Excluir ${post.title}`} disabled={pending} onClick={() => { if (!window.confirm(`Excluir definitivamente o rascunho “${post.title}” e suas imagens?`)) return; runAction(post.id, "Excluindo rascunho...", () => deleteDraftBlogPostAction(post.id), (currentRows) => currentRows.filter((item) => item.id !== post.id)); }}><Trash2 className="size-4 text-destructive" /></Button> : null}</div></TableCell></TableRow>)}
+              {!pageRows.length ? <TableRow><TableCell colSpan={6} className="h-48 text-center"><p className="font-bold text-leehov-navy-950">Nenhum post encontrado</p><p className="mt-2 text-sm text-leehov-muted">Ajuste os filtros ou crie um novo conteúdo.</p>{canCreate ? <Button asChild className="mt-5 rounded-full"><Link href="/admin/blog/novo"><Plus className="size-4" />Novo post</Link></Button> : null}</TableCell></TableRow> : null}
             </TableBody>
           </Table>
         </div>

@@ -58,6 +58,8 @@ describe("AdminBlogTable", () => {
     await user.click(screen.getByRole("button", { name: "Próxima" }));
 
     expect(screen.getByText("9 posts · página 2 de 2")).toBeInTheDocument();
+    expect(screen.getByText("Artigo 9")).toBeInTheDocument();
+    expect(screen.queryByText("Artigo 1")).not.toBeInTheDocument();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Anterior" })).toBeEnabled();
   });

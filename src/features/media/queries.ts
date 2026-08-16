@@ -50,18 +50,6 @@ function mapAsset(row: MediaRow, signedUrl: string, usage: MediaUsage[] = []): M
   };
 }
 
-async function signRows(rows: MediaRow[]) {
-  const admin = createAdminClient();
-  const groups = new Map<MediaRow["storage_bucket"], string[]>();
-  for (const row of rows) groups.set(row.storage_bucket, [...(groups.get(row.storage_bucket) ?? []), row.storage_path]);
-  const urls = new Map<string, string>();
-  await Promise.all([...groups].map(async ([bucket, paths]) => {
-    const { data } = await admin.storage.from(bucket).createSignedUrls(paths, 3600);
-    for (const item of data ?? []) if (item.path && item.signedUrl) urls.set(`${bucket}:${item.path}`, item.signedUrl);
-  }));
-  return urls;
-}
-
 export async function getAdminMediaAssets(): Promise<MediaAsset[]> {
   await requirePermission("media.view");
   const supabase = await createClient();
@@ -107,12 +95,15 @@ export async function getAdminMediaAssets(): Promise<MediaAsset[]> {
   for (const item of posts.data ?? []) appendPath(item.cover_image_url, { id: item.id, label: item.title, type: "blog_post" });
   for (const item of postImages.data ?? []) appendPath(item.image_url, { id: item.blog_post_id, label: postNames.get(item.blog_post_id) ?? "Post", type: "blog_post" });
 
-  const urls = await signRows(rows);
-  return rows.map((row) => mapAsset(row, urls.get(`${row.storage_bucket}:${row.storage_path}`) ?? "", usageByAsset.get(row.id) ?? []));
+  return rows.map((row) => mapAsset(row, "", usageByAsset.get(row.id) ?? []));
 }
 
 export async function getMediaAssetOptions() {
-  return getAdminMediaAssets();
+  await requirePermission("media.view");
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("media_assets").select("*").order("created_at", { ascending: false });
+  if (error) throw new Error(`Não foi possível carregar a biblioteca: ${error.message}`);
+  return ((data ?? []) as MediaRow[]).map((row) => mapAsset(row, ""));
 }
 
 export async function getMediaAssetById(id: string): Promise<MediaAsset | null> {

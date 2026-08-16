@@ -33,3 +33,9 @@ export type MediaActionResult = {
   message: string;
   asset?: MediaAsset;
 };
+
+export type MediaPreviewResult = {
+  success: boolean;
+  message: string;
+  urls: Record<string, string>;
+};

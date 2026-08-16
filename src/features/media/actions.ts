@@ -1,9 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { requirePermission } from "@/features/auth/permissions";
 import { mediaMetadataSchema, mediaUploadSchema } from "@/features/media/schema";
-import type { MediaActionResult } from "@/features/media/types";
+import type { MediaActionResult, MediaPreviewResult } from "@/features/media/types";
 import { createMediaAsset } from "@/features/media/service";
 import { validateMediaImage } from "@/features/media/utils";
 import { createClient } from "@/lib/supabase/server";
@@ -19,6 +20,40 @@ function revalidateMedia() {
   revalidatePath("/admin/depoimentos");
   revalidatePath("/admin/popups");
   revalidatePath("/admin/configuracoes");
+}
+
+const mediaPreviewIdsSchema = z.array(z.string().uuid()).min(1).max(24);
+
+export async function getMediaPreviewUrlsAction(input: unknown): Promise<MediaPreviewResult> {
+  await requirePermission("media.view");
+  const parsed = mediaPreviewIdsSchema.safeParse(input);
+  if (!parsed.success) return { success: false, message: "Não foi possível preparar as miniaturas.", urls: {} };
+
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("media_assets")
+    .select("id, storage_bucket, storage_path")
+    .in("id", [...new Set(parsed.data)]);
+  if (error) return { success: false, message: "Não foi possível carregar as miniaturas.", urls: {} };
+
+  const buckets = new Map<string, string[]>();
+  for (const asset of data ?? []) buckets.set(asset.storage_bucket, [...(buckets.get(asset.storage_bucket) ?? []), asset.storage_path]);
+  const signed = await Promise.all([...buckets].map(async ([bucket, paths]) => {
+    const { data: urls, error: signError } = await admin.storage.from(bucket).createSignedUrls(paths, 3600);
+    return { bucket, urls: urls ?? [], error: signError };
+  }));
+  if (signed.some((result) => result.error)) return { success: false, message: "Não foi possível carregar as miniaturas.", urls: {} };
+
+  const urlsByPath = new Map<string, string>();
+  for (const result of signed) for (const url of result.urls) if (url.path && url.signedUrl) urlsByPath.set(`${result.bucket}:${url.path}`, url.signedUrl);
+  return {
+    success: true,
+    message: "Miniaturas carregadas.",
+    urls: Object.fromEntries((data ?? []).flatMap((asset) => {
+      const signedUrl = urlsByPath.get(`${asset.storage_bucket}:${asset.storage_path}`);
+      return signedUrl ? [[asset.id, signedUrl]] : [];
+    })),
+  };
 }
 
 export async function uploadMediaAssetAction(formData: FormData): Promise<MediaActionResult> {

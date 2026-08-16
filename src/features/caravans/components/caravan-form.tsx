@@ -76,8 +76,8 @@ function defaults(caravan?: AdminCaravan): CaravanFormInput {
   };
 }
 
-function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
-  return <div className="space-y-2"><Label>{label}</Label>{children}{error ? <p className="text-xs text-destructive">{error}</p> : null}</div>;
+function Field({ label, error, helper, children }: { label: string; error?: string; helper?: string; children: React.ReactNode }) {
+  return <div className="space-y-2"><Label>{label}</Label>{children}{helper ? <p className="text-xs text-leehov-muted">{helper}</p> : null}{error ? <p className="text-xs text-destructive">{error}</p> : null}</div>;
 }
 
 function BooleanField({ label, description, checked, onCheckedChange }: { label: string; description?: string; checked: boolean; onCheckedChange: (value: boolean) => void }) {
@@ -598,7 +598,7 @@ export function CaravanForm({ caravan, categories, mediaAssets }: { caravan?: Ad
           <Controller control={form.control} name="published" render={({ field }) => <BooleanField label="Publicado" description="Torna o pacote visível no site." checked={field.value} onCheckedChange={field.onChange} />} />
           <Controller control={form.control} name="featuredHome" render={({ field }) => <BooleanField label="Destaque na Home" checked={field.value} onCheckedChange={field.onChange} />} />
           <Controller control={form.control} name="featuredHero" render={({ field }) => <BooleanField label="Destaque no Hero" checked={field.value} onCheckedChange={field.onChange} />} />
-          <div className="md:col-span-2 grid gap-5 md:grid-cols-2"><Field label="Título do Hero" error={errors.heroTitle?.message}><Input {...form.register("heroTitle")} /></Field><Field label="Texto do botão"><Input {...form.register("heroCtaText")} /></Field><Field label="URL do botão"><Input {...form.register("heroCtaUrl")} /></Field><Field label="Descrição do Hero" error={errors.heroDescription?.message}><Textarea {...form.register("heroDescription")} /></Field></div>
+          <div className="md:col-span-2 grid gap-5 md:grid-cols-2"><Field label="Título do Hero" helper="Até 64 caracteres." error={errors.heroTitle?.message}><Input {...form.register("heroTitle")} maxLength={64} /></Field><Field label="Texto do botão"><Input {...form.register("heroCtaText")} /></Field><Field label="URL do botão"><Input {...form.register("heroCtaUrl")} /></Field><Field label="Descrição do Hero" helper="Até 180 caracteres." error={errors.heroDescription?.message}><Textarea {...form.register("heroDescription")} maxLength={180} /></Field></div>
         </Card></TabsContent>
       </Tabs>
       <MediaLibrarySelect open={Boolean(libraryTarget)} onOpenChange={(open) => { if (!open) setLibraryTarget(null); }} assets={mediaAssets} onSelect={chooseLibraryAsset} />

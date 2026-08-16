@@ -1,6 +1,8 @@
 import { z } from "zod";
 
 const optionalText = z.string().trim().max(5000);
+const optionalHeroTitle = z.string().trim().max(64, "O título do Hero deve ter até 64 caracteres.");
+const optionalHeroDescription = z.string().trim().max(180, "A descrição do Hero deve ter até 180 caracteres.");
 const optionalVideoUrl = z.string().trim().max(2048).refine((value) => {
   if (!value || value.startsWith("/")) return true;
   try {
@@ -105,8 +107,8 @@ const caravanFormBaseSchema = z.object({
   notes: optionalText,
   featuredHome: z.boolean(),
   featuredHero: z.boolean(),
-  heroTitle: optionalText,
-  heroDescription: optionalText,
+  heroTitle: optionalHeroTitle,
+  heroDescription: optionalHeroDescription,
   heroCtaText: optionalText,
   heroCtaUrl: optionalText,
   heroOrder: z.number().int().nonnegative(),

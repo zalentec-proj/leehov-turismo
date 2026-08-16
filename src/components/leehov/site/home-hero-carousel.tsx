@@ -87,8 +87,9 @@ export function HomeHeroCarousel({ caravans }: { caravans: CaravanDetail[] }) {
   const [isPaused, setIsPaused] = useState(false);
   const prefersReducedMotion = usePrefersReducedMotion();
   const activeSlide = heroSlides[activeIndex];
-  const hasVeryLongTitle = activeSlide.title.length > 28;
-  const hasLongTitle = activeSlide.title.includes(" ") || activeSlide.title.length > 10;
+  const titleLength = activeSlide.title.trim().length;
+  const hasVeryLongTitle = titleLength > 48;
+  const hasLongTitle = titleLength > 28;
 
   const goToSlide = useCallback((index: number) => {
     setActiveIndex(index);
@@ -133,7 +134,7 @@ export function HomeHeroCarousel({ caravans }: { caravans: CaravanDetail[] }) {
     <section
       aria-label="Pacotes em destaque"
       aria-roledescription="carousel"
-      className="relative isolate h-[850px] max-h-[100svh] min-h-[760px] overflow-hidden bg-leehov-navy-950 text-white"
+      className="relative isolate h-[850px] min-h-[760px] overflow-hidden bg-leehov-navy-950 text-white"
       onBlur={() => setIsPaused(false)}
       onFocus={() => setIsPaused(true)}
       onMouseEnter={() => setIsPaused(true)}
@@ -159,29 +160,29 @@ export function HomeHeroCarousel({ caravans }: { caravans: CaravanDetail[] }) {
       <div className="absolute left-1/2 top-[96px] h-[520px] w-[760px] -translate-x-1/3 rounded-full bg-[radial-gradient(circle,rgb(58_198_244_/_24%)_0%,rgb(12_168_232_/_12%)_42%,rgb(6_26_42_/_0%)_70%)]" />
 
       <div className="relative mx-auto h-full max-w-[1313px] px-5 sm:px-8 xl:px-0">
-        <div className="absolute left-5 top-[176px] max-w-[560px] sm:left-8 sm:top-[220px] lg:top-[305px] xl:left-[56px]">
+        <div className="absolute left-5 top-[152px] max-w-[560px] sm:left-8 sm:top-[188px] lg:top-[257px] xl:left-[56px]">
           <div key={activeSlide.id} aria-live="polite">
-            <div className="relative -top-6 sm:-top-8 lg:-top-10 xl:-top-12">
+            <div>
               <p className="mb-5 text-[12px] font-extrabold uppercase leading-4 tracking-[0.16em] text-leehov-blue-300 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-3 motion-safe:duration-500">
                 {activeSlide.category}
               </p>
               <h1
                 className={cn(
-                  "max-w-[560px] text-balance break-words font-extrabold leading-[0.92] tracking-normal text-white motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-6 motion-safe:duration-700",
+                  "line-clamp-4 max-w-[560px] text-balance break-words font-extrabold leading-[0.92] tracking-normal text-white motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-6 motion-safe:duration-700",
                   hasVeryLongTitle
-                    ? "text-[clamp(40px,4.7vw,64px)] leading-[1]"
+                    ? "text-[clamp(36px,3.6vw,54px)] leading-[0.98]"
                     : hasLongTitle
-                      ? "text-[clamp(50px,6vw,82px)]"
-                      : "text-[clamp(56px,8vw,104px)]",
+                      ? "text-[clamp(40px,4.5vw,64px)]"
+                      : "text-[clamp(48px,5.8vw,82px)]",
                 )}
               >
                 {activeSlide.title}
               </h1>
-              <p className="mt-7 max-w-[520px] text-[18px] font-medium leading-[31px] text-white/88 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-5 motion-safe:delay-100 motion-safe:duration-700 sm:text-[19px]">
+              <p className="mt-6 line-clamp-3 max-w-[520px] text-[18px] font-medium leading-[31px] text-white/88 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-5 motion-safe:delay-100 motion-safe:duration-700 sm:text-[19px]">
                 {activeSlide.description}
               </p>
             </div>
-            <div className="mt-9 flex flex-col gap-[18px] motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 motion-safe:delay-200 motion-safe:duration-700 sm:flex-row">
+            <div className="mt-6 flex flex-col gap-[18px] motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 motion-safe:delay-200 motion-safe:duration-700 sm:flex-row">
               <Button asChild className="h-[58px] min-w-[256px] rounded-full bg-gradient-to-r from-leehov-blue-300 to-leehov-blue-600 px-6 text-[16px] font-extrabold text-white shadow-[0_14px_26px_rgb(8_117_205_/_30%)] hover:from-leehov-blue-500 hover:to-leehov-blue-600 [&_a]:whitespace-nowrap">
                 <Link href={activeSlide.primaryHref}>
                   {activeSlide.primaryLabel}
@@ -197,7 +198,7 @@ export function HomeHeroCarousel({ caravans }: { caravans: CaravanDetail[] }) {
             </div>
           </div>
 
-          {heroSlides.length > 1 ? <div className="mt-6 flex items-center gap-3">
+          {heroSlides.length > 1 ? <div className="mt-5 flex items-center gap-3">
             <Button
               aria-label="Pacote anterior"
               className="size-10 rounded-full border border-white/40 bg-white/8 text-white hover:bg-white/16 hover:text-white"
@@ -249,7 +250,7 @@ export function HomeHeroCarousel({ caravans }: { caravans: CaravanDetail[] }) {
             >
               <div
                 className={cn(
-                  "text-[16px] font-extrabold leading-[18px] transition-colors",
+                  "min-h-[54px] line-clamp-3 text-[16px] font-extrabold leading-[18px] transition-colors",
                   slideIndex === activeIndex ? "text-white" : "text-white/76",
                 )}
               >
@@ -292,7 +293,7 @@ export function HomeHeroCarousel({ caravans }: { caravans: CaravanDetail[] }) {
               >
                 <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-[14px] bg-leehov-navy-800"><Image src={slide.cardImage} alt="" fill sizes="64px" quality={75} className="object-cover" /></span>
                 <span>
-                  <span className="block text-[13px] font-extrabold leading-4 text-white">
+                    <span className="line-clamp-2 block text-[13px] font-extrabold leading-4 text-white">
                     {slide.cardTitle}
                   </span>
                   <span className="mt-1 block text-[11px] font-semibold uppercase tracking-[0.08em] text-white/65">

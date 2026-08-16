@@ -22,7 +22,7 @@ function revalidateMedia() {
   revalidatePath("/admin/configuracoes");
 }
 
-const mediaPreviewIdsSchema = z.array(z.string().uuid()).min(1).max(24);
+const mediaPreviewIdsSchema = z.array(z.string().uuid()).min(1).max(15);
 
 export async function getMediaPreviewUrlsAction(input: unknown): Promise<MediaPreviewResult> {
   await requirePermission("media.view");

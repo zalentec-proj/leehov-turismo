@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Camera, Globe2, Mail, MapPin, MessageCircle } from "lucide-react";
+import { Mail, MapPin, MessageCircle } from "lucide-react";
 import { NewsletterSignup } from "@/features/newsletter/components/newsletter-signup";
 import type { PublicSiteSettings } from "@/features/settings/types";
 import { LEEHOV_WHATSAPP_DISPLAY, LEEHOV_WHATSAPP_URL } from "@/features/settings/utils";
@@ -23,8 +23,20 @@ const footerColumns = [
   },
 ];
 
+function InstagramIcon({ className }: { className?: string }) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className} aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" /></svg>;
+}
+
+function FacebookIcon({ className }: { className?: string }) {
+  return <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true"><path d="M13.8 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.3-1.5 1.6-1.5H17V3.6c-.7-.1-1.5-.2-2.3-.2-2.3 0-3.9 1.4-3.9 4v2.5H8.2V13h2.6v8h3Z" /></svg>;
+}
+
+function YouTubeIcon({ className }: { className?: string }) {
+  return <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true"><path d="M21.6 7.2a3 3 0 0 0-2.1-2.1C17.7 4.6 12 4.6 12 4.6s-5.7 0-7.5.5a3 3 0 0 0-2.1 2.1C1.9 9 1.9 12 1.9 12s0 3 .5 4.8a3 3 0 0 0 2.1 2.1c1.8.5 7.5.5 7.5.5s5.7 0 7.5-.5a3 3 0 0 0 2.1-2.1c.5-1.8.5-4.8.5-4.8s0-3-.5-4.8ZM10.1 15V9l5.2 3-5.2 3Z" /></svg>;
+}
+
 export function SiteFooter({ settings }: { settings: PublicSiteSettings }) {
-  const socialLinks = [{ href: settings.social.instagram, icon: Camera, label: "Instagram" }, { href: settings.social.facebook, icon: Globe2, label: "Facebook" }, { href: settings.social.youtube, icon: MessageCircle, label: "YouTube" }].filter((item) => item.href);
+  const socialLinks = [{ href: settings.social.instagram, icon: InstagramIcon, label: "Instagram" }, { href: settings.social.facebook, icon: FacebookIcon, label: "Facebook" }, { href: settings.social.youtube, icon: YouTubeIcon, label: "YouTube" }].filter((item) => item.href);
   return (
     <footer className="bg-leehov-navy-950 text-white">
       <div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:px-8 lg:grid-cols-[1.1fr_1fr_1fr] lg:px-12">

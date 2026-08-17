@@ -1,7 +1,14 @@
 import { z } from "zod";
 
 const optionalEmail = z.string().trim().email("Informe um e-mail válido.").or(z.literal(""));
-const optionalUrl = z.string().trim().url("Informe uma URL completa e válida.").refine((value) => new URL(value).protocol === "https:", "Use uma URL HTTPS.").or(z.literal(""));
+const optionalUrl = z.string().trim().refine((value) => {
+  if (!value) return true;
+  try {
+    return new URL(value).protocol === "https:";
+  } catch {
+    return false;
+  }
+}, "Use uma URL HTTPS completa e válida.");
 const emailList = z.array(z.string().trim().email()).max(20);
 
 export const siteSettingsSchema = z.object({

@@ -48,10 +48,6 @@ const desktopCardLayout = [
     wrapperClassName: "w-[270px] pt-[18px]",
     imageClassName: "h-[350px] w-[270px]",
   },
-  {
-    wrapperClassName: "w-[270px] pt-[42px]",
-    imageClassName: "h-[350px] w-[270px]",
-  },
 ];
 
 function usePrefersReducedMotion() {
@@ -88,8 +84,8 @@ export function HomeHeroCarousel({ caravans }: { caravans: CaravanDetail[] }) {
   const prefersReducedMotion = usePrefersReducedMotion();
   const activeSlide = heroSlides[activeIndex];
   const titleLength = activeSlide.title.trim().length;
-  const hasVeryLongTitle = titleLength > 48;
-  const hasLongTitle = titleLength > 28;
+  const hasVeryLongTitle = titleLength > 52;
+  const hasLongTitle = titleLength > 32;
 
   const goToSlide = useCallback((index: number) => {
     setActiveIndex(index);
@@ -160,7 +156,7 @@ export function HomeHeroCarousel({ caravans }: { caravans: CaravanDetail[] }) {
       <div className="absolute left-1/2 top-[96px] h-[520px] w-[760px] -translate-x-1/3 rounded-full bg-[radial-gradient(circle,rgb(58_198_244_/_24%)_0%,rgb(12_168_232_/_12%)_42%,rgb(6_26_42_/_0%)_70%)]" />
 
       <div className="relative mx-auto h-full max-w-[1313px] px-5 sm:px-8 xl:px-0">
-        <div className="absolute left-5 top-[152px] max-w-[560px] sm:left-8 sm:top-[188px] lg:top-[257px] xl:left-[56px]">
+        <div className="absolute left-5 top-[128px] max-w-[520px] sm:left-8 sm:top-[150px] lg:top-[168px] xl:left-[56px] xl:top-[205px]">
           <div key={activeSlide.id} aria-live="polite">
             <div>
               <p className="mb-5 text-[12px] font-extrabold uppercase leading-4 tracking-[0.16em] text-leehov-blue-300 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-3 motion-safe:duration-500">
@@ -168,21 +164,21 @@ export function HomeHeroCarousel({ caravans }: { caravans: CaravanDetail[] }) {
               </p>
               <h1
                 className={cn(
-                  "line-clamp-4 max-w-[560px] text-balance break-words font-extrabold leading-[0.92] tracking-normal text-white motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-6 motion-safe:duration-700",
+                  "line-clamp-3 max-w-[520px] text-balance break-words font-extrabold leading-[0.94] tracking-normal text-white motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-6 motion-safe:duration-700",
                   hasVeryLongTitle
-                    ? "text-[clamp(36px,3.6vw,54px)] leading-[0.98]"
+                    ? "text-[clamp(34px,3.25vw,48px)] leading-[0.96]"
                     : hasLongTitle
-                      ? "text-[clamp(40px,4.5vw,64px)]"
-                      : "text-[clamp(48px,5.8vw,82px)]",
+                      ? "text-[clamp(36px,3.6vw,52px)]"
+                      : "text-[clamp(44px,5vw,74px)]",
                 )}
               >
                 {activeSlide.title}
               </h1>
-              <p className="mt-6 line-clamp-3 max-w-[520px] text-[18px] font-medium leading-[31px] text-white/88 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-5 motion-safe:delay-100 motion-safe:duration-700 sm:text-[19px]">
+              <p className="mt-5 line-clamp-3 max-w-[500px] text-[17px] font-medium leading-7 text-white/88 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-5 motion-safe:delay-100 motion-safe:duration-700 sm:text-[18px]">
                 {activeSlide.description}
               </p>
             </div>
-            <div className="mt-6 flex flex-col gap-[18px] motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 motion-safe:delay-200 motion-safe:duration-700 sm:flex-row">
+            <div className="mt-5 flex flex-col gap-[18px] motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 motion-safe:delay-200 motion-safe:duration-700 sm:flex-row">
               <Button asChild className="h-[58px] min-w-[256px] rounded-full bg-gradient-to-r from-leehov-blue-300 to-leehov-blue-600 px-6 text-[16px] font-extrabold text-white shadow-[0_14px_26px_rgb(8_117_205_/_30%)] hover:from-leehov-blue-500 hover:to-leehov-blue-600 [&_a]:whitespace-nowrap">
                 <Link href={activeSlide.primaryHref}>
                   {activeSlide.primaryLabel}
@@ -198,7 +194,7 @@ export function HomeHeroCarousel({ caravans }: { caravans: CaravanDetail[] }) {
             </div>
           </div>
 
-          {heroSlides.length > 1 ? <div className="mt-5 flex items-center gap-3">
+          {heroSlides.length > 1 ? <div className="mt-4 flex items-center gap-3">
             <Button
               aria-label="Pacote anterior"
               className="size-10 rounded-full border border-white/40 bg-white/8 text-white hover:bg-white/16 hover:text-white"
@@ -235,7 +231,7 @@ export function HomeHeroCarousel({ caravans }: { caravans: CaravanDetail[] }) {
           </div> : null}
         </div>
 
-        <div className="pointer-events-none absolute left-[54%] top-[196px] hidden items-start gap-[34px] lg:flex xl:left-[660px]">
+        <div className="pointer-events-none absolute left-[650px] top-[190px] hidden items-start gap-[34px] xl:flex">
           {visibleDesktopCards.map(({ layout, slide, slideIndex }) => (
             <button
               key={`${activeSlide.id}-${slide.id}`}
@@ -250,11 +246,11 @@ export function HomeHeroCarousel({ caravans }: { caravans: CaravanDetail[] }) {
             >
               <div
                 className={cn(
-                  "min-h-[54px] line-clamp-3 text-[16px] font-extrabold leading-[18px] transition-colors",
+                  "min-h-[50px] text-[15px] font-extrabold leading-[17px] transition-colors",
                   slideIndex === activeIndex ? "text-white" : "text-white/76",
                 )}
               >
-                <p>{slide.cardTitle}</p>
+                <p className="line-clamp-2">{slide.cardTitle}</p>
                 <p className="tracking-[0.08em]">★★★★★</p>
               </div>
               <div

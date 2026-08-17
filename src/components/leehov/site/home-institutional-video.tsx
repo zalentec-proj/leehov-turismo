@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { Play } from "lucide-react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,24 +12,34 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-function getYouTubeEmbedUrl(value: string) {
+function getYouTubeVideoId(value: string) {
   try {
     const url = new URL(value);
     const videoId =
       url.hostname === "youtu.be"
         ? url.pathname.slice(1)
-        : (url.searchParams.get("v") ?? "");
-    return /^[A-Za-z0-9_-]{11}$/.test(videoId)
-      ? `https://www.youtube-nocookie.com/embed/${videoId}?rel=0`
-      : "";
+        : url.pathname.startsWith("/shorts/")
+          ? url.pathname.split("/")[2]
+          : (url.searchParams.get("v") ?? "");
+    return /^[A-Za-z0-9_-]{11}$/.test(videoId) ? videoId : "";
   } catch {
     return "";
   }
 }
 
 export function HomeInstitutionalVideo({ videoUrl }: { videoUrl: string }) {
-  const embedUrl = getYouTubeEmbedUrl(videoUrl);
-  if (!embedUrl) return null;
+  const videoId = getYouTubeVideoId(videoUrl);
+  if (!videoId) return null;
+
+  return <InstitutionalVideoContent key={videoId} videoId={videoId} />;
+}
+
+function InstitutionalVideoContent({ videoId }: { videoId: string }) {
+  const maxResolutionThumbnail = videoId ? `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg` : "";
+  const standardThumbnail = videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : "";
+  const [thumbnailUrl, setThumbnailUrl] = useState(maxResolutionThumbnail);
+
+  const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?rel=0`;
 
   return (
     <Dialog>
@@ -38,11 +49,13 @@ export function HomeInstitutionalVideo({ videoUrl }: { videoUrl: string }) {
           className="group relative aspect-video w-full overflow-hidden rounded-[24px] bg-leehov-navy-950 text-left shadow-leehov-floating focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-leehov-blue-300"
         >
           <Image
-            src="/images/leehov/hero-fallback.jpg"
+            src={thumbnailUrl || "/images/leehov/hero-fallback.jpg"}
             alt="Prévia do vídeo institucional da Leehov"
             fill
             sizes="(min-width: 1024px) 55vw, 100vw"
+            quality={90}
             className="object-cover opacity-72 transition duration-500 group-hover:scale-[1.025] motion-reduce:transition-none"
+            onError={() => setThumbnailUrl((current) => current === maxResolutionThumbnail ? standardThumbnail : "")}
           />
           <span className="absolute inset-0 bg-gradient-to-t from-leehov-navy-950/65 to-transparent" />
           <span className="absolute inset-0 flex items-center justify-center">
@@ -55,7 +68,7 @@ export function HomeInstitutionalVideo({ videoUrl }: { videoUrl: string }) {
           </span>
         </button>
       </DialogTrigger>
-      <DialogContent className="max-w-5xl overflow-hidden border-0 bg-leehov-navy-950 p-0 text-white sm:rounded-[24px]">
+      <DialogContent className="w-[min(92vw,calc(88svh*16/9),1200px)] max-w-[calc(100%-1.5rem)] overflow-hidden border-0 bg-leehov-navy-950 p-0 text-white sm:max-w-[min(92vw,calc(88svh*16/9),1200px)] sm:rounded-[24px]">
         <DialogHeader className="sr-only">
           <DialogTitle>Vídeo institucional da Leehov</DialogTitle>
           <DialogDescription>

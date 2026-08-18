@@ -6,8 +6,8 @@ export const metadata = {
 export default function PrivacyPage() {
   return (
     <main className="bg-white pb-24">
-      <header className="bg-leehov-navy-950 px-5 pb-24 pt-40 text-white sm:px-8 lg:px-12"><div className="mx-auto max-w-3xl"><p className="text-xs font-bold uppercase tracking-[0.18em] text-leehov-blue-300">Privacidade e transparência</p><h1 className="mt-4 text-4xl font-extrabold sm:text-5xl">Política de Privacidade</h1><p className="mt-5 leading-7 text-white/65">Como tratamos dados de contato, inscrições, preferências e integrações do site.</p></div></header>
-      <section className="px-5 pt-16 sm:px-8 lg:px-12"><div className="mx-auto max-w-3xl">
+      <header className="bg-leehov-navy-950 px-10 pb-24 pt-40 text-white sm:px-8 lg:px-12"><div className="mx-auto max-w-3xl"><p className="text-xs font-bold uppercase tracking-[0.18em] text-leehov-blue-300">Privacidade e transparência</p><h1 className="mt-4 text-4xl font-extrabold sm:text-5xl">Política de Privacidade</h1><p className="mt-5 leading-7 text-white/65">Como tratamos dados de contato, inscrições, preferências e integrações do site.</p></div></header>
+      <section className="px-10 pt-16 sm:px-8 lg:px-12"><div className="mx-auto max-w-3xl">
         <div className="space-y-6 leading-8 text-leehov-muted">
           <p>
             A Leehov usa os dados informados nos formulários para responder contatos, registrar interesses em pacotes e, quando solicitado, enviar a newsletter. Dados de atendimento ficam acessíveis somente à equipe autorizada.

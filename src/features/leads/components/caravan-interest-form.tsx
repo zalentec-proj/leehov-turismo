@@ -54,7 +54,7 @@ export function CaravanInterestForm({ caravanId, caravanTitle }: { caravanId: st
   const error = (name: keyof CaravanInterestLeadInput) => form.formState.errors[name]?.message;
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4" noValidate>
+    <form onSubmit={form.handleSubmit(onSubmit)} className="grid min-w-0 gap-3 sm:gap-4" noValidate>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2"><Label htmlFor={`interest-name-${caravanId}`}>Nome</Label><Input id={`interest-name-${caravanId}`} autoComplete="name" {...form.register("name")} />{error("name") ? <p className="text-sm text-destructive">{error("name")}</p> : null}</div>
         <div className="space-y-2"><Label htmlFor={`interest-phone-${caravanId}`}>WhatsApp</Label><Input id={`interest-phone-${caravanId}`} type="tel" autoComplete="tel" {...form.register("phone")} />{error("phone") ? <p className="text-sm text-destructive">{error("phone")}</p> : null}</div>
@@ -67,7 +67,7 @@ export function CaravanInterestForm({ caravanId, caravanTitle }: { caravanId: st
       <div className="space-y-2"><Label htmlFor={`interest-message-${caravanId}`}>Mensagem</Label><Textarea id={`interest-message-${caravanId}`} rows={5} {...form.register("message")} />{error("message") ? <p className="text-sm text-destructive">{error("message")}</p> : null}</div>
       <div className="absolute -left-[10000px] top-auto size-px overflow-hidden" aria-hidden="true"><Label htmlFor={`interest-company-${caravanId}`}>Empresa</Label><Input id={`interest-company-${caravanId}`} tabIndex={-1} autoComplete="off" {...form.register("company")} /></div>
       <TurnstileField key={turnstileKey} onTokenChange={setTurnstileToken} />
-      <Button disabled={form.formState.isSubmitting} type="submit" className="rounded-full bg-leehov-blue-600 text-white">
+      <Button disabled={form.formState.isSubmitting} type="submit" className="h-12 w-full rounded-full bg-leehov-blue-600 text-white">
         {form.formState.isSubmitting ? <Loader2 className="size-4 animate-spin" /> : null}{form.formState.isSubmitting ? "Enviando..." : "Quero saber mais"}
       </Button>
       {result ? <Alert className="border-emerald-200 bg-emerald-50 text-emerald-900" role="status"><AlertDescription className="flex flex-col gap-3"><span>{result.message}</span>{result.whatsappUrl ? <a className="inline-flex items-center gap-2 font-bold underline" href={result.whatsappUrl} target="_blank" rel="noreferrer"><MessageCircle className="size-4" />Continuar no WhatsApp</a> : null}</AlertDescription></Alert> : null}

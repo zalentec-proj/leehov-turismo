@@ -138,12 +138,29 @@
   }
   html {
     @apply scroll-smooth;
+    max-width: 100%;
+    overflow-x: clip;
   }
   body {
     @apply min-h-screen bg-background text-foreground antialiased;
+    max-width: 100%;
+    overflow-x: clip;
   }
   ::selection {
     @apply bg-leehov-blue-500 text-white;
+  }
+}
+
+@media (max-width: 400px) {
+  .leehov-turnstile {
+    width: 255px;
+    height: 56px;
+  }
+
+  .leehov-turnstile > div {
+    width: 300px;
+    transform: scale(0.85);
+    transform-origin: left top;
   }
 }
 
@@ -173,6 +190,12 @@
   }
 }
 
+@keyframes leehov-metric-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 @layer utilities {
   .leehov-about-float {
     animation: leehov-about-float 7s ease-in-out infinite;
@@ -192,12 +215,17 @@
   .leehov-route-dash path {
     animation: leehov-route-dash 14s linear infinite;
   }
+
+  .leehov-metric-marquee {
+    animation: leehov-metric-marquee 24s linear infinite;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .leehov-about-float,
   .leehov-about-float-delay,
   .leehov-about-float-soft,
+  .leehov-metric-marquee,
   .leehov-route-dash path {
     animation: none !important;
   }

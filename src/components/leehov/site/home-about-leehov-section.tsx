@@ -204,9 +204,9 @@ export function HomeAboutLeehovSection() {
   return (
     <section
       ref={sectionRef}
-      className="overflow-x-clip bg-leehov-surface px-5 pb-[72px] pt-6 sm:px-8 lg:px-8"
+      className="overflow-x-clip bg-leehov-surface px-5 pb-12 pt-6 sm:px-8 sm:pb-[72px] lg:px-8"
     >
-      <div className="relative mx-auto min-h-[900px] max-w-[1473px] overflow-visible rounded-[20px] bg-[linear-gradient(180deg,#fbfdff_0%,#f2f9ff_100%)] px-6 py-16 sm:px-10 lg:min-h-[980px] lg:px-[100px] lg:py-[116px]">
+      <div className="relative mx-auto max-w-[1473px] overflow-visible rounded-[20px] bg-[linear-gradient(180deg,#fbfdff_0%,#f2f9ff_100%)] px-5 py-12 sm:px-10 sm:py-16 lg:min-h-[980px] lg:px-[100px] lg:py-[116px]">
         <div className="relative z-30 flex max-w-[610px] flex-col gap-[26px]">
           <p
             className={cn(
@@ -219,7 +219,7 @@ export function HomeAboutLeehovSection() {
           </p>
           <h2
             className={cn(
-              "text-[42px] font-extrabold leading-[48px] tracking-normal text-[#102f4d] sm:text-[58px] sm:leading-[64px]",
+              "text-[32px] font-extrabold leading-[38px] tracking-normal text-[#102f4d] sm:text-[58px] sm:leading-[64px]",
               textEntranceClass("delay-75"),
             )}
           >
@@ -227,7 +227,7 @@ export function HomeAboutLeehovSection() {
           </h2>
           <p
             className={cn(
-              "max-w-[610px] text-[18px] font-medium leading-[31px] text-[#425e76]",
+              "max-w-[610px] text-[16px] font-medium leading-7 text-[#425e76] sm:text-[18px] sm:leading-[31px]",
               textEntranceClass("delay-150"),
             )}
           >
@@ -236,7 +236,7 @@ export function HomeAboutLeehovSection() {
           </p>
           <p
             className={cn(
-              "max-w-[610px] text-[16px] leading-[28px] text-[#627b91]",
+              "max-w-[610px] text-[15px] leading-6 text-[#627b91] sm:text-[16px] sm:leading-[28px]",
               textEntranceClass("delay-200"),
             )}
           >
@@ -245,7 +245,18 @@ export function HomeAboutLeehovSection() {
             que superam expectativas.
           </p>
 
-          <div className="grid gap-5 pt-4 sm:grid-cols-2 lg:flex lg:gap-[42px] lg:pt-7">
+          <div className="relative -mx-5 overflow-hidden pt-4 lg:hidden" aria-label="Números da Leehov">
+            <div className="leehov-metric-marquee flex w-max gap-3 px-5">
+              {[...metrics, ...metrics].map((metric, index) => (
+                <div key={`${metric.label}-${index}`} aria-hidden={index >= metrics.length} className="flex min-w-[158px] items-center gap-3 rounded-2xl border border-[#d7e7f5] bg-white px-4 py-3 shadow-[0_8px_22px_rgb(6_42_68_/_5%)]">
+                  <metric.icon aria-hidden="true" className="size-7 shrink-0 stroke-[1.8] text-[#169fe2]" />
+                  <div><p className="text-[20px] font-extrabold leading-5 text-[#143c5e]">{metric.value}</p><p className="mt-1 text-[11px] font-semibold leading-4 text-[#6d879d]">{metric.label}</p></div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="hidden gap-[42px] pt-7 lg:flex">
             {metrics.map((metric, index) => (
               <div
                 key={metric.label}
@@ -291,9 +302,9 @@ export function HomeAboutLeehovSection() {
           </Button>
         </div>
 
-        <div className="pointer-events-none relative z-20 mt-14 h-[560px] lg:absolute lg:inset-0 lg:mt-0 lg:h-auto">
+        <div className="pointer-events-none relative z-20 mt-8 h-[360px] lg:absolute lg:inset-0 lg:mt-0 lg:h-auto">
           <div
-            className="absolute left-[8%] top-0 h-[430px] w-[72%] will-change-transform sm:left-[20%] sm:w-[420px] lg:left-auto lg:right-[190px] lg:top-[92px] lg:h-[690px] lg:w-[480px]"
+            className="absolute left-0 top-0 h-[360px] w-full will-change-transform sm:left-[20%] sm:h-[430px] sm:w-[420px] lg:left-auto lg:right-[190px] lg:top-[92px] lg:h-[690px] lg:w-[480px]"
             style={imageCardScrollStyle({
               start: 0,
               end: 0.72,
@@ -306,7 +317,7 @@ export function HomeAboutLeehovSection() {
           </div>
 
           <div
-            className="absolute right-[3%] top-[54px] h-[190px] w-[46%] will-change-transform sm:right-[12%] sm:w-[250px] lg:right-[72px] lg:top-[170px] lg:h-[230px] lg:w-[260px]"
+            className="absolute right-[3%] top-[54px] hidden h-[190px] w-[46%] will-change-transform sm:right-[12%] sm:w-[250px] lg:block lg:right-[72px] lg:top-[170px] lg:h-[230px] lg:w-[260px]"
             style={imageCardScrollStyle({
               start: 0.28,
               end: 0.88,
@@ -319,7 +330,7 @@ export function HomeAboutLeehovSection() {
           </div>
 
           <div
-            className="absolute right-[7%] top-[312px] h-[180px] w-[43%] will-change-transform sm:right-[15%] sm:w-[230px] lg:right-[75px] lg:top-[528px] lg:h-[220px] lg:w-[230px]"
+            className="absolute right-[7%] top-[312px] hidden h-[180px] w-[43%] will-change-transform sm:right-[15%] sm:w-[230px] lg:block lg:right-[75px] lg:top-[528px] lg:h-[220px] lg:w-[230px]"
             style={imageCardScrollStyle({
               start: 0.48,
               end: 1,
@@ -332,9 +343,9 @@ export function HomeAboutLeehovSection() {
           </div>
         </div>
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[320px] bg-[linear-gradient(180deg,rgb(246_251_255_/_0%)_0%,rgb(235_247_255_/_78%)_56%,rgb(255_255_255_/_92%)_100%)]" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 hidden h-[320px] bg-[linear-gradient(180deg,rgb(246_251_255_/_0%)_0%,rgb(235_247_255_/_78%)_56%,rgb(255_255_255_/_92%)_100%)] lg:block" />
         <div
-          className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[300px] opacity-80"
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-10 hidden h-[300px] opacity-80 lg:block"
           style={{
             backgroundImage:
               "radial-gradient(circle at 12% 72%, rgb(255 255 255 / 72%) 0 12%, transparent 23%), radial-gradient(circle at 36% 90%, rgb(255 255 255 / 78%) 0 16%, transparent 30%), radial-gradient(circle at 68% 82%, rgb(255 255 255 / 68%) 0 13%, transparent 28%), radial-gradient(circle at 88% 70%, rgb(255 255 255 / 72%) 0 12%, transparent 26%)",
@@ -343,7 +354,7 @@ export function HomeAboutLeehovSection() {
 
         <svg
           aria-hidden="true"
-          className="leehov-route-dash pointer-events-none absolute bottom-[42px] left-1/2 z-20 h-[310px] w-[1080px] max-w-none -translate-x-1/2 lg:left-[34px] lg:w-[1390px] lg:translate-x-0"
+          className="leehov-route-dash pointer-events-none absolute bottom-[42px] left-1/2 z-20 hidden h-[310px] w-[1080px] max-w-none -translate-x-1/2 lg:block lg:left-[34px] lg:w-[1390px] lg:translate-x-0"
           viewBox="0 0 1390 310"
           fill="none"
         >
@@ -358,7 +369,7 @@ export function HomeAboutLeehovSection() {
 
         <svg
           aria-hidden="true"
-          className="pointer-events-none absolute bottom-[246px] left-7 z-20 size-11 -rotate-[23deg]"
+          className="pointer-events-none absolute bottom-[246px] left-7 z-20 hidden size-11 -rotate-[23deg] lg:block"
           viewBox="0.008 17.778 43 44"
           fill="none"
         >
@@ -382,7 +393,7 @@ export function HomeAboutLeehovSection() {
           <circle cx="21.5" cy="32.903" r="4.968" fill="#FFFFFF" />
         </svg>
 
-        <div className="pointer-events-none absolute bottom-[132px] -left-[12%] z-40 w-[760px] max-w-[108vw] sm:-left-[4%] lg:left-[2%] lg:w-[860px] xl:bottom-[116px] xl:left-6 xl:w-[980px]">
+        <div className="pointer-events-none absolute bottom-[132px] -left-[12%] z-40 hidden w-[760px] max-w-[108vw] sm:-left-[4%] lg:block lg:left-[2%] lg:w-[860px] xl:bottom-[116px] xl:left-6 xl:w-[980px]">
           <Image
             src="/images/leehov-plane.png"
             alt=""
@@ -399,7 +410,7 @@ export function HomeAboutLeehovSection() {
 
         <svg
           aria-hidden="true"
-          className="pointer-events-none absolute bottom-12 right-6 z-20 size-[72px] rotate-[23deg]"
+          className="pointer-events-none absolute bottom-12 right-6 z-20 hidden size-[72px] rotate-[23deg] lg:block"
           viewBox="0 0 72 72"
           fill="none"
         >

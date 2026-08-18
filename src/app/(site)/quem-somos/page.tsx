@@ -21,7 +21,7 @@ const principles = [
 export default function AboutPage() {
   return (
     <main className="bg-white">
-      <section className="bg-leehov-navy-950 px-5 pb-28 pt-40 text-white sm:px-8 lg:px-12">
+      <section className="bg-leehov-navy-950 px-10 pb-28 pt-40 text-white sm:px-8 lg:px-12">
         <div className="mx-auto grid max-w-[1312px] gap-12 lg:grid-cols-[0.82fr_1.18fr] lg:items-center">
           <div>
             <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-leehov-blue-300">Sobre a Leehov</p>
@@ -39,7 +39,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="px-5 py-20 sm:px-8 lg:px-12 lg:py-24">
+      <section className="px-10 py-20 sm:px-8 lg:px-12 lg:py-24">
         <div className="mx-auto grid max-w-[1120px] gap-12 lg:grid-cols-[0.72fr_1.28fr]">
           <div><p className="text-xs font-extrabold uppercase tracking-[0.2em] text-leehov-blue-600">Nossa história</p><h2 className="mt-4 text-3xl font-extrabold leading-tight text-leehov-navy-950 sm:text-[40px]">Muito além de escolher um destino</h2></div>
           <div className="space-y-6 text-[17px] leading-8 text-leehov-text">
@@ -50,7 +50,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="bg-leehov-surface px-5 py-20 sm:px-8 lg:px-12 lg:py-24">
+      <section className="bg-leehov-surface px-10 py-20 sm:px-8 lg:px-12 lg:py-24">
         <div className="mx-auto max-w-[1312px]">
           <div className="max-w-2xl"><p className="text-xs font-extrabold uppercase tracking-[0.2em] text-leehov-blue-600">Nosso jeito de cuidar</p><h2 className="mt-4 text-3xl font-extrabold text-leehov-navy-950 sm:text-[40px]">O que guia cada pacote</h2></div>
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -59,7 +59,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="px-5 py-20 text-center sm:px-8 lg:px-12">
+      <section className="px-10 py-20 text-center sm:px-8 lg:px-12">
         <div className="mx-auto max-w-3xl"><p className="text-xs font-extrabold uppercase tracking-[0.2em] text-leehov-blue-600">Vamos conversar</p><h2 className="mt-4 text-3xl font-extrabold text-leehov-navy-950 sm:text-[40px]">Sua próxima história pode começar em grupo</h2><p className="mx-auto mt-5 max-w-2xl leading-7 text-leehov-muted">Fale com a equipe Leehov e entenda qual pacote combina com o momento que você quer viver.</p><Button asChild size="lg" className="mt-8 rounded-full bg-leehov-blue-600 px-6 text-white"><a href={LEEHOV_WHATSAPP_URL} target="_blank" rel="noreferrer">Falar com um consultor <ArrowRight className="size-4" /></a></Button></div>
       </section>
     </main>

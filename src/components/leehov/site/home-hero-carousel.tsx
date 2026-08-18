@@ -130,7 +130,7 @@ export function HomeHeroCarousel({ caravans }: { caravans: CaravanDetail[] }) {
     <section
       aria-label="Pacotes em destaque"
       aria-roledescription="carousel"
-      className="relative isolate h-[850px] min-h-[760px] overflow-hidden bg-leehov-navy-950 text-white"
+      className="relative isolate h-[690px] min-h-[640px] overflow-hidden bg-leehov-navy-950 text-white sm:h-[760px] sm:min-h-[720px] lg:h-[850px] lg:min-h-[760px]"
       onBlur={() => setIsPaused(false)}
       onFocus={() => setIsPaused(true)}
       onMouseEnter={() => setIsPaused(true)}
@@ -153,10 +153,10 @@ export function HomeHeroCarousel({ caravans }: { caravans: CaravanDetail[] }) {
       </div>
       <div className="absolute inset-0 bg-[linear-gradient(190deg,rgb(255_255_255_/_0%)_-1%,rgb(8_60_90_/_68%)_38%,rgb(6_26_42_/_96%)_81%)] mix-blend-multiply" />
       <div className="absolute inset-0 bg-leehov-navy-950/20" />
-      <div className="absolute left-1/2 top-[96px] h-[520px] w-[760px] -translate-x-1/3 rounded-full bg-[radial-gradient(circle,rgb(58_198_244_/_24%)_0%,rgb(12_168_232_/_12%)_42%,rgb(6_26_42_/_0%)_70%)]" />
+      <div className="absolute left-1/2 top-[96px] hidden h-[520px] w-[760px] -translate-x-1/3 rounded-full bg-[radial-gradient(circle,rgb(58_198_244_/_24%)_0%,rgb(12_168_232_/_12%)_42%,rgb(6_26_42_/_0%)_70%)] sm:block" />
 
-      <div className="relative mx-auto h-full max-w-[1313px] px-5 sm:px-8 xl:px-0">
-        <div className="absolute left-5 top-[128px] max-w-[520px] sm:left-8 sm:top-[150px] lg:top-[168px] xl:left-[56px] xl:top-[205px]">
+      <div className="relative mx-auto h-full max-w-[1313px] px-10 sm:px-8 xl:px-0">
+        <div className="absolute left-10 top-[104px] max-w-[520px] sm:left-8 sm:top-[150px] lg:top-[168px] xl:left-[56px] xl:top-[205px]">
           <div key={activeSlide.id} aria-live="polite">
             <div>
               <p className="mb-5 text-[12px] font-extrabold uppercase leading-4 tracking-[0.16em] text-leehov-blue-300 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-3 motion-safe:duration-500">
@@ -166,26 +166,26 @@ export function HomeHeroCarousel({ caravans }: { caravans: CaravanDetail[] }) {
                 className={cn(
                   "line-clamp-3 max-w-[520px] text-balance break-words font-extrabold leading-[0.94] tracking-normal text-white motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-6 motion-safe:duration-700",
                   hasVeryLongTitle
-                    ? "text-[clamp(34px,3.25vw,48px)] leading-[0.96]"
+                    ? "text-[32px] leading-[0.96] sm:text-[clamp(34px,3.25vw,48px)]"
                     : hasLongTitle
-                      ? "text-[clamp(36px,3.6vw,52px)]"
-                      : "text-[clamp(44px,5vw,74px)]",
+                      ? "text-[34px] sm:text-[clamp(36px,3.6vw,52px)]"
+                      : "text-[38px] sm:text-[clamp(44px,5vw,74px)]",
                 )}
               >
                 {activeSlide.title}
               </h1>
-              <p className="mt-5 line-clamp-3 max-w-[500px] text-[17px] font-medium leading-7 text-white/88 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-5 motion-safe:delay-100 motion-safe:duration-700 sm:text-[18px]">
+              <p className="mt-4 line-clamp-3 max-w-[500px] text-[15px] font-medium leading-6 text-white/88 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-5 motion-safe:delay-100 motion-safe:duration-700 sm:mt-5 sm:text-[18px] sm:leading-7">
                 {activeSlide.description}
               </p>
             </div>
-            <div className="mt-5 flex flex-col gap-[18px] motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 motion-safe:delay-200 motion-safe:duration-700 sm:flex-row">
-              <Button asChild className="h-[58px] min-w-[256px] rounded-full bg-gradient-to-r from-leehov-blue-300 to-leehov-blue-600 px-6 text-[16px] font-extrabold text-white shadow-[0_14px_26px_rgb(8_117_205_/_30%)] hover:from-leehov-blue-500 hover:to-leehov-blue-600 [&_a]:whitespace-nowrap">
+            <div className="mt-5 flex flex-col gap-3 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 motion-safe:delay-200 motion-safe:duration-700 sm:flex-row sm:gap-[18px]">
+              <Button asChild className="h-12 w-full min-w-0 rounded-full bg-gradient-to-r from-leehov-blue-300 to-leehov-blue-600 px-6 text-[15px] font-extrabold text-white shadow-[0_14px_26px_rgb(8_117_205_/_30%)] hover:from-leehov-blue-500 hover:to-leehov-blue-600 [&_a]:whitespace-nowrap sm:h-[58px] sm:min-w-[256px] sm:w-auto sm:text-[16px]">
                 <Link href={activeSlide.primaryHref}>
                   {activeSlide.primaryLabel}
                   <ArrowRight className="size-4" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" className="h-[58px] w-[210px] rounded-full border-white/55 bg-white/5 text-[16px] font-extrabold text-white hover:bg-white/12 hover:text-white">
+              <Button asChild variant="outline" className="h-12 w-full rounded-full border-white/55 bg-white/5 text-[15px] font-extrabold text-white hover:bg-white/12 hover:text-white sm:h-[58px] sm:w-[210px] sm:text-[16px]">
                 <a href={LEEHOV_WHATSAPP_URL} target="_blank" rel="noreferrer">
                   <MessageCircle className="size-4" />
                   Falar no WhatsApp

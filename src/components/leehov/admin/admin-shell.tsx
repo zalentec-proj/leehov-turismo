@@ -88,7 +88,7 @@ export function AdminShell({ children, profile, permissions }: { children: React
       </aside>
 
       <div className="lg:pl-[250px]">
-        <header className="flex h-20 items-center justify-between border-b border-leehov-border bg-white px-5 sm:px-8 lg:px-10">
+        <header className="flex h-[68px] items-center justify-between border-b border-leehov-border bg-white px-4 sm:h-20 sm:px-8 lg:px-10">
           <div className="flex items-center gap-3">
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild><Button type="button" variant="outline" size="icon" className="rounded-full lg:hidden" aria-label="Abrir navegação do painel"><Menu className="size-4" /></Button></SheetTrigger>
@@ -99,8 +99,8 @@ export function AdminShell({ children, profile, permissions }: { children: React
               </SheetContent>
             </Sheet>
             <div>
-            <p className="text-sm text-leehov-muted">Painel administrativo</p>
-            <h1 className="text-xl font-bold text-leehov-navy-950">
+            <p className="hidden text-sm text-leehov-muted sm:block">Painel administrativo</p>
+            <h1 className="text-base font-bold text-leehov-navy-950 sm:text-xl">
               Leehov Turismo
             </h1>
             </div>
@@ -119,7 +119,7 @@ export function AdminShell({ children, profile, permissions }: { children: React
             </form>
           </div>
         </header>
-        <main className="p-5 sm:p-8 lg:p-10">{children}</main>
+        <main className="p-4 sm:p-8 lg:p-10">{children}</main>
       </div>
     </div>
   );

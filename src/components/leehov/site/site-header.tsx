@@ -48,8 +48,8 @@ export function SiteHeader() {
     >
       <div
         className={cn(
-          "mx-auto flex max-w-[1313px] items-center justify-between px-5 transition-all duration-300 sm:px-8 xl:px-0",
-          hasGlassBackground ? "h-[82px]" : "h-[112px]",
+          "mx-auto flex max-w-[1313px] items-center justify-between px-10 transition-all duration-300 sm:px-8 xl:px-0",
+          hasGlassBackground ? "h-[72px] sm:h-[82px]" : "h-[80px] sm:h-[112px]",
         )}
       >
         <Link href="/" className="block shrink-0" aria-label="Leehov Turismo">
@@ -60,8 +60,8 @@ export function SiteHeader() {
             height={158}
             priority
             unoptimized
-            sizes="(min-width: 640px) 194px, 170px"
-            className="h-auto w-[170px] sm:w-[194px]"
+            sizes="(min-width: 640px) 194px, 138px"
+            className="h-auto w-[138px] sm:w-[194px]"
           />
         </Link>
 

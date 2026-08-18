@@ -41,7 +41,7 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
 
   return (
     <main className="bg-white pb-24">
-      <section className="bg-leehov-navy-950 px-5 pb-32 pt-40 text-white sm:px-8 lg:px-12">
+      <section className="bg-leehov-navy-950 px-10 pb-32 pt-40 text-white sm:px-8 lg:px-12">
         <div className="mx-auto max-w-[1312px]">
           <p className="text-xs font-extrabold uppercase tracking-[0.22em] text-leehov-blue-300">Inspirações de viagem</p>
           <div className="mt-5 grid gap-10 lg:grid-cols-[1fr_420px] lg:items-end">
@@ -55,7 +55,7 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
         </div>
       </section>
 
-      <section className="relative z-10 -mt-14 px-5 sm:px-8 lg:px-12">
+      <section className="relative z-10 -mt-14 px-10 sm:px-8 lg:px-12">
         <div className="mx-auto max-w-[1312px] rounded-[18px] border border-leehov-border bg-white p-4 shadow-leehov-card">
           <nav aria-label="Categorias do Blog" className="flex gap-2 overflow-x-auto pb-1">
             <Button asChild size="sm" variant={!categoria ? "default" : "outline"} className="shrink-0 rounded-full"><Link href={q ? `/blog?q=${encodeURIComponent(q)}` : "/blog"}>Todos</Link></Button>
@@ -65,7 +65,7 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
       </section>
 
       {visibleFeatured ? (
-        <section className="px-5 py-14 sm:px-8 lg:px-12">
+        <section className="px-10 py-14 sm:px-8 lg:px-12">
           <div className="mx-auto max-w-[1312px]">
             <Link href={`/blog/${visibleFeatured.slug}`} className="group grid overflow-hidden rounded-[28px] bg-leehov-navy-950 shadow-leehov-floating lg:grid-cols-[1.15fr_1fr]">
               <div className="relative min-h-[340px] overflow-hidden bg-leehov-navy-800 lg:min-h-[430px]">{visibleFeatured.imageUrl ? <Image src={visibleFeatured.imageUrl} alt={visibleFeatured.coverAltText} fill quality={90} sizes="(min-width: 1024px) 57vw, 100vw" className="object-cover transition duration-700 group-hover:scale-[1.025] motion-reduce:transition-none" /> : null}</div>
@@ -80,14 +80,14 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
         </section>
       ) : null}
 
-      <section className="px-5 py-12 sm:px-8 lg:px-12" aria-labelledby="blog-grid-title">
+      <section className="px-10 py-12 sm:px-8 lg:px-12" aria-labelledby="blog-grid-title">
         <div className="mx-auto max-w-[1312px]">
           <div className="mb-8 flex items-end justify-between gap-6"><div><p className="text-xs font-extrabold uppercase tracking-[0.2em] text-leehov-blue-600">Conteúdo editorial</p><h2 id="blog-grid-title" className="mt-3 text-3xl font-extrabold text-leehov-navy-950 sm:text-[40px]">Explore novas histórias</h2></div>{q || categoria ? <p className="text-sm text-leehov-muted">{posts.length} {posts.length === 1 ? "artigo encontrado" : "artigos encontrados"}</p> : null}</div>
           {gridPosts.length ? <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">{gridPosts.map((post) => <PostCard key={post.id} post={post} />)}</div> : !visibleFeatured ? <div className="rounded-[24px] border border-dashed border-leehov-border bg-leehov-surface px-6 py-20 text-center"><h2 className="text-2xl font-extrabold text-leehov-navy-950">Nenhum artigo publicado</h2><p className="mt-3 text-leehov-muted">{q || categoria ? "Tente ajustar a busca ou escolher outra categoria." : "Novas inspirações serão publicadas em breve."}</p>{q || categoria ? <Button asChild variant="outline" className="mt-6 rounded-full"><Link href="/blog">Limpar busca</Link></Button> : null}</div> : null}
         </div>
       </section>
 
-      <section className="px-5 py-12 sm:px-8 lg:px-12">
+      <section className="px-10 py-12 sm:px-8 lg:px-12">
         <div className="mx-auto grid max-w-[1180px] gap-8 rounded-[24px] bg-leehov-surface p-7 shadow-leehov-card sm:p-10 md:grid-cols-[1fr_480px] md:items-center">
           <div><p className="text-xs font-extrabold uppercase tracking-[0.18em] text-leehov-blue-600">Newsletter</p><h2 className="mt-3 text-2xl font-extrabold text-leehov-navy-950">Receba novas inspirações de viagem</h2><p className="mt-3 text-sm leading-6 text-leehov-muted">Confirme seu e-mail e acompanhe destinos, dicas e próximos pacotes.</p></div>
           <NewsletterSignup source="blog" />

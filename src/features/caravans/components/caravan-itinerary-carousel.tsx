@@ -33,7 +33,7 @@ export function CaravanItineraryCarousel({ days }: { days: CaravanItineraryDay[]
   }
 
   return (
-    <div aria-label="Roteiro dia a dia" aria-roledescription="carousel" className="space-y-7">
+    <div aria-label="Roteiro dia a dia" aria-roledescription="carousel" className="space-y-5 sm:space-y-7">
       <div className="scrollbar-none flex snap-x gap-2 overflow-x-auto pb-2" role="tablist" aria-label="Escolher dia do roteiro">
         {days.map((day, index) => (
           <button
@@ -80,7 +80,7 @@ export function CaravanItineraryCarousel({ days }: { days: CaravanItineraryDay[]
         onPointerUp={(event) => finishSwipe(event.clientX)}
         onPointerCancel={() => { pointerStart.current = null; }}
       >
-        <div className="relative min-h-[300px] overflow-hidden bg-[#DDEAF5] lg:min-h-full">
+        <div className="relative min-h-[240px] overflow-hidden bg-[#DDEAF5] sm:min-h-[300px] lg:min-h-full">
           {activeDay.imageUrl && !failedImages.has(activeDay.id) ? (
             <Image
               key={activeDay.id}
@@ -100,10 +100,10 @@ export function CaravanItineraryCarousel({ days }: { days: CaravanItineraryDay[]
           </div>
         </div>
 
-        <div className="flex flex-col justify-center p-7 sm:p-10 lg:p-12">
+        <div className="flex flex-col justify-center p-5 sm:p-10 lg:p-12">
           <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-leehov-blue-500">{activeDay.location || `Dia ${activeDay.day}`}</p>
-          <h3 className="mt-3 text-[clamp(28px,3.2vw,42px)] font-extrabold leading-[1.08] tracking-[-0.025em] text-leehov-text">{activeDay.title}</h3>
-          <p className="mt-5 text-[16px] leading-7 text-[#5D788F]">{activeDay.description || "Os detalhes deste dia serão apresentados pela equipe Leehov."}</p>
+          <h3 className="mt-3 text-[26px] font-extrabold leading-[1.08] tracking-[-0.025em] text-leehov-text sm:text-[clamp(28px,3.2vw,42px)]">{activeDay.title}</h3>
+          <p className="mt-4 text-[15px] leading-6 text-[#5D788F] sm:mt-5 sm:text-[16px] sm:leading-7">{activeDay.description || "Os detalhes deste dia serão apresentados pela equipe Leehov."}</p>
 
           {(activeDay.meals.length || activeDay.accommodation) ? (
             <div className="mt-7 flex flex-col gap-3 border-t border-[#DDEAF5] pt-6 text-sm text-[#496980] sm:flex-row sm:gap-7">

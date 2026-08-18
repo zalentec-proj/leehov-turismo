@@ -14,8 +14,8 @@ export default async function CaravansPage() {
 
   return (
     <main className="bg-leehov-surface pb-24">
-      <section className="bg-leehov-navy-950 px-5 pb-28 pt-40 text-white sm:px-8 lg:px-12"><div className="mx-auto max-w-[1312px]"><p className="text-xs font-extrabold uppercase tracking-[0.2em] text-leehov-blue-300">Viagens em grupo</p><h1 className="mt-5 text-4xl font-extrabold sm:text-[58px]">Pacotes Leehov</h1><p className="mt-6 max-w-2xl text-lg leading-8 text-white/68">Experiências acompanhadas, com orientação antes do embarque, suporte durante o roteiro e cuidado até o retorno.</p></div></section>
-      <section className="px-5 py-16 sm:px-8 lg:px-12"><div className="mx-auto max-w-[1312px]"><div className="mb-10"><p className="text-xs font-extrabold uppercase tracking-[0.2em] text-leehov-blue-600">Próximas experiências</p><h2 className="mt-3 text-3xl font-extrabold text-leehov-navy-950 sm:text-[40px]">Escolha sua próxima jornada</h2></div>
+      <section className="bg-leehov-navy-950 px-10 pb-16 pt-28 text-white sm:px-8 sm:pb-28 sm:pt-40 lg:px-12"><div className="mx-auto max-w-[1312px]"><p className="text-xs font-extrabold uppercase tracking-[0.2em] text-leehov-blue-300">Viagens em grupo</p><h1 className="mt-4 text-[36px] font-extrabold leading-tight sm:mt-5 sm:text-[58px]">Pacotes Leehov</h1><p className="mt-4 max-w-2xl text-[15px] leading-6 text-white/68 sm:mt-6 sm:text-lg sm:leading-8">Experiências acompanhadas, com orientação antes do embarque, suporte durante o roteiro e cuidado até o retorno.</p></div></section>
+      <section className="px-10 py-16 sm:px-8 lg:px-12"><div className="mx-auto max-w-[1312px]"><div className="mb-10"><p className="text-xs font-extrabold uppercase tracking-[0.2em] text-leehov-blue-600">Próximas experiências</p><h2 className="mt-3 text-3xl font-extrabold text-leehov-navy-950 sm:text-[40px]">Escolha sua próxima jornada</h2></div>
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {caravans.map((caravan) => (
             <CaravanCard key={caravan.id} caravan={caravan} />

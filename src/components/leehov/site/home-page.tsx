@@ -72,17 +72,17 @@ export function HomePage({
     <>
       <HomeHeroCarousel caravans={heroCaravans} />
 
-      <section className="relative z-10 -mt-5 rounded-t-[28px] bg-[#f9fcff] px-5 pb-14 pt-[126px] sm:px-8 lg:px-12 xl:px-[112px]">
+      <section className="relative z-10 -mt-5 rounded-t-[28px] bg-[#f9fcff] px-10 pb-12 pt-20 sm:px-8 sm:pb-14 sm:pt-[126px] lg:px-12 xl:px-[112px]">
         <div className="mx-auto max-w-[1313px]">
           <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
             <div className="max-w-[620px]">
               <p className="text-[13px] font-black uppercase leading-[13px] tracking-[0.08em] text-leehov-blue-500">
                 Viagens incríveis
               </p>
-              <h2 className="mt-[18px] text-[40px] font-extrabold leading-[46px] tracking-normal text-[#153b5b] sm:text-[48px] sm:leading-[54px]">
+              <h2 className="mt-[14px] text-[32px] font-extrabold leading-[38px] tracking-normal text-[#153b5b] sm:mt-[18px] sm:text-[48px] sm:leading-[54px]">
                 Pacotes em destaque
               </h2>
-              <p className="mt-[18px] max-w-[620px] text-[16px] font-normal leading-[26px] text-[#6d879d]">
+              <p className="mt-3 max-w-[620px] text-[15px] font-normal leading-6 text-[#6d879d] sm:mt-[18px] sm:text-[16px] sm:leading-[26px]">
                 Viagens em grupo selecionadas para você explorar cada destino
                 com organização, segurança e acompanhamento próximo.
               </p>
@@ -99,15 +99,15 @@ export function HomePage({
             </Button>
           </div>
 
-          <div className="mt-16 grid gap-7 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-10 flex snap-x gap-4 overflow-x-auto pb-2 sm:mt-16 sm:grid sm:grid-cols-2 sm:gap-7 sm:overflow-visible xl:grid-cols-4">
             {caravans.map((route) => (
               <Link
                 key={route.id}
                 href={`/caravanas/${route.slug}`}
-                className="group flex h-[420px] overflow-hidden rounded-[16px] border border-[#d7e7f5] bg-white shadow-[0_10px_28px_rgb(13_54_83_/_8%)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_44px_rgb(13_54_83_/_12%)]"
+                className="group flex h-[348px] w-[272px] shrink-0 snap-start overflow-hidden rounded-[16px] border border-[#d7e7f5] bg-white shadow-[0_10px_28px_rgb(13_54_83_/_8%)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_44px_rgb(13_54_83_/_12%)] sm:h-[420px] sm:w-auto"
               >
                 <article className="flex w-full flex-col">
-                  <div className="relative h-[250px] shrink-0 overflow-hidden bg-leehov-surface">
+                  <div className="relative h-[196px] shrink-0 overflow-hidden bg-leehov-surface sm:h-[250px]">
                     {route.imageUrl ? (
                       <Image
                         src={route.imageUrl}
@@ -122,8 +122,8 @@ export function HomePage({
                       Grupo Acompanhado
                     </span>
                   </div>
-                  <div className="flex flex-1 flex-col gap-[14px] px-[22px] pb-[18px] pt-[22px]">
-                    <h3 className="text-[20px] font-extrabold leading-6 tracking-normal text-[#102f4d]">
+                  <div className="flex flex-1 flex-col gap-2 px-4 pb-4 pt-4 sm:gap-[14px] sm:px-[22px] sm:pb-[18px] sm:pt-[22px]">
+                    <h3 className="text-[18px] font-extrabold leading-5 tracking-normal text-[#102f4d] sm:text-[20px] sm:leading-6">
                       {route.title}
                     </h3>
                     <p className="text-[14px] font-normal leading-[18px] text-[#7891a8]">
@@ -152,7 +152,7 @@ export function HomePage({
         </div>
       </section>
 
-      <section className="bg-[#f9fcff] px-5 py-20 sm:px-8 lg:px-12 xl:px-[112px]">
+      <section className="bg-[#f9fcff] px-10 py-20 sm:px-8 lg:px-12 xl:px-[112px]">
         <div className="mx-auto grid max-w-[1313px] items-center gap-10 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.18em] text-leehov-blue-500">
@@ -169,7 +169,7 @@ export function HomePage({
               asChild
               variant="outline"
               size="lg"
-              className="mt-7 rounded-full px-6"
+            className="mt-6 w-full rounded-full px-6 sm:mt-7 sm:w-auto"
             >
               <Link href="/quem-somos">
                 Conheça nosso jeito de viajar <ArrowRight className="size-4" />
@@ -182,28 +182,28 @@ export function HomePage({
 
       <HomeAboutLeehovSection />
 
-      <section className="bg-leehov-surface px-5 py-[88px] sm:px-8 lg:px-12 xl:px-[112px]">
+      <section className="bg-leehov-surface px-10 py-16 sm:px-8 sm:py-[88px] lg:px-12 xl:px-[112px]">
         <div className="mx-auto max-w-[1313px]">
           <div className="max-w-[720px]">
             <p className="text-[13px] font-black uppercase leading-[13px] tracking-[0.08em] text-leehov-blue-500">
               <span className="mr-3 inline-block size-2.5 rounded-full bg-leehov-blue-500 align-middle" />
               Diferenciais Leehov
             </p>
-            <h2 className="mt-[26px] text-[40px] font-extrabold leading-[46px] tracking-normal text-[#102f4d] sm:text-[52px] sm:leading-[62px]">
+            <h2 className="mt-4 text-[32px] font-extrabold leading-[38px] tracking-normal text-[#102f4d] sm:mt-[26px] sm:text-[52px] sm:leading-[62px]">
               Por que viajar com a Leehov?
             </h2>
-            <p className="mt-[22px] max-w-[680px] text-[17px] font-normal leading-[31px] text-[#627b91]">
+            <p className="mt-4 max-w-[680px] text-[15px] font-normal leading-6 text-[#627b91] sm:mt-[22px] sm:text-[17px] sm:leading-[31px]">
               Muito mais que destinos, entregamos confiança, cuidado e
               experiências feitas sob medida para você viver o melhor da sua
               jornada.
             </p>
           </div>
 
-          <div className="mt-[68px] grid gap-7 sm:grid-cols-2 lg:grid-cols-5 lg:gap-9">
+          <div className="mt-10 grid gap-4 sm:mt-[68px] sm:grid-cols-2 sm:gap-7 lg:grid-cols-5 lg:gap-9">
             {benefits.map((benefit) => (
               <article
                 key={benefit.title}
-                className="flex min-h-[317px] flex-col items-center rounded-[16px] border border-[#d6e7f5] bg-white px-[30px] pb-[30px] pt-[36px] text-center shadow-[0_18px_46px_rgb(6_42_68_/_6%)]"
+                className="flex min-h-[248px] flex-col items-center rounded-[16px] border border-[#d6e7f5] bg-white px-5 pb-5 pt-6 text-center shadow-[0_18px_46px_rgb(6_42_68_/_6%)] sm:min-h-[317px] sm:px-[30px] sm:pb-[30px] sm:pt-[36px]"
               >
                 <div className="flex size-[42px] items-center justify-center rounded-full bg-leehov-blue-600 text-white">
                   <benefit.icon
@@ -211,10 +211,10 @@ export function HomePage({
                     className="size-[25px] stroke-[2.2]"
                   />
                 </div>
-                <h3 className="mt-[22px] min-h-[42px] text-[18px] font-extrabold leading-5 tracking-normal text-[#123e66]">
+                <h3 className="mt-4 min-h-0 text-[16px] font-extrabold leading-5 tracking-normal text-[#123e66] sm:mt-[22px] sm:min-h-[42px] sm:text-[18px]">
                   {benefit.title}
                 </h3>
-                <p className="mt-[20px] flex-1 text-[14px] font-normal leading-[22px] text-[#627b91]">
+                <p className="mt-3 flex-1 text-[13px] font-normal leading-5 text-[#627b91] sm:mt-[20px] sm:text-[14px] sm:leading-[22px]">
                   {benefit.text}
                 </p>
                 <span
@@ -227,7 +227,7 @@ export function HomePage({
         </div>
       </section>
 
-      <section className="bg-leehov-surface px-5 pb-[72px] pt-0 sm:px-8 lg:px-12 xl:px-11">
+      <section className="bg-leehov-surface px-10 pb-[72px] pt-0 sm:px-8 lg:px-12 xl:px-11">
         <div className="mx-auto max-w-[1449px]">
           <div className="relative min-h-[300px] overflow-hidden rounded-[16px] bg-[linear-gradient(90deg,#082b46_0%,#0b5772_50%,#07253d_100%)] shadow-[0_22px_54px_rgb(6_42_68_/_10%)]">
             <Image
@@ -286,7 +286,7 @@ export function HomePage({
         title={homeSettings.testimonialsTitle}
       />
 
-      <section className="bg-leehov-surface px-5 py-24 sm:px-8 lg:px-12">
+      <section className="bg-leehov-surface px-10 py-16 sm:px-8 sm:py-24 lg:px-12">
         <div className="mx-auto max-w-7xl">
           <SectionHeading
             eyebrow="Inspirações"

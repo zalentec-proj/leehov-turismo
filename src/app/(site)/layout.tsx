@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { FloatingWhatsAppButton } from "@/components/leehov/site/floating-whatsapp-button";
+import { MobileSiteNav } from "@/components/leehov/site/mobile-site-nav";
 import { SiteFooter } from "@/components/leehov/site/site-footer";
 import { SiteHeader } from "@/components/leehov/site/site-header";
 import { getActivePopup } from "@/features/popups/queries";
@@ -12,9 +13,10 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
   return (
     <div className="min-h-screen bg-white text-leehov-text">
       <SiteHeader />
-      <main>{children}</main>
+      <main className="pb-[76px] lg:pb-0">{children}</main>
       <SiteFooter settings={settings} />
       <FloatingWhatsAppButton />
+      <MobileSiteNav />
       <PublicPopupRenderer popup={popup} whatsapp={settings.whatsapp} />
       <CookieConsentManager consent={settings.consent} tracking={tracking} />
     </div>

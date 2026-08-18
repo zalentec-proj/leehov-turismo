@@ -39,7 +39,7 @@ export function SiteFooter({ settings }: { settings: PublicSiteSettings }) {
   const socialLinks = [{ href: settings.social.instagram, icon: InstagramIcon, label: "Instagram" }, { href: settings.social.facebook, icon: FacebookIcon, label: "Facebook" }, { href: settings.social.youtube, icon: YouTubeIcon, label: "YouTube" }].filter((item) => item.href);
   return (
     <footer className="bg-leehov-navy-950 text-white">
-      <div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:px-8 lg:grid-cols-[1.1fr_1fr_1fr] lg:px-12">
+      <div className="mx-auto grid max-w-7xl gap-10 px-10 py-14 sm:px-8 lg:grid-cols-[1.1fr_1fr_1fr] lg:px-12">
         <div>
           <Link href="/" className="mb-5 block" aria-label="Leehov Turismo">
             <Image src="/images/leehov/logo-site.webp" alt="Leehov Turismo" width={500} height={158} unoptimized sizes="176px" className="h-auto w-[176px]" />
@@ -88,8 +88,8 @@ export function SiteFooter({ settings }: { settings: PublicSiteSettings }) {
           </div>
         </div>
       </div>
-      <div className="border-t border-white/10 px-5 py-8 sm:px-8 lg:px-12"><div className="mx-auto grid max-w-7xl gap-5 md:grid-cols-[1fr_520px] md:items-center"><div><p className="text-sm font-bold text-white">Novidades da Leehov no seu e-mail</p><p className="mt-2 text-sm text-white/60">Confirmação segura e cancelamento a qualquer momento.</p></div><NewsletterSignup source="footer" variant="dark" /></div></div>
-      <div className="border-t border-white/10 px-5 py-5 text-center text-xs text-white/50">
+      <div className="border-t border-white/10 px-10 py-8 sm:px-8 lg:px-12"><div className="mx-auto grid max-w-7xl gap-5 md:grid-cols-[1fr_520px] md:items-center"><div><p className="text-sm font-bold text-white">Novidades da Leehov no seu e-mail</p><p className="mt-2 text-sm text-white/60">Confirmação segura e cancelamento a qualquer momento.</p></div><NewsletterSignup source="footer" variant="dark" /></div></div>
+      <div className="border-t border-white/10 px-10 py-5 text-center text-xs text-white/50">
         © 2026 Leehov Turismo. Todos os direitos reservados.
       </div>
     </footer>

@@ -63,7 +63,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     <article className="bg-white">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema).replaceAll("<", "\\u003c") }} />
 
-      <header className="bg-leehov-navy-950 px-5 pb-40 pt-36 text-white sm:px-8 sm:pb-48 sm:pt-40 lg:px-12">
+      <header className="bg-leehov-navy-950 px-10 pb-40 pt-36 text-white sm:px-8 sm:pb-48 sm:pt-40 lg:px-12">
         <div className="mx-auto max-w-[930px] text-center">
           <Button asChild variant="ghost" className="mb-8 rounded-full text-white/72 hover:bg-white/10 hover:text-white">
             <Link href="/blog">
@@ -84,7 +84,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         </div>
       </header>
 
-      <div className="relative z-10 mx-auto -mt-28 max-w-[1312px] px-5 sm:-mt-32 sm:px-8 lg:px-0">
+      <div className="relative z-10 mx-auto -mt-28 max-w-[1312px] px-10 sm:-mt-32 sm:px-8 lg:px-0">
         <div className="relative aspect-[16/8] overflow-hidden rounded-[24px] bg-leehov-surface shadow-leehov-floating sm:aspect-[16/6] lg:h-[408px] lg:aspect-auto">
           {post.imageUrl ? (
             <Image
@@ -104,7 +104,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         </div>
       </div>
 
-      <div className="mx-auto max-w-[740px] px-5 pb-12 pt-16 sm:px-8 sm:pt-20">
+      <div className="mx-auto max-w-[740px] px-10 pb-12 pt-16 sm:px-8 sm:pt-20">
         <div
           className="blog-content text-[17px] leading-8 text-leehov-text [&_a]:font-semibold [&_a]:text-leehov-blue-600 [&_a]:underline-offset-4 [&_a:hover]:underline [&_blockquote]:my-9 [&_blockquote]:rounded-r-xl [&_blockquote]:border-l-4 [&_blockquote]:border-leehov-cyan [&_blockquote]:bg-leehov-surface [&_blockquote]:p-6 [&_h2]:mb-4 [&_h2]:mt-12 [&_h2]:text-[30px] [&_h2]:font-extrabold [&_h2]:leading-tight [&_h2]:text-leehov-navy-950 [&_h3]:mb-3 [&_h3]:mt-9 [&_h3]:text-2xl [&_h3]:font-bold [&_h3]:text-leehov-navy-950 [&_li]:my-2 [&_ol]:my-6 [&_ol]:list-decimal [&_ol]:pl-7 [&_p]:my-6 [&_strong]:text-leehov-navy-950 [&_ul]:my-6 [&_ul]:list-disc [&_ul]:pl-7"
           dangerouslySetInnerHTML={{ __html: post.content }}
@@ -114,7 +114,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       <BlogPhotoGallery images={post.images} />
 
       {post.relatedCaravan?.published ? (
-        <aside className="bg-white px-5 pb-20 pt-2 sm:px-8 lg:px-12 lg:pb-24">
+        <aside className="bg-white px-10 pb-20 pt-2 sm:px-8 lg:px-12 lg:pb-24">
           <div className="mx-auto flex min-h-[206px] max-w-[1312px] flex-col justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-leehov-navy-950 via-leehov-navy-800 to-leehov-blue-600 p-8 text-white shadow-leehov-floating sm:p-10 lg:flex-row lg:items-center lg:justify-between lg:px-14">
             <div className="max-w-3xl">
               <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-leehov-blue-300">Pacote relacionado</p>
@@ -129,7 +129,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
       ) : null}
 
       {related.length ? (
-        <section className="border-t border-leehov-border bg-leehov-surface px-5 py-20 sm:px-8 lg:px-12" aria-labelledby="related-posts-title">
+        <section className="border-t border-leehov-border bg-leehov-surface px-10 py-20 sm:px-8 lg:px-12" aria-labelledby="related-posts-title">
           <div className="mx-auto max-w-[1312px]">
             <div className="flex items-end justify-between gap-6">
               <div>
@@ -157,7 +157,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         </section>
       ) : null}
 
-      <aside className="bg-white px-5 py-20 sm:px-8 lg:px-12">
+      <aside className="bg-white px-10 py-20 sm:px-8 lg:px-12">
         <div className="mx-auto grid max-w-[1080px] gap-8 rounded-[24px] bg-leehov-navy-950 p-8 text-white shadow-leehov-floating sm:p-10 lg:grid-cols-[1fr_480px] lg:items-center">
           <div>
             <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-leehov-blue-300">Próxima viagem</p>

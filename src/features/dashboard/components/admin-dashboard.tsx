@@ -47,18 +47,18 @@ function MetricCard({ metric }: { metric: DashboardMetric }) {
   const trend = formatDashboardTrend(metric.trend);
 
   return (
-    <Card className="min-h-[128px] rounded-[18px] border-leehov-border p-5 shadow-leehov-card sm:p-6">
-      <div className="flex items-start gap-4">
-        <span className={cn("flex size-[72px] shrink-0 items-center justify-center rounded-2xl", style.color)}>
-          <Icon className="size-7" />
+    <Card className="min-h-[104px] rounded-[18px] border-leehov-border p-4 shadow-leehov-card sm:min-h-[128px] sm:p-6">
+      <div className="flex items-start gap-3 sm:gap-4">
+        <span className={cn("flex size-11 shrink-0 items-center justify-center rounded-xl sm:size-[72px] sm:rounded-2xl", style.color)}>
+          <Icon className="size-5 sm:size-7" />
         </span>
         <div className="min-w-0">
-          <p className="text-sm font-bold text-[#3F5677]">{metric.label}</p>
-          <p className="mt-1 text-[31px] font-extrabold leading-none tracking-[-0.04em] text-leehov-navy-950">
+          <p className="text-xs font-bold leading-4 text-[#3F5677] sm:text-sm">{metric.label}</p>
+          <p className="mt-1 text-[24px] font-extrabold leading-none tracking-[-0.04em] text-leehov-navy-950 sm:text-[31px]">
             {formatMetricValue(metric.value)}
           </p>
           <p className={cn(
-            "mt-2 text-xs font-bold sm:text-sm",
+            "mt-1.5 text-[11px] font-bold sm:mt-2 sm:text-sm",
             trend.tone === "positive" && "text-[#08A864]",
             trend.tone === "negative" && "text-[#D84A4A]",
             trend.tone === "neutral" && "text-[#71839A]",
@@ -232,7 +232,7 @@ export function AdminDashboard({ data, profileName }: { data: AdminDashboardData
         <span className="inline-flex w-fit items-center gap-2 rounded-lg border border-leehov-border bg-white px-3 py-2 text-sm font-medium text-[#455D79]"><Clock3 className="size-4 text-[#0878DE]" />{formattedDate}</span>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-4">
         {data.metrics.map((metric) => <MetricCard key={metric.id} metric={metric} />)}
       </section>
 

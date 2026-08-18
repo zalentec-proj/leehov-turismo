@@ -59,25 +59,25 @@ export default async function CaravanPage({ params }: CaravanPageProps) {
     <div className="bg-white">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(tripSchema).replaceAll("<", "\\u003c") }} />
 
-      <section className="relative min-h-[720px] overflow-hidden bg-leehov-navy-950 px-5 pb-14 pt-36 text-white sm:px-8 lg:min-h-[774px] lg:px-12 lg:pb-[54px] lg:pt-[154px]">
+      <section className="relative min-h-[620px] overflow-hidden bg-leehov-navy-950 px-10 pb-10 pt-28 text-white sm:min-h-[720px] sm:px-8 sm:pb-14 sm:pt-36 lg:min-h-[774px] lg:px-12 lg:pb-[54px] lg:pt-[154px]">
         {heroImage ? <Image src={heroImage} alt="" fill priority sizes="100vw" quality={90} className="object-cover object-center lg:object-[72%_center]" /> : null}
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgb(6_26_42)_0%,rgb(6_26_42_/_94%)_38%,rgb(6_26_42_/_68%)_62%,rgb(6_26_42_/_18%)_100%)]" />
         <div className="absolute inset-0 bg-leehov-navy-950/12" />
 
-        <div className="relative mx-auto grid min-h-[520px] max-w-[1312px] items-end gap-10 lg:grid-cols-[minmax(0,720px)_360px] lg:justify-between">
+        <div className="relative mx-auto grid min-h-[460px] max-w-[1312px] items-end gap-7 sm:min-h-[520px] sm:gap-10 lg:grid-cols-[minmax(0,720px)_360px] lg:justify-between">
           <div className="self-center lg:pb-12">
             <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#59DAFF]">{caravan.category?.name || "Pacote acompanhado"}</p>
-            <h1 className="mt-[18px] max-w-[760px] text-[clamp(44px,5.2vw,72px)] font-extrabold leading-[1.03] tracking-[-0.035em] text-white">{caravan.heroTitle || caravan.title}</h1>
-            <p className="mt-[18px] max-w-[640px] text-[18px] leading-[30px] text-white/82">{caravan.heroDescription || caravan.summary}</p>
+            <h1 className="mt-4 max-w-[760px] text-[38px] font-extrabold leading-[1.03] tracking-[-0.035em] text-white sm:mt-[18px] sm:text-[clamp(44px,5.2vw,72px)]">{caravan.heroTitle || caravan.title}</h1>
+            <p className="mt-4 max-w-[640px] text-[15px] leading-6 text-white/82 sm:mt-[18px] sm:text-[18px] sm:leading-[30px]">{caravan.heroDescription || caravan.summary}</p>
 
-            <div className="mt-9 grid max-w-[680px] grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-8">
+            <div className="scrollbar-none -mx-1 mt-7 flex max-w-[680px] snap-x gap-3 overflow-x-auto pb-1 sm:mx-0 sm:mt-9 sm:grid sm:grid-cols-3 sm:gap-8 sm:overflow-visible">
               <HeroMetric icon={Clock3} value={caravan.duration} label="Duração da viagem" />
               <HeroMetric icon={CalendarDays} value={caravan.departureLabel} label="Próxima saída" />
               <HeroMetric icon={UsersRound} value="Grupo acompanhado" label={caravan.leaderName ? `Com ${caravan.leaderName}` : "Com líder Leehov"} />
             </div>
           </div>
 
-          <Card className="rounded-[18px] border-white/18 bg-[#051B2BEA] p-7 text-white shadow-[0_22px_42px_rgb(0_0_0_/_22%)] backdrop-blur-md">
+          <Card className="rounded-[18px] border-white/18 bg-[#051B2BEA] p-5 text-white shadow-[0_22px_42px_rgb(0_0_0_/_22%)] backdrop-blur-md sm:p-7">
             <p className="text-xs font-extrabold uppercase tracking-[0.1em] text-[#67DCF8]">Pacote completo</p>
             <p className="mt-3 text-[27px] font-extrabold leading-[33px] text-white">{caravan.price || "Valores sob consulta"}</p>
             <p className="mt-3 text-[13px] leading-5 text-white/72">Roteiro organizado, suporte próximo e acompanhamento Leehov durante a experiência.</p>
@@ -89,7 +89,7 @@ export default async function CaravanPage({ params }: CaravanPageProps) {
       </section>
 
       <nav aria-label="Navegação deste pacote" className="sticky top-[82px] z-40 border-b border-[#DDEAF5] bg-white/96 shadow-sm backdrop-blur">
-        <div className="scrollbar-none mx-auto flex h-[66px] max-w-[1312px] items-center gap-7 overflow-x-auto px-5 text-sm font-bold text-[#496980] sm:px-8 lg:px-0">
+        <div className="scrollbar-none mx-auto flex h-14 max-w-[1312px] items-center gap-5 overflow-x-auto px-10 text-xs font-bold text-[#496980] sm:h-[66px] sm:gap-7 sm:px-8 sm:text-sm lg:px-0">
           <Link className="whitespace-nowrap text-[#0077C8]" href="#visao-geral">Visão geral</Link>
           <Link className="whitespace-nowrap hover:text-[#0077C8]" href="#roteiro">Roteiro dia a dia</Link>
           <Link className="whitespace-nowrap hover:text-[#0077C8]" href="#inclusos">O que inclui</Link>
@@ -98,12 +98,12 @@ export default async function CaravanPage({ params }: CaravanPageProps) {
         </div>
       </nav>
 
-      <section id="visao-geral" className="scroll-mt-40 px-5 py-20 sm:px-8 lg:px-12 lg:py-[102px]">
+      <section id="visao-geral" className="scroll-mt-32 px-10 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-[102px]">
         <div className="mx-auto grid max-w-[1312px] gap-14 lg:grid-cols-[560px_minmax(0,1fr)] lg:items-center lg:gap-[90px]">
           <div>
             <p className="text-xs font-extrabold uppercase tracking-[0.11em] text-leehov-blue-500">Uma viagem que atravessa culturas</p>
-            <h2 className="mt-4 text-[clamp(36px,4vw,48px)] font-extrabold leading-[1.12] tracking-[-0.03em] text-leehov-text">{caravan.destination}, uma jornada inesquecível.</h2>
-            <p className="mt-5 text-[17px] leading-7 text-[#5B778F]">{caravan.description || caravan.summary}</p>
+            <h2 className="mt-4 text-[32px] font-extrabold leading-[1.12] tracking-[-0.03em] text-leehov-text sm:text-[clamp(36px,4vw,48px)]">{caravan.destination}, uma jornada inesquecível.</h2>
+            <p className="mt-4 text-[15px] leading-6 text-[#5B778F] sm:mt-5 sm:text-[17px] sm:leading-7">{caravan.description || caravan.summary}</p>
             <div className="mt-7 grid grid-cols-3 gap-4 text-sm leading-5 text-[#173E5D]">
               <p><strong className="block text-2xl text-leehov-blue-600">{caravan.itinerary.length || "—"}</strong>Dias detalhados</p>
               <p><strong className="block text-2xl text-leehov-blue-600">{caravan.departures.length || "—"}</strong>Saídas previstas</p>
@@ -111,7 +111,7 @@ export default async function CaravanPage({ params }: CaravanPageProps) {
             </div>
           </div>
 
-          <div className="relative min-h-[390px]">
+          <div className="relative min-h-[300px] sm:min-h-[390px]">
             {overviewImages[0] ? <div className="absolute inset-y-0 left-0 right-16 overflow-hidden rounded-[18px] bg-leehov-surface"><Image src={overviewImages[0].imageUrl} alt={overviewImages[0].altText || caravan.title} fill sizes="(min-width: 1024px) 38vw, 100vw" quality={90} className="object-cover" /></div> : <div className="absolute inset-y-0 left-0 right-16 rounded-[18px] bg-leehov-surface" />}
             {overviewImages[1] ? <div className="absolute bottom-8 right-0 h-[220px] w-[42%] overflow-hidden rounded-[16px] border-[5px] border-white bg-leehov-surface shadow-[0_14px_30px_rgb(6_42_68_/_17%)]"><Image src={overviewImages[1].imageUrl} alt={overviewImages[1].altText || caravan.title} fill sizes="260px" quality={75} className="object-cover" /></div> : null}
             {galleryImages.length ? <Button asChild size="sm" className="absolute bottom-5 left-5 rounded-full bg-leehov-navy-950/78 text-xs font-bold text-white backdrop-blur hover:bg-leehov-navy-950"><Link href="#galeria">Clique e explore as imagens</Link></Button> : null}
@@ -119,15 +119,15 @@ export default async function CaravanPage({ params }: CaravanPageProps) {
         </div>
       </section>
 
-      <section id="roteiro" className="scroll-mt-40 bg-leehov-surface px-5 py-20 sm:px-8 lg:px-12 lg:py-[94px]">
+      <section id="roteiro" className="scroll-mt-32 bg-leehov-surface px-10 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-[94px]">
         <div className="mx-auto max-w-[1156px]">
           <p className="text-xs font-extrabold uppercase tracking-[0.11em] text-leehov-blue-500">Roteiro dia a dia</p>
-          <h2 className="mb-11 mt-3 text-[clamp(36px,4vw,48px)] font-extrabold leading-[1.1] tracking-[-0.03em] text-leehov-text">Uma história a cada parada.</h2>
+          <h2 className="mb-8 mt-3 text-[32px] font-extrabold leading-[1.1] tracking-[-0.03em] text-leehov-text sm:mb-11 sm:text-[clamp(36px,4vw,48px)]">Uma história a cada parada.</h2>
           <CaravanItineraryCarousel days={caravan.itinerary} />
         </div>
       </section>
 
-      <section id="inclusos" className="scroll-mt-40 px-5 py-20 sm:px-8 lg:px-12 lg:py-[90px]">
+      <section id="inclusos" className="scroll-mt-32 px-10 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-[90px]">
         <div className="mx-auto max-w-[1312px]">
           <div className="mb-9 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
             <div><p className="text-xs font-extrabold uppercase tracking-[0.11em] text-leehov-blue-500">Planeje com clareza</p><h2 className="mt-3 text-[clamp(34px,3.7vw,44px)] font-extrabold leading-tight tracking-[-0.03em] text-leehov-text">O que está incluso na viagem</h2></div>
@@ -140,7 +140,7 @@ export default async function CaravanPage({ params }: CaravanPageProps) {
         </div>
       </section>
 
-      <section id="informacoes" className="scroll-mt-40 bg-leehov-surface px-5 py-20 sm:px-8 lg:px-12 lg:py-[78px]">
+      <section id="informacoes" className="scroll-mt-32 bg-leehov-surface px-10 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-[78px]">
         <div className="mx-auto grid max-w-[1312px] gap-12 lg:grid-cols-[450px_minmax(0,1fr)] lg:gap-[70px]">
           <div><p className="text-xs font-extrabold uppercase tracking-[0.11em] text-leehov-blue-500">Informações importantes</p><h2 className="mt-3 text-[clamp(34px,3.6vw,44px)] font-extrabold leading-[1.18] tracking-[-0.03em] text-leehov-text">Tudo organizado antes do embarque.</h2>{caravan.leaderName ? <p className="mt-6 inline-flex items-center gap-2 font-bold text-[#244B68]"><ShieldCheck className="size-5 text-leehov-blue-500" />Acompanhamento de {caravan.leaderName}</p> : null}</div>
           <Accordion type="single" collapsible className="border-t border-[#D5E7F2]">
@@ -153,7 +153,7 @@ export default async function CaravanPage({ params }: CaravanPageProps) {
       </section>
 
       {galleryImages.length ? (
-        <section id="galeria" className="scroll-mt-40 px-5 py-20 sm:px-8 lg:px-12">
+        <section id="galeria" className="scroll-mt-40 px-10 py-20 sm:px-8 lg:px-12">
           <div className="mx-auto max-w-[1312px]">
             <p className="text-xs font-extrabold uppercase tracking-[0.11em] text-leehov-blue-500">Galeria</p>
             <h2 className="mt-3 text-[clamp(34px,3.6vw,44px)] font-extrabold tracking-[-0.03em] text-leehov-text">Conheça a experiência</h2>
@@ -164,10 +164,10 @@ export default async function CaravanPage({ params }: CaravanPageProps) {
         </section>
       ) : null}
 
-      <section id="interesse" className="scroll-mt-32 px-5 py-20 sm:px-8 lg:px-12">
-        <div className="mx-auto grid max-w-[1312px] gap-10 rounded-[24px] bg-[linear-gradient(110deg,#083C5A,#0877B8)] px-7 py-12 text-white sm:px-10 lg:grid-cols-[minmax(0,510px)_minmax(0,1fr)] lg:items-center lg:px-[58px]">
-          <div><p className="text-xs font-extrabold uppercase tracking-[0.11em] text-[#70E6FF]">Fale com um especialista</p><h2 className="mt-3 text-[clamp(36px,4vw,48px)] font-extrabold leading-tight tracking-[-0.03em] text-white">Quer viajar com a Leehov?</h2><p className="mt-4 max-w-lg text-base leading-7 text-white/78">Receba a apresentação completa e tire todas as dúvidas sobre este pacote.</p></div>
-          <Card className="rounded-[18px] border-white/18 bg-white p-6 text-leehov-text shadow-xl"><CaravanInterestForm caravanId={caravan.id} caravanTitle={caravan.title} /></Card>
+      <section id="interesse" className="scroll-mt-32 px-10 py-16 sm:px-8 sm:py-20 lg:px-12">
+        <div className="mx-auto grid max-w-[1312px] gap-7 rounded-[20px] bg-[linear-gradient(110deg,#083C5A,#0877B8)] px-5 py-8 text-white sm:gap-10 sm:rounded-[24px] sm:px-10 sm:py-12 lg:grid-cols-[minmax(0,510px)_minmax(0,1fr)] lg:items-center lg:px-[58px]">
+          <div><p className="text-xs font-extrabold uppercase tracking-[0.11em] text-[#70E6FF]">Fale com um especialista</p><h2 className="mt-3 text-[32px] font-extrabold leading-tight tracking-[-0.03em] text-white sm:text-[clamp(36px,4vw,48px)]">Quer viajar com a Leehov?</h2><p className="mt-4 max-w-lg text-[15px] leading-6 text-white/78 sm:text-base sm:leading-7">Receba a apresentação completa e tire todas as dúvidas sobre este pacote.</p></div>
+          <Card className="min-w-0 rounded-[18px] border-white/18 bg-white p-5 text-leehov-text shadow-xl sm:p-6"><CaravanInterestForm caravanId={caravan.id} caravanTitle={caravan.title} /></Card>
         </div>
       </section>
     </div>
@@ -175,7 +175,7 @@ export default async function CaravanPage({ params }: CaravanPageProps) {
 }
 
 function HeroMetric({ icon: Icon, value, label }: { icon: typeof Clock3; value: string; label: string }) {
-  return <div className="min-w-0"><Icon className="size-5 text-[#6BE1FF]" aria-hidden="true" /><p className="mt-2 truncate text-[15px] font-bold text-white" title={value}>{value}</p><p className="mt-1 text-xs text-white/62">{label}</p></div>;
+  return <div className="min-w-[170px] snap-start rounded-xl border border-white/12 bg-white/5 px-3 py-3 sm:min-w-0 sm:rounded-none sm:border-0 sm:bg-transparent sm:px-0 sm:py-0"><Icon className="size-5 text-[#6BE1FF]" aria-hidden="true" /><p className="mt-2 truncate text-[15px] font-bold text-white" title={value}>{value}</p><p className="mt-1 text-xs text-white/62">{label}</p></div>;
 }
 
 function ListPanel({ title, items, tone }: { title: string; items: string[]; tone: "included" | "excluded" }) {

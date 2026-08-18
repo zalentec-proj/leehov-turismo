@@ -52,7 +52,7 @@ export function ContactForm() {
   const error = (name: keyof ContactLeadInput) => form.formState.errors[name]?.message;
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4" noValidate>
+    <form onSubmit={form.handleSubmit(onSubmit)} className="grid min-w-0 gap-3 sm:gap-4" noValidate>
       <div className="space-y-2">
         <Label htmlFor="contact-name">Nome</Label>
         <Input id="contact-name" autoComplete="name" {...form.register("name")} aria-invalid={Boolean(error("name"))} />
@@ -80,7 +80,7 @@ export function ContactForm() {
         <Input id="contact-company" tabIndex={-1} autoComplete="off" {...form.register("company")} />
       </div>
       <TurnstileField key={turnstileKey} onTokenChange={setTurnstileToken} />
-      <Button disabled={form.formState.isSubmitting} type="submit" className="rounded-full bg-leehov-blue-600 text-white hover:bg-leehov-cyan">
+      <Button disabled={form.formState.isSubmitting} type="submit" className="h-12 w-full rounded-full bg-leehov-blue-600 text-white hover:bg-leehov-cyan">
         {form.formState.isSubmitting ? <Loader2 className="size-4 animate-spin" /> : null}
         {form.formState.isSubmitting ? "Enviando..." : "Enviar mensagem"}
       </Button>

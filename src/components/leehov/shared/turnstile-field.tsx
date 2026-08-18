@@ -42,7 +42,7 @@ export function TurnstileField({
       theme: "light",
       size: "normal",
       appearance,
-      language: "pt-BR",
+      language: "pt-br",
       callback: (token: string) => onTokenChange(token),
       "expired-callback": () => onTokenChange(""),
       "error-callback": () => onTokenChange(""),
@@ -64,7 +64,7 @@ export function TurnstileField({
   return (
     <div
       className={cn(
-        "w-fit max-w-full overflow-hidden rounded-xl",
+        "leehov-turnstile w-[300px] max-w-full overflow-hidden rounded-xl",
         appearance === "always" && "min-h-[65px]",
       )}
       aria-label="Proteção anti-spam"

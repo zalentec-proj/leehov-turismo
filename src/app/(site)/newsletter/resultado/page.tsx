@@ -34,7 +34,7 @@ export default async function NewsletterResultPage({ searchParams }: { searchPar
   const Icon = state.icon;
 
   return (
-    <section className="bg-leehov-surface px-5 pb-24 pt-40 sm:px-8 lg:px-12">
+    <section className="bg-leehov-surface px-10 pb-24 pt-40 sm:px-8 lg:px-12">
       <Card className="mx-auto max-w-2xl rounded-[28px] border-leehov-border p-8 text-center shadow-leehov-floating sm:p-12">
         <span className="mx-auto flex size-16 items-center justify-center rounded-full bg-leehov-blue-500/10 text-leehov-blue-600">
           <Icon className="size-8" />

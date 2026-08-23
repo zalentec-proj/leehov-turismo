@@ -19,7 +19,12 @@ import { getGooglePlacesReviews } from "@/features/testimonials/google-places";
 
 const manualSelect = "*, image:media_assets(id, storage_bucket, storage_path)";
 
-async function signPath(path: string | null | undefined, bucket: "site-media" | "caravan-images" | "blog-images" = "site-media") {
+async function resolveTestimonialImage(
+  id: string | null | undefined,
+  path: string | null | undefined,
+  bucket: "site-media" | "caravan-images" | "blog-images" = "site-media",
+) {
+  if (id) return `/api/media/${id}`;
   if (!path) return "";
   const supabase = createAdminClient();
   const { data } = await supabase.storage
@@ -178,8 +183,8 @@ export async function getFeaturedTestimonials(): Promise<TestimonialSummary[]> {
   const manualItems = await Promise.all(
     ((manual.data ?? []) as unknown as Array<Record<string, unknown>>).map(
       async (row) => {
-        const image = row.image as { storage_bucket?: "site-media" | "caravan-images" | "blog-images"; storage_path?: string } | null;
-        return mapManual(row, await signPath(image?.storage_path, image?.storage_bucket));
+        const image = row.image as { id?: string; storage_bucket?: "site-media" | "caravan-images" | "blog-images"; storage_path?: string } | null;
+        return mapManual(row, await resolveTestimonialImage(image?.id, image?.storage_path, image?.storage_bucket));
       },
     ),
   );
@@ -212,8 +217,8 @@ export async function getAdminTestimonials(): Promise<Testimonial[]> {
   return Promise.all(
     ((data ?? []) as unknown as Array<Record<string, unknown>>).map(
       async (row) => {
-        const image = row.image as { storage_bucket?: "site-media" | "caravan-images" | "blog-images"; storage_path?: string } | null;
-        return mapManual(row, await signPath(image?.storage_path, image?.storage_bucket));
+        const image = row.image as { id?: string; storage_bucket?: "site-media" | "caravan-images" | "blog-images"; storage_path?: string } | null;
+        return mapManual(row, await resolveTestimonialImage(image?.id, image?.storage_path, image?.storage_bucket));
       },
     ),
   );

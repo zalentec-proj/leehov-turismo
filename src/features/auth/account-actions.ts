@@ -8,6 +8,7 @@ import { recoverySchema, setPasswordSchema } from "@/features/auth/schema";
 import { sendTransactionalEmail } from "@/lib/email/send-email";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { consumeRateLimit } from "@/lib/security/public-forms";
 import type { ActionState } from "@/lib/validations/action-state";
 import { isPendingOneTimeUse } from "@/features/auth/one-time-state";
 
@@ -21,6 +22,9 @@ export async function requestPasswordRecoveryAction(
   _previousState: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
+  if (!await consumeRateLimit("password_recovery", 3, 3600)) {
+    return { success: true, message: GENERIC_RECOVERY_MESSAGE };
+  }
   const parsed = recoverySchema.safeParse({ email: formData.get("email") });
   if (!parsed.success) return { success: true, message: GENERIC_RECOVERY_MESSAGE };
   const admin = createAdminClient();

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { loginSchema } from "@/features/auth/schema";
 import { firstAllowedAdminPath, getEffectivePermissions } from "@/features/auth/permissions";
 import { createClient } from "@/lib/supabase/server";
+import { consumeRateLimit } from "@/lib/security/public-forms";
 import type { ActionState } from "@/lib/validations/action-state";
 
 export async function loginAction(
@@ -17,6 +18,10 @@ export async function loginAction(
 
   if (!parsed.success) {
     return { success: false, message: parsed.error.issues[0]?.message ?? "Revise os dados." };
+  }
+
+  if (!await consumeRateLimit("login", 5, 900)) {
+    return { success: false, message: "Muitas tentativas de acesso. Aguarde 15 minutos e tente novamente." };
   }
 
   const supabase = await createClient();

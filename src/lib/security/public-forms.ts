@@ -8,6 +8,7 @@ import type { AttributionInput } from "@/features/shared/attribution";
 import type { Json } from "@/types/database";
 
 export type PublicFormScope = "contact" | "caravan_interest" | "newsletter";
+export type RateLimitScope = PublicFormScope | "login" | "password_recovery";
 
 type SecurityResult =
   | { allowed: true; metadata: Record<string, Json | undefined> }
@@ -58,19 +59,7 @@ export async function protectPublicForm(input: {
   const requestHeaders = await headers();
   const forwardedFor = requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim();
   const remoteIp = forwardedFor || requestHeaders.get("x-real-ip")?.trim() || "unknown";
-  const identifierHash = createHmac("sha256", requireFormSecuritySecret())
-    .update(`${input.scope}:${remoteIp}`)
-    .digest("hex");
-
-  const admin = createAdminClient();
-  const { data: withinLimit, error: rateError } = await admin.rpc("consume_form_rate_limit", {
-    p_scope: input.scope,
-    p_identifier_hash: identifierHash,
-    p_limit: 5,
-    p_window_seconds: 900,
-  });
-
-  if (rateError) throw rateError;
+  const withinLimit = await consumeRateLimit(input.scope, 5, 900, remoteIp);
   if (!withinLimit) {
     return {
       allowed: false,
@@ -102,4 +91,44 @@ export async function protectPublicForm(input: {
       utmTerm: cleanUtm(input.attribution?.utmTerm),
     },
   };
+}
+
+/** Applies server-side limits to forms that do not carry a Turnstile widget. */
+export async function consumeRateLimit(
+  scope: RateLimitScope,
+  limit: number,
+  windowSeconds: number,
+  suppliedIp?: string,
+) {
+  const requestHeaders = await headers();
+  const forwardedFor = requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim();
+  const remoteIp = suppliedIp || forwardedFor || requestHeaders.get("x-real-ip")?.trim() || "unknown";
+  const identifierHash = createHmac("sha256", requireFormSecuritySecret())
+    .update(`${scope}:${remoteIp}`)
+    .digest("hex");
+  const admin = createAdminClient();
+  const parameters = {
+    p_identifier_hash: identifierHash,
+    p_limit: limit,
+    p_window_seconds: windowSeconds,
+  };
+  let { data, error } = await admin.rpc("consume_form_rate_limit", {
+    ...parameters,
+    p_scope: scope,
+  });
+
+  // Compatibility during the remote migration window: older databases only
+  // accept public-form scope names. The HMAC still contains the real scope, so
+  // login and recovery counters remain isolated and no request is allowed
+  // without a database-backed limit.
+  if (error && (scope === "login" || scope === "password_recovery")) {
+    const fallback = await admin.rpc("consume_form_rate_limit", {
+      ...parameters,
+      p_scope: "contact",
+    });
+    data = fallback.data;
+    error = fallback.error;
+  }
+  if (error) throw error;
+  return Boolean(data);
 }

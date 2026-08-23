@@ -28,13 +28,13 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
       description,
       publishedTime: post.publishedAt,
       authors: [post.author],
-      images: post.imageUrl ? [{ url: post.imageUrl, alt: post.coverAltText }] : [],
+      images: post.imagePath ? [{ url: `/api/open-graph/blog/${encodeURIComponent(post.slug)}`, alt: post.coverAltText }] : [],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: post.imageUrl ? [post.imageUrl] : [],
+      images: post.imagePath ? [`/api/open-graph/blog/${encodeURIComponent(post.slug)}`] : [],
     },
   };
 }
@@ -51,7 +51,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     "@type": "BlogPosting",
     headline: post.title,
     description: post.summary,
-    image: post.imageUrl || undefined,
+    image: post.imagePath ? `/api/open-graph/blog/${encodeURIComponent(post.slug)}` : undefined,
     datePublished: post.publishedAt,
     dateModified: post.publishedAt,
     author: { "@type": "Person", name: post.author },

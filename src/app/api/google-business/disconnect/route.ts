@@ -4,8 +4,10 @@ import { getPermissionAccess } from "@/features/auth/permissions";
 import { getLiveGoogleConnection, GOOGLE_TOKEN_KEY_ENV } from "@/lib/google/business-profile";
 import { decryptSecret } from "@/lib/security/encryption";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { hasSameOrigin } from "@/lib/security/request";
 
-export async function POST() {
+export async function POST(request: Request) {
+  if (!hasSameOrigin(request)) return NextResponse.json({ error: "Origem não permitida" }, { status: 403 });
   const access = await getPermissionAccess("testimonials.manage_google");
   if (!access) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   const { profile } = access;

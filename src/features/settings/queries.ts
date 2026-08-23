@@ -88,15 +88,6 @@ const safeHttpsUrl = (value: string) => {
 const validTrackingId = (value: string, pattern: RegExp) =>
   pattern.test(value) ? value : "";
 
-async function signOgImage(path?: string | null, bucket: "site-media" | "caravan-images" | "blog-images" = "site-media") {
-  if (!path) return "";
-  const admin = createAdminClient();
-  const { data } = await admin.storage
-    .from(bucket)
-    .createSignedUrl(path, 3600);
-  return data?.signedUrl ?? "";
-}
-
 function rowMap(
   rows: Array<{
     key: string;
@@ -129,17 +120,6 @@ export async function getPublicSiteSettings(): Promise<PublicSiteSettings> {
   const consent = objectValue(rows.get("cookie_consent")?.value);
   const seoRow = rows.get("seo_global") as
     { media_asset_id?: string | null } | undefined;
-  let ogStoragePath = "";
-  let ogStorageBucket: "site-media" | "caravan-images" | "blog-images" = "site-media";
-  if (seoRow?.media_asset_id) {
-    const { data: media } = await createAdminClient()
-      .from("media_assets")
-      .select("storage_bucket, storage_path")
-      .eq("id", seoRow.media_asset_id)
-      .maybeSingle();
-    ogStoragePath = media?.storage_path ?? "";
-    ogStorageBucket = (media?.storage_bucket as typeof ogStorageBucket | undefined) ?? "site-media";
-  }
   const resolved = {
     contact: {
       phone: textValue(contact, "phone"),
@@ -197,7 +177,9 @@ export async function getPublicSiteSettings(): Promise<PublicSiteSettings> {
         seoFallback.defaultDescription,
       ),
       ogImageAssetId: seoRow?.media_asset_id ?? "",
-      ogImageUrl: await signOgImage(ogStoragePath, ogStorageBucket),
+      // Do not expose Storage signed URLs in SSR metadata. The public route
+      // checks that the configured asset is public-facing and streams it.
+      ogImageUrl: seoRow?.media_asset_id ? "/api/open-graph/site/principal" : "",
     },
     consent: {
       enabled: boolValue(consent, "enabled", true),

@@ -21,9 +21,9 @@ export async function generateMetadata({ params }: CaravanPageProps): Promise<Me
   // `heroImageUrl` always has a visual fallback for the page hero. Metadata must
   // only use a resolved hero URL; otherwise the package card image is the
   // canonical social preview instead of a generic fallback.
-  const image = caravan.heroImagePath && caravan.heroImageUrl !== "/images/leehov/hero-fallback.jpg"
-    ? caravan.heroImageUrl
-    : caravan.imageUrl;
+  const image = caravan.heroImagePath || caravan.imagePath
+    ? `/api/open-graph/caravana/${encodeURIComponent(caravan.slug)}`
+    : "";
   return {
     title: caravan.seoTitle ? { absolute: caravan.seoTitle } : caravan.title,
     description,
@@ -52,7 +52,9 @@ export default async function CaravanPage({ params }: CaravanPageProps) {
     description: caravan.summary,
     touristType: "Viagem em grupo acompanhada",
     itinerary: caravan.destination,
-    image: heroImage || undefined,
+    image: caravan.heroImagePath || caravan.imagePath
+      ? `/api/open-graph/caravana/${encodeURIComponent(caravan.slug)}`
+      : undefined,
   };
 
   return (
@@ -64,20 +66,20 @@ export default async function CaravanPage({ params }: CaravanPageProps) {
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgb(6_26_42)_0%,rgb(6_26_42_/_94%)_38%,rgb(6_26_42_/_68%)_62%,rgb(6_26_42_/_18%)_100%)]" />
         <div className="absolute inset-0 bg-leehov-navy-950/12" />
 
-        <div className="relative mx-auto grid min-h-[460px] max-w-[1312px] items-end gap-7 sm:min-h-[520px] sm:gap-10 lg:grid-cols-[minmax(0,720px)_360px] lg:justify-between">
-          <div className="self-center lg:pb-12">
+        <div className="relative mx-auto grid min-h-[460px] max-w-[1312px] min-w-0 items-end gap-7 sm:min-h-[520px] sm:gap-10 lg:grid-cols-[minmax(0,720px)_360px] lg:justify-between">
+          <div className="min-w-0 self-center lg:pb-12">
             <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-[#59DAFF]">{caravan.category?.name || "Pacote acompanhado"}</p>
             <h1 className="mt-4 max-w-[760px] text-[38px] font-extrabold leading-[1.03] tracking-[-0.035em] text-white sm:mt-[18px] sm:text-[clamp(44px,5.2vw,72px)]">{caravan.heroTitle || caravan.title}</h1>
             <p className="mt-4 max-w-[640px] text-[15px] leading-6 text-white/82 sm:mt-[18px] sm:text-[18px] sm:leading-[30px]">{caravan.heroDescription || caravan.summary}</p>
 
-            <div className="scrollbar-none -mx-1 mt-7 flex max-w-[680px] snap-x gap-3 overflow-x-auto pb-1 sm:mx-0 sm:mt-9 sm:grid sm:grid-cols-3 sm:gap-8 sm:overflow-visible">
+            <div className="scrollbar-none -mx-1 mt-7 flex w-full min-w-0 max-w-[680px] snap-x gap-3 overflow-x-auto overscroll-x-contain pb-1 sm:mx-0 sm:mt-9 sm:grid sm:grid-cols-3 sm:gap-8 sm:overflow-visible">
               <HeroMetric icon={Clock3} value={caravan.duration} label="Duração da viagem" />
               <HeroMetric icon={CalendarDays} value={caravan.departureLabel} label="Próxima saída" />
               <HeroMetric icon={UsersRound} value="Grupo acompanhado" label={caravan.leaderName ? `Com ${caravan.leaderName}` : "Com líder Leehov"} />
             </div>
           </div>
 
-          <Card className="rounded-[18px] border-white/18 bg-[#051B2BEA] p-5 text-white shadow-[0_22px_42px_rgb(0_0_0_/_22%)] backdrop-blur-md sm:p-7">
+          <Card className="min-w-0 rounded-[18px] border-white/18 bg-[#051B2BEA] p-5 text-white shadow-[0_22px_42px_rgb(0_0_0_/_22%)] backdrop-blur-md sm:p-7">
             <p className="text-xs font-extrabold uppercase tracking-[0.1em] text-[#67DCF8]">Pacote completo</p>
             <p className="mt-3 text-[27px] font-extrabold leading-[33px] text-white">{caravan.price || "Valores sob consulta"}</p>
             <p className="mt-3 text-[13px] leading-5 text-white/72">Roteiro organizado, suporte próximo e acompanhamento Leehov durante a experiência.</p>
@@ -88,8 +90,8 @@ export default async function CaravanPage({ params }: CaravanPageProps) {
         </div>
       </section>
 
-      <nav aria-label="Navegação deste pacote" className="sticky top-[82px] z-40 border-b border-[#DDEAF5] bg-white/96 shadow-sm backdrop-blur">
-        <div className="scrollbar-none mx-auto flex h-14 max-w-[1312px] items-center gap-5 overflow-x-auto px-10 text-xs font-bold text-[#496980] sm:h-[66px] sm:gap-7 sm:px-8 sm:text-sm lg:px-0">
+      <nav aria-label="Navegação deste pacote" className="sticky top-[72px] z-40 border-b border-[#DDEAF5] bg-white shadow-sm sm:top-[82px]">
+        <div className="scrollbar-none mx-auto grid h-14 max-w-[1312px] grid-cols-[.74fr_1.24fr_.94fr_1.08fr] items-center gap-2 overflow-x-auto px-5 text-center text-[clamp(10px,2.85vw,14px)] font-bold leading-4 text-[#496980] sm:flex sm:h-[66px] sm:gap-7 sm:px-8 sm:text-left sm:text-sm lg:px-0">
           <Link className="whitespace-nowrap text-[#0077C8]" href="#visao-geral">Visão geral</Link>
           <Link className="whitespace-nowrap hover:text-[#0077C8]" href="#roteiro">Roteiro dia a dia</Link>
           <Link className="whitespace-nowrap hover:text-[#0077C8]" href="#inclusos">O que inclui</Link>

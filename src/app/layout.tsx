@@ -10,7 +10,9 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
     title: { default: settings.seo.siteName, template: settings.seo.titleTemplate },
     description: settings.seo.defaultDescription,
-    openGraph: { siteName: settings.seo.siteName, description: settings.seo.defaultDescription, images: settings.seo.ogImageUrl ? [{ url: settings.seo.ogImageUrl }] : undefined },
+    // The public Open Graph route streams the selected private asset. This
+    // keeps temporary Supabase Storage bearer URLs out of rendered metadata.
+    openGraph: { siteName: settings.seo.siteName, description: settings.seo.defaultDescription, images: settings.seo.ogImageAssetId ? [{ url: "/api/open-graph/site/principal" }] : undefined },
   };
 }
 

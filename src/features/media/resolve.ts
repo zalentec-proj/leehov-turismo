@@ -9,6 +9,7 @@ export async function resolveMediaUrls(
   fallbackBucket: MediaBucket,
   _expiresIn = 3600,
 ): Promise<ReadonlyMap<string, string>> {
+  void _expiresIn;
   const uniquePaths = [...new Set(paths.filter((path): path is string => Boolean(path) && !path?.startsWith("/") && !/^https?:\/\//i.test(path ?? "")))];
   if (!uniquePaths.length) return new Map();
 

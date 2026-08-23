@@ -1,6 +1,5 @@
 import "server-only";
 
-import sharp from "sharp";
 import { NextResponse } from "next/server";
 import { getCurrentProfile } from "@/features/auth/queries";
 import { isMediaPathPublic } from "@/features/media/public-access";
@@ -8,6 +7,31 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 export const allowedMediaBuckets = new Set(["site-media", "blog-images", "caravan-images"]);
 export const allowedImageMimeTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
+
+function mediaCacheControl(publicAsset: boolean) {
+  return publicAsset
+    ? "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800"
+    : "private, no-store";
+}
+
+function mediaResponse(
+  body: ArrayBuffer,
+  contentType: string,
+  publicAsset: boolean,
+  optimized: boolean,
+) {
+  const cacheControl = mediaCacheControl(publicAsset);
+  return new NextResponse(body, {
+    headers: {
+      "content-type": contentType,
+      "cache-control": cacheControl,
+      "cdn-cache-control": cacheControl,
+      "x-content-type-options": "nosniff",
+      "x-leehov-image-optimized": optimized ? "1" : "0",
+      "x-robots-tag": "noindex, nofollow",
+    },
+  });
+}
 
 function boundedInteger(value: string | null, fallback: number, min: number, max: number) {
   const parsed = Number.parseInt(value ?? "", 10);
@@ -39,25 +63,19 @@ export async function deliverMediaImage(
   const url = new URL(request.url);
   const width = boundedInteger(url.searchParams.get("w"), 1600, 64, 2560);
   const quality = boundedInteger(url.searchParams.get("q"), 82, 60, 92);
+  const input = await data.arrayBuffer();
   try {
-    const output = await sharp(Buffer.from(await data.arrayBuffer()), { failOn: "error" })
+    const { default: sharp } = await import("sharp");
+    const output = await sharp(Buffer.from(input), { failOn: "error" })
       .rotate()
       .resize({ width, withoutEnlargement: true, fit: "inside" })
       .webp({ quality, effort: 4, smartSubsample: true })
       .toBuffer();
-    const cacheControl = publicAsset
-      ? "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800"
-      : "private, no-store";
-    return new NextResponse(new Uint8Array(output), {
-      headers: {
-        "content-type": "image/webp",
-        "cache-control": cacheControl,
-        "cdn-cache-control": cacheControl,
-        "x-content-type-options": "nosniff",
-        "x-robots-tag": "noindex, nofollow",
-      },
-    });
+    return mediaResponse(Uint8Array.from(output).buffer, "image/webp", publicAsset, true);
   } catch {
-    return new NextResponse("Imagem inválida.", { status: 422 });
+    // A imagem original continua sendo entregue se o runtime não carregar o
+    // binário nativo do Sharp. A URL estável ainda permite cache no CDN e evita
+    // que uma falha opcional de otimização derrube as imagens do site.
+    return mediaResponse(input, data.type, publicAsset, false);
   }
 }

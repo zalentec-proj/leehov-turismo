@@ -29,7 +29,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const admin = createAdminClient();
   const { data: asset, error } = await admin
     .from("media_assets")
-    .select("id, storage_bucket, storage_path, mime_type")
+    .select("*")
     .eq("id", id)
     .maybeSingle();
   if (error) return imageNotFound("asset-error", error.code, error.message);
@@ -39,5 +39,6 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     bucket: asset.storage_bucket,
     path: asset.storage_path,
     mimeType: asset.mime_type,
+    provider: "storage_provider" in asset && asset.storage_provider === "r2" ? "r2" : "supabase",
   });
 }

@@ -1007,8 +1007,11 @@ export type Database = {
           source_label: string | null
           source_type: string
           storage_bucket: string
+          storage_migrated_at: string | null
           storage_path: string
+          storage_provider: string
           tags: string[]
+          content_sha256: string | null
           updated_at: string
         }
         Insert: {
@@ -1025,8 +1028,11 @@ export type Database = {
           source_label?: string | null
           source_type?: string
           storage_bucket?: string
+          storage_migrated_at?: string | null
           storage_path: string
+          storage_provider?: string
           tags?: string[]
+          content_sha256?: string | null
           updated_at?: string
         }
         Update: {
@@ -1043,8 +1049,11 @@ export type Database = {
           source_label?: string | null
           source_type?: string
           storage_bucket?: string
+          storage_migrated_at?: string | null
           storage_path?: string
+          storage_provider?: string
           tags?: string[]
+          content_sha256?: string | null
           updated_at?: string
         }
         Relationships: [

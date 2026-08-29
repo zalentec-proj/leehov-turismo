@@ -16,7 +16,7 @@ A arquitetura será modular por domínio para facilitar manutenção e evoluçã
 | Estilização | Tailwind CSS |
 | Banco | Supabase PostgreSQL |
 | Autenticação | Supabase Auth |
-| Storage | Supabase Storage |
+| Storage | Cloudflare R2 para mídia nova, com fallback temporário no Supabase Storage |
 | Deploy | Vercel |
 | Validação | Zod |
 | Formulários | React Hook Form |
@@ -143,6 +143,8 @@ Rotas principais:
 6. Cloudflare Turnstile para proteção dos formulários.
 7. Webhooks server-side para eventos do sistema.
 8. WhatsApp com mensagem personalizada por caravana.
+
+As imagens públicas são servidas por rotas same-origin `/api/media`, com transformação pelo Sharp e cache da Vercel. O bucket R2 permanece privado; banco e autenticação continuam no Supabase.
 
 ## Regras técnicas
 

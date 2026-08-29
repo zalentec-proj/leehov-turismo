@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { allowedMediaBuckets, deliverMediaImage } from "@/features/media/delivery";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function GET(
   request: Request,
@@ -16,5 +17,22 @@ export async function GET(
   ) {
     return new NextResponse("Imagem não encontrada.", { status: 404 });
   }
-  return deliverMediaImage(request, { bucket, path: storagePath });
+
+  const { data: catalogAsset } = await createAdminClient()
+    .from("media_assets")
+    .select("*")
+    .eq("storage_bucket", bucket)
+    .eq("storage_path", storagePath)
+    .maybeSingle();
+
+  return deliverMediaImage(request, {
+    id: catalogAsset?.id,
+    bucket,
+    path: storagePath,
+    mimeType: catalogAsset?.mime_type,
+    provider:
+      catalogAsset && "storage_provider" in catalogAsset && catalogAsset.storage_provider === "r2"
+        ? "r2"
+        : "supabase",
+  });
 }

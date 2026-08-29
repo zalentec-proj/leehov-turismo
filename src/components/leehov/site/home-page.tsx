@@ -18,16 +18,14 @@ import { HomeHeroCarousel } from "@/components/leehov/site/home-hero-carousel";
 import { HomeInstitutionalVideo } from "@/components/leehov/site/home-institutional-video";
 import type { BlogPostSummary } from "@/features/blog/types";
 import type { CaravanDetail, CaravanSummary } from "@/features/caravans/types";
-import type { TestimonialSummary } from "@/features/testimonials/types";
 import { NewsletterSignup } from "@/features/newsletter/components/newsletter-signup";
-import { TestimonialsCarousel } from "@/features/testimonials/components/testimonials-carousel";
+import { EmbedSocialGoogleReviews } from "@/features/testimonials/components/embed-social-google-reviews";
 import type { HomeSettings } from "@/features/settings/types";
 
 type HomePageProps = {
   caravans: CaravanSummary[];
   heroCaravans: CaravanDetail[];
   posts: BlogPostSummary[];
-  testimonials: TestimonialSummary[];
   homeSettings: HomeSettings;
 };
 
@@ -65,7 +63,6 @@ export function HomePage({
   caravans,
   heroCaravans,
   posts,
-  testimonials,
   homeSettings,
 }: HomePageProps) {
   return (
@@ -114,7 +111,7 @@ export function HomePage({
                         alt={`Imagem do pacote ${route.title}`}
                         fill
                         sizes="(min-width: 1280px) 25vw, (min-width: 640px) 50vw, 100vw"
-                        quality={75}
+                        quality={78}
                         className="object-cover transition duration-500 group-hover:scale-105 motion-reduce:transition-none"
                       />
                     ) : null}
@@ -280,11 +277,7 @@ export function HomePage({
         </div>
       </section>
 
-      <TestimonialsCarousel
-        testimonials={testimonials}
-        eyebrow={homeSettings.testimonialsEyebrow}
-        title={homeSettings.testimonialsTitle}
-      />
+      <EmbedSocialGoogleReviews />
 
       <section className="bg-leehov-surface px-10 py-16 sm:px-8 sm:py-24 lg:px-12">
         <div className="mx-auto max-w-7xl">
@@ -311,7 +304,7 @@ export function HomePage({
                         src={post.imageUrl}
                         alt={post.coverAltText}
                         fill
-                        quality={90}
+                        quality={86}
                         sizes="(min-width: 768px) 33vw, 100vw"
                         className="object-cover transition duration-500 group-hover:scale-105 motion-reduce:transition-none"
                       />

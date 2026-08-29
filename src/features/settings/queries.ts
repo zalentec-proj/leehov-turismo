@@ -14,7 +14,7 @@ import { createClient } from "@/lib/supabase/server";
 const contactFallback = {
   phone: "",
   contactEmail: "contato@leehovturismo.com.br",
-  address: "",
+  address: "Rua Ipê Roxo, 1879 — Padovani, Corbélia, PR — 85420-000",
 };
 const whatsappFallback = {
   number: LEEHOV_WHATSAPP_NUMBER,
@@ -128,7 +128,7 @@ export async function getPublicSiteSettings(): Promise<PublicSiteSettings> {
         "contactEmail",
         contactFallback.contactEmail,
       ),
-      address: textValue(contact, "address"),
+      address: textValue(contact, "address") || contactFallback.address,
     },
     whatsapp: {
       number: textValue(whatsapp, "number"),

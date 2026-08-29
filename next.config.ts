@@ -18,7 +18,9 @@ const nextConfig: NextConfig = {
   images: {
     loader: "custom",
     loaderFile: "./src/lib/images/loader.ts",
-    qualities: [75, 90],
+    deviceSizes: [360, 430, 640, 768, 1024, 1280, 1600],
+    imageSizes: [48, 64, 96, 128, 256, 384],
+    qualities: [78, 86],
     remotePatterns: [
       {
         protocol: "https",
@@ -50,13 +52,13 @@ const nextConfig: NextConfig = {
               "object-src 'none'",
               "frame-ancestors 'none'",
               "form-action 'self'",
-              "img-src 'self' data: blob: https://awfcyrpuzhovxixzpqzv.supabase.co https://i.ytimg.com https://www.facebook.com",
+              "img-src 'self' data: blob: https://awfcyrpuzhovxixzpqzv.supabase.co https://i.ytimg.com https://www.facebook.com https://embedsocial.com",
               "font-src 'self' data:",
               "style-src 'self' 'unsafe-inline'",
-              "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://www.googletagmanager.com https://connect.facebook.net",
-              "frame-src https://challenges.cloudflare.com https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com",
+              "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://www.googletagmanager.com https://connect.facebook.net https://embedsocial.com",
+              "frame-src https://challenges.cloudflare.com https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://embedsocial.com",
               "media-src 'self' https:",
-              "connect-src 'self' https://awfcyrpuzhovxixzpqzv.supabase.co wss://awfcyrpuzhovxixzpqzv.supabase.co https://challenges.cloudflare.com https://www.google-analytics.com https://region1.google-analytics.com https://www.facebook.com",
+              "connect-src 'self' https://awfcyrpuzhovxixzpqzv.supabase.co wss://awfcyrpuzhovxixzpqzv.supabase.co https://challenges.cloudflare.com https://www.google-analytics.com https://region1.google-analytics.com https://www.facebook.com https://embedsocial.com",
               "upgrade-insecure-requests",
               "block-all-mixed-content",
             ].join("; "),

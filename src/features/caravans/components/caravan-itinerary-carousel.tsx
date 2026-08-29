@@ -88,7 +88,7 @@ export function CaravanItineraryCarousel({ days }: { days: CaravanItineraryDay[]
               alt={activeDay.title}
               fill
               sizes="(min-width: 1024px) 46vw, 100vw"
-              quality={90}
+              quality={86}
               className="object-cover motion-safe:animate-in motion-safe:fade-in motion-safe:duration-500"
               onError={() => setFailedImages((current) => new Set(current).add(activeDay.id))}
             />

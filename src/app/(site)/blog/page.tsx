@@ -17,7 +17,7 @@ function PostCard({ post }: { post: BlogPostSummary }) {
   return (
     <Link href={`/blog/${post.slug}`} className="group overflow-hidden rounded-[18px] border border-leehov-border bg-white shadow-leehov-card transition hover:-translate-y-1 hover:shadow-leehov-floating motion-reduce:transition-none">
       <div className="relative aspect-[16/10] overflow-hidden bg-leehov-surface">
-        {post.imageUrl ? <Image src={post.imageUrl} alt={post.coverAltText} fill quality={90} sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw" className="object-cover transition duration-500 group-hover:scale-[1.04] motion-reduce:transition-none" /> : null}
+        {post.imageUrl ? <Image src={post.imageUrl} alt={post.coverAltText} fill quality={86} sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw" className="object-cover transition duration-500 group-hover:scale-[1.04] motion-reduce:transition-none" /> : null}
       </div>
       <div className="p-6">
         <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-leehov-blue-600">{post.category}</p>
@@ -68,7 +68,7 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
         <section className="px-10 py-14 sm:px-8 lg:px-12">
           <div className="mx-auto max-w-[1312px]">
             <Link href={`/blog/${visibleFeatured.slug}`} className="group grid overflow-hidden rounded-[28px] bg-leehov-navy-950 shadow-leehov-floating lg:grid-cols-[1.15fr_1fr]">
-              <div className="relative min-h-[340px] overflow-hidden bg-leehov-navy-800 lg:min-h-[430px]">{visibleFeatured.imageUrl ? <Image src={visibleFeatured.imageUrl} alt={visibleFeatured.coverAltText} fill quality={90} sizes="(min-width: 1024px) 57vw, 100vw" className="object-cover transition duration-700 group-hover:scale-[1.025] motion-reduce:transition-none" /> : null}</div>
+              <div className="relative min-h-[340px] overflow-hidden bg-leehov-navy-800 lg:min-h-[430px]">{visibleFeatured.imageUrl ? <Image src={visibleFeatured.imageUrl} alt={visibleFeatured.coverAltText} fill quality={86} sizes="(min-width: 1024px) 57vw, 100vw" className="object-cover transition duration-700 group-hover:scale-[1.025] motion-reduce:transition-none" /> : null}</div>
               <div className="flex flex-col justify-center p-8 sm:p-12">
                 <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-leehov-cyan">Destaque · {visibleFeatured.category}</p>
                 <h2 className="mt-4 text-3xl font-extrabold leading-tight text-white sm:text-[40px]">{visibleFeatured.title}</h2>

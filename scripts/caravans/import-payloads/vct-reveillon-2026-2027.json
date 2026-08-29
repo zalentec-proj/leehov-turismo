@@ -1,0 +1,138 @@
+{
+  "source": {
+    "fileName": "VCT Réveillon.pdf",
+    "importedAt": "2026-08-10",
+    "notes": "Dados extraídos do PDF. Imagens, disponibilidade, vagas e confirmação comercial devem ser revisadas antes de publicar."
+  },
+  "caravan": {
+    "title": "Sudeste Asiático — Réveillon 2026/2027",
+    "slug": "sudeste-asiatico-reveillon-2026-2027",
+    "destination": "Vietnã, Camboja e Tailândia",
+    "categoryId": "",
+    "type": "Caravana internacional cultural",
+    "summary": "Uma viagem em grupo pelo Sudeste Asiático, com roteiro por Vietnã, Camboja e Tailândia, incluindo o Festival das Lanternas em Chiang Mai no Réveillon.",
+    "description": "Conheça Hanói, a Baía de Halong, Hoi An, Siem Reap, Bangkok, Chiang Rai, Chiang Mai e Phuket em uma caravana acompanhada pela Leehov Turismo. O roteiro reúne cultura, templos, paisagens, cruzeiro na Baía de Halong e uma experiência especial de Réveillon no Festival das Lanternas.",
+    "duration": "19 dias e 18 noites",
+    "price": "US$ 8.295 por pessoa em apartamento duplo",
+    "currency": "USD",
+    "status": "draft",
+    "cardImagePath": "",
+    "heroImagePath": "",
+    "videoUrl": "",
+    "videoThumbnailPath": "",
+    "isGroupTrip": true,
+    "isAccompanied": true,
+    "hasPortugueseGuide": false,
+    "hasLeehovRepresentative": true,
+    "hasTravelKit": false,
+    "hasTravelInsurance": false,
+    "minPeople": null,
+    "maxPeople": null,
+    "leaderName": "",
+    "leaderBio": "",
+    "leaderImagePath": "",
+    "included": [
+      "Aéreo internacional saindo de Guarulhos.",
+      "Traslados de e para aeroportos e cidades em transporte climatizado.",
+      "Hospedagem na categoria planejada ou similar, com café da manhã.",
+      "Refeições previstas no programa: 11 almoços e 1 jantar.",
+      "Cruzeiro pela Baía de Halong por 2 dias e 1 noite, com refeições incluídas.",
+      "Cinco voos internos: Hanói–Da Nang, Da Nang–Siem Reap, Siem Reap–Bangkok, Bangkok–Chiang Rai e Chiang Mai–Phuket.",
+      "Bagagem em classe econômica: 5 a 7 kg de cabine e 20 kg despachada, conforme a tarifa atual.",
+      "Visitas, passeios e taxas de entrada previstos no programa.",
+      "Guias locais em espanhol ou português, conforme disponibilidade por região.",
+      "Representante da Leehov Turismo durante a viagem."
+    ],
+    "notIncluded": [
+      "Refeições não mencionadas no programa e bebidas.",
+      "Seguro pessoal obrigatório.",
+      "Vistos para Vietnã e Camboja e autorização para a Tailândia (estimativa de US$ 65).",
+      "Taxas de serviço estimadas em US$ 140, pagas em espécie durante a viagem.",
+      "Todos os serviços não mencionados claramente no programa.",
+      "Suplemento de US$ 1.500 para apartamento individual."
+    ],
+    "notes": "Voo internacional a definir. Bruna Moraes é apresentada no material como embaixadora da Leehov Turismo; o PDF não confirma que ela será a líder/acompanhante desta saída. Passeios opcionais em Phuket têm valor médio de US$ 85, sujeito à cotação do grupo.",
+    "featuredHome": false,
+    "featuredHero": false,
+    "heroTitle": "",
+    "heroDescription": "",
+    "heroCtaText": "",
+    "heroCtaUrl": "",
+    "heroOrder": 0,
+    "published": false,
+    "seoTitle": "Sudeste Asiático no Réveillon 2026/2027 | Leehov Turismo",
+    "seoDescription": "Caravana de Réveillon pelo Vietnã, Camboja e Tailândia, com roteiro de 19 dias acompanhado pela Leehov Turismo.",
+    "departures": [
+      {
+        "id": "",
+        "label": "17 de dezembro de 2026 a 4 de janeiro de 2027",
+        "startDate": "2026-12-17",
+        "endDate": "2027-01-04",
+        "availableSpots": null,
+        "status": "coming_soon",
+        "notes": "Disponibilidade a confirmar.",
+        "orderIndex": 0
+      }
+    ],
+    "itinerary": [
+      {
+        "id": "", "day": 1, "title": "Chegada em Hanói", "location": "Hanói, Vietnã", "description": "Chegada a Hanói, recepção e traslado ao hotel para check-in e descanso.", "imagePath": "", "meals": [], "accommodation": "Shinning Central Hotel 4*+ (previsto)", "notes": "", "orderIndex": 0
+      },
+      {
+        "id": "", "day": 2, "title": "Descobrindo Hanói", "location": "Hanói, Vietnã", "description": "Visitas ao Mausoléu de Ho Chi Minh (exterior), residência de Ho Chi Minh, Pagode do Pilar Único, Pagode Tran Quoc, Templo da Literatura e Templo Ngoc Son ou Museu da Mulher Vietnamita.", "imagePath": "", "meals": ["Café da manhã", "Almoço"], "accommodation": "Shinning Central Hotel 4*+ (previsto)", "notes": "", "orderIndex": 10
+      },
+      {
+        "id": "", "day": 3, "title": "Cruzeiro pela Baía de Halong", "location": "Baía de Halong, Vietnã", "description": "Viagem por estrada até Halong e embarque no cruzeiro VELAR. Tempo para apreciar a baía, praticar caiaque ou nadar, participar da Sunset Party e de demonstração de culinária vietnamita.", "imagePath": "", "meals": ["Café da manhã", "Almoço", "Jantar"], "accommodation": "Venus Cruise 5* (previsto)", "notes": "", "orderIndex": 20
+      },
+      {
+        "id": "", "day": 4, "title": "Halong e chegada a Hoi An", "location": "Baía de Halong e Hoi An, Vietnã", "description": "Passeio às grutas e ilhotas Dark & Bright em barco a remo, brunch no cruzeiro e retorno ao continente. Traslado a Hanói, voo para Da Nang e chegada a Hoi An.", "imagePath": "", "meals": ["Café da manhã", "Brunch"], "accommodation": "Little Residence Hoi An 4* (previsto)", "notes": "Jantar por conta própria.", "orderIndex": 30
+      },
+      {
+        "id": "", "day": 5, "title": "Hoi An, Ba Na Hills e Ponte Dourada", "location": "Hoi An e Da Nang, Vietnã", "description": "Visita ao centro histórico de Hoi An, com Ponte Japonesa, Templo Chinês Phuc Kien e Museu de História. À tarde, visita a Ba Na Hills e à Ponte Dourada, com show de luzes ou Hoi An Impression à noite.", "imagePath": "", "meals": ["Café da manhã", "Almoço"], "accommodation": "Little Residence Hoi An 4* (previsto)", "notes": "Jantar por conta própria.", "orderIndex": 40
+      },
+      {
+        "id": "", "day": 6, "title": "Voo para Siem Reap", "location": "Da Nang, Vietnã e Siem Reap, Camboja", "description": "Traslado ao aeroporto de Da Nang, voo para Siem Reap e traslado ao hotel. Restante do dia livre.", "imagePath": "", "meals": ["Café da manhã"], "accommodation": "Saem Siem Reap Hotel 4* (previsto)", "notes": "Jantar por conta própria.", "orderIndex": 50
+      },
+      {
+        "id": "", "day": 7, "title": "Templos de Angkor", "location": "Siem Reap, Camboja", "description": "Visitas a Angkor Thom, Templo Bayon, Recinto Real, Phimeanakas, Terraço dos Elefantes, Terraço do Rei Leproso, Preah Khan, Ta Prohm e Angkor Wat.", "imagePath": "", "meals": ["Café da manhã"], "accommodation": "Saem Siem Reap Hotel 4* (previsto)", "notes": "", "orderIndex": 60
+      },
+      {
+        "id": "", "day": 8, "title": "Banteay Srei e Banteay Samre", "location": "Siem Reap, Camboja", "description": "Visita ao templo de Banteay Srei, com parada na vila de Preah Dark, e ao templo Banteay Samre, conhecido por seus relevos de Vishnu e lendas de Krishna.", "imagePath": "", "meals": ["Café da manhã", "Almoço"], "accommodation": "Saem Siem Reap Hotel 4* (previsto)", "notes": "Jantar por conta própria.", "orderIndex": 70
+      },
+      {
+        "id": "", "day": 9, "title": "Chegada a Bangkok", "location": "Bangkok, Tailândia", "description": "Tempo livre até o traslado ao aeroporto para voo a Bangkok. Chegada, traslado ao hotel e restante do dia livre.", "imagePath": "", "meals": ["Café da manhã"], "accommodation": "Eastin Grand Sathorn Hotel Bangkok 4*+ (previsto)", "notes": "Refeições por conta própria.", "orderIndex": 80
+      },
+      {
+        "id": "", "day": 10, "title": "Templos e Grande Palácio", "location": "Bangkok, Tailândia", "description": "Visitas ao Grande Palácio Real, Wat Phra Kaew, Wat Pho, Wat Arun e Wat Traimit, com almoço em restaurante local.", "imagePath": "", "meals": ["Café da manhã", "Almoço"], "accommodation": "Eastin Grand Sathorn Hotel Bangkok 4*+ (previsto)", "notes": "Jantar por conta própria.", "orderIndex": 90
+      },
+      {
+        "id": "", "day": 11, "title": "Mercado flutuante e mercado ferroviário", "location": "Ratchaburi e Samut Songkhram, Tailândia", "description": "Excursão ao Mercado Flutuante Damnoen Saduak e ao Mercado Ferroviário de Maeklong, com retorno a Bangkok.", "imagePath": "", "meals": ["Café da manhã", "Almoço"], "accommodation": "Eastin Grand Sathorn Hotel Bangkok 4*+ (previsto)", "notes": "Jantar por conta própria.", "orderIndex": 100
+      },
+      {
+        "id": "", "day": 12, "title": "Triângulo Dourado", "location": "Chiang Rai, Tailândia", "description": "Voo para Chiang Rai e visita à aldeia Karen, ao Triângulo Dourado e ao Museu do Ópio. O texto do PDF contém uma inconsistência no deslocamento final; confirmar a logística antes da publicação.", "imagePath": "", "meals": ["Café da manhã"], "accommodation": "The Heritage Chiang Rai 4* (previsto)", "notes": "Confirmar sequência dos traslados e voo interno com o fornecedor.", "orderIndex": 110
+      },
+      {
+        "id": "", "day": 13, "title": "Templos do norte da Tailândia", "location": "Chiang Rai e Chiang Mai, Tailândia", "description": "Visitas ao templo Doi Suthep, ao Templo Branco (Wat Rong Khun) e ao Templo Azul, com traslado ao hotel em Chiang Mai.", "imagePath": "", "meals": ["Café da manhã"], "accommodation": "Centara Riverside Chiang Mai Hotel 4* ou CH Hotel 3*+ (previsto)", "notes": "O PDF mistura as cidades neste dia; confirmar o deslocamento e a ordem dos passeios.", "orderIndex": 120
+      },
+      {
+        "id": "", "day": 14, "title": "Santuário de elefantes", "location": "Chiang Mai, Tailândia", "description": "Experiência no Santuário de Elefantes de Kanta, com preparação de frutas, interação responsável, caminhada e banho com os animais.", "imagePath": "", "meals": ["Café da manhã", "Almoço"], "accommodation": "Centara Riverside Chiang Mai Hotel 4* ou CH Hotel 3*+ (previsto)", "notes": "Jantar por conta própria. Os horários apresentados são aproximados.", "orderIndex": 130
+      },
+      {
+        "id": "", "day": 15, "title": "Festival das Lanternas — Réveillon", "location": "Chiang Mai, Tailândia", "description": "Dia livre. À noite, participação no Festival das Lanternas com entrada VIP especial de Réveillon.", "imagePath": "", "meals": ["Café da manhã"], "accommodation": "Centara Riverside Chiang Mai Hotel 4* ou CH Hotel 3*+ (previsto)", "notes": "", "orderIndex": 140
+      },
+      {
+        "id": "", "day": 16, "title": "Chegada a Phuket", "location": "Phuket, Tailândia", "description": "Tempo livre até o traslado ao aeroporto, voo para Phuket e chegada ao hotel.", "imagePath": "", "meals": ["Café da manhã"], "accommodation": "Amora Beach Resort Phuket 4*+ (previsto)", "notes": "Refeições por conta própria.", "orderIndex": 150
+      },
+      {
+        "id": "", "day": 17, "title": "Dia livre em Phuket", "location": "Phuket, Tailândia", "description": "Dia livre para aproveitar as praias de Phuket. Há opção de passeio de barco à Ilha Phi Phi, sujeito à cotação do grupo.", "imagePath": "", "meals": ["Café da manhã"], "accommodation": "Amora Beach Resort Phuket 4*+ (previsto)", "notes": "Passeio opcional estimado em US$ 85.", "orderIndex": 160
+      },
+      {
+        "id": "", "day": 18, "title": "Mais um dia em Phuket", "location": "Phuket, Tailândia", "description": "Dia livre para aproveitar Phuket. Há opção de passeio de barco à Ilha James Bond, sujeito à cotação do grupo.", "imagePath": "", "meals": ["Café da manhã"], "accommodation": "Amora Beach Resort Phuket 4*+ (previsto)", "notes": "Passeio opcional estimado em US$ 85, com almoço incluído segundo o PDF.", "orderIndex": 170
+      },
+      {
+        "id": "", "day": 19, "title": "Retorno ao Brasil", "location": "Phuket, Tailândia", "description": "Manhã livre e traslado ao aeroporto de Phuket para voo a Istambul e retorno ao Brasil.", "imagePath": "", "meals": ["Café da manhã"], "accommodation": "", "notes": "Quartos disponíveis até 12h. Refeições por conta própria.", "orderIndex": 180
+      }
+    ],
+    "images": []
+  }
+}

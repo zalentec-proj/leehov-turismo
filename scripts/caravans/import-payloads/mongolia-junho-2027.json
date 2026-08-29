@@ -1,0 +1,63 @@
+{
+  "title": "Mongólia — Junho de 2027",
+  "slug": "mongolia-junho-2027",
+  "destination": "Mongólia",
+  "type": "Caravana internacional cultural",
+  "summary": "Uma jornada acompanhada pela Leehov pelos cenários, tradições nômades e história da Mongólia, entre Ulaanbaatar, o Deserto de Gobi e os parques nacionais do país.",
+  "description": "Conheça a Mongólia em uma viagem de 11 dias e 10 noites acompanhada por Bruna Moraes. O roteiro reúne Ulaanbaatar, o Parque Nacional Gorkhi-Terelj, Karakorum, as termas de Tsenkher, cavalos selvagens em Khustain Nuruu e o Deserto de Gobi, com dunas, fósseis e famílias nômades.",
+  "duration": "11 dias e 10 noites",
+  "price": "US$ 8.152 por pessoa em apartamento duplo",
+  "currency": "USD",
+  "status": "draft",
+  "isGroupTrip": true,
+  "isAccompanied": true,
+  "hasPortugueseGuide": false,
+  "hasLeehovRepresentative": true,
+  "hasTravelKit": true,
+  "hasTravelInsurance": false,
+  "minPeople": null,
+  "maxPeople": null,
+  "leaderName": "Bruna Moraes",
+  "leaderBio": "Bruna Moraes é embaixadora da Leehov Turismo e acompanha o grupo nesta experiência pela Mongólia.",
+  "included": [
+    "Aéreo internacional.",
+    "Dois voos domésticos previstos no programa.",
+    "Hospedagem em hotel 5 estrelas em Ulaanbaatar e cinco noites em acampamento tradicional mongol (Ger).",
+    "Café da manhã todos os dias, almoços e jantares previstos no roteiro.",
+    "Guia local em espanhol.",
+    "Todos os passeios e ingressos previstos no roteiro.",
+    "Transporte privativo e climatizado.",
+    "Representante Leehov Turismo desde o Brasil.",
+    "Jeeps 4x4 no Deserto de Gobi.",
+    "Kit viagem, traslados e duas garrafas de água de cortesia por dia."
+  ],
+  "notIncluded": [
+    "Seguro viagem obrigatório.",
+    "Gorjetas, estimadas em US$ 8 por pessoa por dia.",
+    "Refeições não mencionadas como inclusas."
+  ],
+  "notes": "Voo com bloqueio aéreo em definição. Suplemento para apartamento individual: US$ 800.",
+  "featuredHome": false,
+  "featuredHero": false,
+  "heroOrder": 0,
+  "published": false,
+  "seoTitle": "Caravana para a Mongólia em junho de 2027 | Leehov Turismo",
+  "seoDescription": "Conheça a Mongólia em uma caravana de 11 dias com Ulaanbaatar, parques nacionais e Deserto de Gobi acompanhada pela Leehov Turismo.",
+  "departures": [
+    { "label": "2 a 12 de junho de 2027", "startDate": "2027-06-02", "endDate": "2027-06-12", "availableSpots": null, "status": "coming_soon", "notes": "Voo e disponibilidade a confirmar.", "orderIndex": 0 }
+  ],
+  "itinerary": [
+    { "day": 1, "title": "Chegada a Ulaanbaatar", "location": "Ulaanbaatar, Mongólia", "description": "Chegada à capital da Mongólia, traslado ao hotel e descanso.", "meals": [], "accommodation": "Hotel em Ulaanbaatar", "notes": "", "orderIndex": 0 },
+    { "day": 2, "title": "Ulaanbaatar", "location": "Ulaanbaatar, Mongólia", "description": "Passeio pela Praça Central Sukhbaatar, Mosteiro Budista Gandan Tegchenling e Museu Nacional de História da Mongólia. À tarde, espetáculo folclórico com músicas e danças tradicionais.", "meals": ["Café da manhã", "Almoço", "Jantar"], "accommodation": "Hotel em Ulaanbaatar", "notes": "", "orderIndex": 10 },
+    { "day": 3, "title": "Gorkhi-Terelj e estátua de Genghis Khan", "location": "Ulaanbaatar e Parque Nacional Gorkhi-Terelj", "description": "Visita ao Parque Nacional Gorkhi-Terelj, parada na Rocha da Tartaruga e visita ao Complexo da Estátua Equestre de Genghis Khan. Retorno a Ulaanbaatar.", "meals": ["Café da manhã", "Almoço", "Jantar"], "accommodation": "Hotel em Ulaanbaatar", "notes": "Distância aproximada: 170 km.", "orderIndex": 20 },
+    { "day": 4, "title": "Karakorum e Mosteiro Erdene Zuu", "location": "Karakorum, Mongólia", "description": "Viagem à antiga capital do Grande Império Mongol, com almoço próximo a Elsen Tasarkhai e visita ao Mosteiro Erdene Zuu, o primeiro mosteiro budista da Mongólia.", "meals": ["Café da manhã", "Almoço", "Jantar"], "accommodation": "Acampamento tradicional Ger", "notes": "Distância aproximada: 380 km.", "orderIndex": 30 },
+    { "day": 5, "title": "Karakorum e termas de Tsenkher", "location": "Karakorum e Tsenkher, Mongólia", "description": "Visita ao Museu de Kharakhorin e continuação até as águas termais de Tsenkher, com tempo para aproveitar os banhos ao ar livre em meio à natureza.", "meals": ["Café da manhã", "Almoço", "Jantar"], "accommodation": "Acampamento turístico em Tsenkher", "notes": "Distância aproximada: 120 km.", "orderIndex": 40 },
+    { "day": 6, "title": "Parque Nacional Khustain Nuruu", "location": "Khustain Nuruu, Mongólia", "description": "Viagem ao Parque Nacional Khustain Nuruu para safari de observação dos cavalos selvagens de Przewalski, com visita ao centro de interpretação do parque.", "meals": ["Café da manhã", "Almoço", "Jantar"], "accommodation": "Acampamento tradicional", "notes": "Distância aproximada: 420 km.", "orderIndex": 50 },
+    { "day": 7, "title": "Khustain Nuruu e retorno a Ulaanbaatar", "location": "Khustain Nuruu e Ulaanbaatar, Mongólia", "description": "Retorno a Ulaanbaatar, visita ao Museu e Palácio do Último Rei da Mongólia, Javzandamba, e hospedagem em hotel cinco estrelas.", "meals": ["Café da manhã", "Almoço", "Jantar"], "accommodation": "Hotel 5 estrelas em Ulaanbaatar", "notes": "Distância aproximada: 120 km.", "orderIndex": 60 },
+    { "day": 8, "title": "Deserto de Gobi", "location": "Ulaanbaatar, Dalanzadgad e Dunas de Khongor", "description": "Voo doméstico a Dalanzadgad e visita ao Vale de Yol, no Parque Nacional Gobi Gurvan Saikhan. Depois do almoço, viagem às Dunas de Khongor.", "meals": ["Café da manhã", "Almoço", "Jantar"], "accommodation": "Acampamento tradicional no Deserto de Gobi", "notes": "", "orderIndex": 70 },
+    { "day": 9, "title": "Dunas de Khongor e Bayanzag", "location": "Deserto de Gobi, Mongólia", "description": "Passeio pelas Dunas de Khongor, continuação a Bayanzag, as Falésias de Fogo, caminhada pela floresta de Saxaul e visita a uma família nômade criadora de camelos.", "meals": ["Café da manhã", "Almoço", "Jantar"], "accommodation": "Acampamento tradicional no Deserto de Gobi", "notes": "Possibilidade de passeio de camelo.", "orderIndex": 80 },
+    { "day": 10, "title": "Bayanzag e Ulaanbaatar", "location": "Bayanzag e Ulaanbaatar, Mongólia", "description": "Voo de retorno para Ulaanbaatar, visita à Colina Zaisan, almoço e tarde livre para compras ou descanso.", "meals": ["Café da manhã", "Almoço", "Jantar"], "accommodation": "Hotel 5 estrelas em Ulaanbaatar", "notes": "", "orderIndex": 90 },
+    { "day": 11, "title": "Retorno ao Brasil", "location": "Ulaanbaatar, Mongólia", "description": "Após o café da manhã, traslado ao Aeroporto Internacional de Ulaanbaatar para embarque em voo internacional de retorno.", "meals": ["Café da manhã"], "accommodation": "", "notes": "", "orderIndex": 100 }
+  ],
+  "images": []
+}

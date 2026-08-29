@@ -6,6 +6,7 @@ import { requirePermission } from "@/features/auth/permissions";
 import { mediaMetadataSchema, mediaUploadSchema } from "@/features/media/schema";
 import type { MediaActionResult, MediaPreviewResult } from "@/features/media/types";
 import { createMediaAsset } from "@/features/media/service";
+import { removeMediaObject } from "@/features/media/object-storage";
 import { validateMediaImage } from "@/features/media/utils";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -32,27 +33,13 @@ export async function getMediaPreviewUrlsAction(input: unknown): Promise<MediaPr
   const admin = createAdminClient();
   const { data, error } = await admin
     .from("media_assets")
-    .select("id, storage_bucket, storage_path")
+    .select("id")
     .in("id", [...new Set(parsed.data)]);
   if (error) return { success: false, message: "Não foi possível carregar as miniaturas.", urls: {} };
-
-  const buckets = new Map<string, string[]>();
-  for (const asset of data ?? []) buckets.set(asset.storage_bucket, [...(buckets.get(asset.storage_bucket) ?? []), asset.storage_path]);
-  const signed = await Promise.all([...buckets].map(async ([bucket, paths]) => {
-    const { data: urls, error: signError } = await admin.storage.from(bucket).createSignedUrls(paths, 3600);
-    return { bucket, urls: urls ?? [], error: signError };
-  }));
-  if (signed.some((result) => result.error)) return { success: false, message: "Não foi possível carregar as miniaturas.", urls: {} };
-
-  const urlsByPath = new Map<string, string>();
-  for (const result of signed) for (const url of result.urls) if (url.path && url.signedUrl) urlsByPath.set(`${result.bucket}:${url.path}`, url.signedUrl);
   return {
     success: true,
     message: "Miniaturas carregadas.",
-    urls: Object.fromEntries((data ?? []).flatMap((asset) => {
-      const signedUrl = urlsByPath.get(`${asset.storage_bucket}:${asset.storage_path}`);
-      return signedUrl ? [[asset.id, signedUrl]] : [];
-    })),
+    urls: Object.fromEntries((data ?? []).map((asset) => [asset.id, `/api/media/${asset.id}?w=384&q=78`])),
   };
 }
 
@@ -114,7 +101,7 @@ export async function updateMediaAssetAction(input: unknown): Promise<MediaActio
 export async function deleteMediaAssetAction(id: string): Promise<MediaActionResult> {
   await requirePermission("media.delete");
   const supabase = createAdminClient();
-  const { data: asset, error } = await supabase.from("media_assets").select("id, storage_bucket, storage_path").eq("id", id).maybeSingle();
+  const { data: asset, error } = await supabase.from("media_assets").select("*").eq("id", id).maybeSingle();
   if (error || !asset) return { success: false, message: "Imagem não encontrada." };
   const [testimonials, popups, settings, caravans, caravanImages, itinerary, posts, postImages] = await Promise.all([
     supabase.from("testimonials").select("id", { count: "exact", head: true }).eq("image_asset_id", id),
@@ -129,8 +116,15 @@ export async function deleteMediaAssetAction(id: string): Promise<MediaActionRes
   if ([testimonials, popups, settings, caravans, caravanImages, itinerary, posts, postImages].some((result) => (result.count ?? 0) > 0)) {
     return { success: false, message: "Esta imagem está em uso. Remova os vínculos antes de excluí-la." };
   }
-  const { error: storageError } = await supabase.storage.from(asset.storage_bucket).remove([asset.storage_path]);
-  if (storageError) return { success: false, message: storageError.message };
+  try {
+    await removeMediaObject({
+      provider: "storage_provider" in asset && asset.storage_provider === "r2" ? "r2" : "supabase",
+      bucket: asset.storage_bucket,
+      path: asset.storage_path,
+    });
+  } catch (storageError) {
+    return { success: false, message: storageError instanceof Error ? storageError.message : "Não foi possível excluir a imagem." };
+  }
   const { error: deleteError } = await supabase.from("media_assets").delete().eq("id", id);
   if (deleteError) return { success: false, message: deleteError.message };
   revalidateMedia();

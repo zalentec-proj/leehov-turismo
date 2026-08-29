@@ -262,7 +262,7 @@ export function HomeHeroCarousel({ caravans }: { caravans: CaravanDetail[] }) {
                   layout.imageClassName,
                 )}
               >
-                <Image src={slide.cardImage} alt="" fill sizes="300px" quality={75} className="object-cover" />
+                <Image src={slide.cardImage} alt="" fill sizes="300px" quality={78} className="object-cover" />
                 {slideIndex === activeIndex ? (
                   <div className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-black/35 to-transparent" />
                 ) : null}
@@ -287,7 +287,7 @@ export function HomeHeroCarousel({ caravans }: { caravans: CaravanDetail[] }) {
                 onClick={() => goToSlide(index)}
                 type="button"
               >
-                <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-[14px] bg-leehov-navy-800"><Image src={slide.cardImage} alt="" fill sizes="64px" quality={75} className="object-cover" /></span>
+                <span className="relative h-16 w-16 shrink-0 overflow-hidden rounded-[14px] bg-leehov-navy-800"><Image src={slide.cardImage} alt="" fill sizes="64px" quality={78} className="object-cover" /></span>
                 <span>
                     <span className="line-clamp-2 block text-[13px] font-extrabold leading-4 text-white">
                     {slide.cardTitle}

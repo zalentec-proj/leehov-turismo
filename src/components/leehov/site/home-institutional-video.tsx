@@ -53,7 +53,7 @@ function InstitutionalVideoContent({ videoId }: { videoId: string }) {
             alt="Prévia do vídeo institucional da Leehov"
             fill
             sizes="(min-width: 1024px) 55vw, 100vw"
-            quality={90}
+            quality={86}
             className="object-cover opacity-72 transition duration-500 group-hover:scale-[1.025] motion-reduce:transition-none"
             onError={() => setThumbnailUrl((current) => current === maxResolutionThumbnail ? standardThumbnail : "")}
           />

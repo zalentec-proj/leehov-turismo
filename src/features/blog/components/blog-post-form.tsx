@@ -371,7 +371,7 @@ export function BlogPostForm({ post, categories, caravans, mediaAssets }: { post
               <Card className="rounded-[18px] border-leehov-border p-6">
                 <div className="grid gap-6 md:grid-cols-[280px_1fr]">
                   <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-leehov-surface">
-                    {coverPreview ? <Image src={coverPreview} alt="Preview da capa" fill quality={90} sizes="280px" className="object-cover" /> : <div className="flex h-full flex-col items-center justify-center gap-3 text-leehov-muted"><ImagePlus className="size-7" /><span className="text-sm font-semibold">Capa ainda não enviada</span></div>}
+                    {coverPreview ? <Image src={coverPreview} alt="Preview da capa" fill quality={86} sizes="280px" className="object-cover" /> : <div className="flex h-full flex-col items-center justify-center gap-3 text-leehov-muted"><ImagePlus className="size-7" /><span className="text-sm font-semibold">Capa ainda não enviada</span></div>}
                   </div>
                   <div className="space-y-4">
                     <Field label="Capa do artigo" error={errors.coverImagePath?.message} hint="Original preservado, sem redução. Use no mínimo 1600 × 900 px; JPEG, PNG, WebP ou AVIF, até 8 MiB.">

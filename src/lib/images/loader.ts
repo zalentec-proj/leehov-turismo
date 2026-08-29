@@ -10,6 +10,6 @@ export default function leehovImageLoader({ src, width, quality }: ImageLoaderPr
 
   const url = new URL(src, "https://leehov.local");
   url.searchParams.set("w", String(width));
-  if (src.startsWith("/api/media/")) url.searchParams.set("q", String(quality ?? 82));
+  if (src.startsWith("/api/media/")) url.searchParams.set("q", String(quality ?? 78));
   return `${url.pathname}${url.search}`;
 }

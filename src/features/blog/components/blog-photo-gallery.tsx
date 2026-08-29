@@ -65,7 +65,7 @@ export function BlogPhotoGallery({ images }: BlogPhotoGalleryProps) {
                     src={image.imageUrl}
                     alt=""
                     fill
-                    quality={90}
+                    quality={86}
                     sizes="144px"
                     className="object-cover"
                     onError={() => setFailedImages((current) => ({ ...current, [image.id]: true }))}
@@ -106,7 +106,7 @@ export function BlogPhotoGallery({ images }: BlogPhotoGalleryProps) {
                 src={selectedImage.imageUrl}
                 alt={selectedImage.altText}
                 fill
-                quality={90}
+                quality={86}
                 sizes="(min-width: 1024px) 1150px, 100vw"
                 className="object-cover"
                 onError={() => setFailedImages((current) => ({ ...current, [selectedImage.id]: true }))}

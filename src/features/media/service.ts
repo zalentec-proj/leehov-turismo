@@ -2,6 +2,11 @@ import "server-only";
 
 import { randomUUID } from "node:crypto";
 import type { MediaAsset, MediaFolder } from "@/features/media/types";
+import {
+  getMediaUploadProvider,
+  removeMediaObject,
+  uploadMediaObject,
+} from "@/features/media/object-storage";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 type CreateMediaAssetInput = {
@@ -24,19 +29,24 @@ const emptyToNull = (value?: string) => value?.trim() || null;
 export async function createMediaAsset(input: CreateMediaAssetInput): Promise<MediaAsset> {
   const admin = createAdminClient();
   const id = randomUUID();
+  const storageProvider = getMediaUploadProvider();
+  const storageBucket = "site-media" as const;
   const storagePath = `${input.folder}/${id}/${randomUUID()}.${input.extension}`;
   const tags = [...new Set([input.folder, input.sourceType, ...(input.tags ?? [])].map((tag) => tag.trim().toLocaleLowerCase("pt-BR")).filter(Boolean))].slice(0, 20);
 
-  const { error: uploadError } = await admin.storage.from("site-media").upload(storagePath, input.bytes, {
-    cacheControl: "31536000",
-    contentType: input.mimeType,
-    upsert: false,
-  });
-  if (uploadError) throw new Error("Não foi possível enviar a imagem para a Biblioteca de Mídia.");
+  try {
+    await uploadMediaObject(
+      { provider: storageProvider, bucket: storageBucket, path: storagePath },
+      input.bytes,
+      input.mimeType,
+    );
+  } catch {
+    throw new Error("Não foi possível enviar a imagem para a Biblioteca de Mídia.");
+  }
 
-  const { error: insertError } = await admin.from("media_assets").insert({
+  const record = {
     id,
-    storage_bucket: "site-media",
+    storage_bucket: storageBucket,
     storage_path: storagePath,
     file_name: input.fileName.slice(0, 255),
     mime_type: input.mimeType,
@@ -49,23 +59,19 @@ export async function createMediaAsset(input: CreateMediaAssetInput): Promise<Me
     source_label: emptyToNull(input.sourceLabel),
     tags,
     created_by: input.createdBy,
-  });
+    ...(storageProvider === "r2" ? { storage_provider: storageProvider } : {}),
+  };
+  const { error: insertError } = await admin.from("media_assets").insert(record);
   if (insertError) {
-    await admin.storage.from("site-media").remove([storagePath]);
+    await removeMediaObject({ provider: storageProvider, bucket: storageBucket, path: storagePath });
     throw new Error("A imagem foi enviada, mas não pôde ser registrada na Biblioteca de Mídia.");
-  }
-
-  const { data: signed, error: signedError } = await admin.storage.from("site-media").createSignedUrl(storagePath, 3600);
-  if (signedError || !signed?.signedUrl) {
-    await admin.from("media_assets").delete().eq("id", id);
-    await admin.storage.from("site-media").remove([storagePath]);
-    throw new Error("Não foi possível preparar a visualização da imagem.");
   }
 
   const now = new Date().toISOString();
   return {
     id,
-    storageBucket: "site-media",
+    storageProvider,
+    storageBucket,
     storagePath,
     fileName: input.fileName.slice(0, 255),
     mimeType: input.mimeType,
@@ -79,7 +85,7 @@ export async function createMediaAsset(input: CreateMediaAssetInput): Promise<Me
     tags,
     createdAt: now,
     updatedAt: now,
-    signedUrl: signed.signedUrl,
+    signedUrl: `/api/media/${id}`,
     usage: [],
   };
 }

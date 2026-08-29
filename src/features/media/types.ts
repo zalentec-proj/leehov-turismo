@@ -2,6 +2,8 @@ export const mediaFolders = ["general", "packages", "blog", "testimonials", "pop
 
 export type MediaFolder = (typeof mediaFolders)[number];
 
+export type MediaStorageProvider = "supabase" | "r2";
+
 export type MediaUsage = {
   id: string;
   label: string;
@@ -10,6 +12,7 @@ export type MediaUsage = {
 
 export type MediaAsset = {
   id: string;
+  storageProvider: MediaStorageProvider;
   storageBucket: "site-media" | "caravan-images" | "blog-images";
   storagePath: string;
   fileName: string;

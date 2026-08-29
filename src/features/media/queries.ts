@@ -2,11 +2,11 @@ import "server-only";
 
 import { requirePermission } from "@/features/auth/permissions";
 import type { MediaAsset, MediaUsage } from "@/features/media/types";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 type MediaRow = {
   id: string;
+  storage_provider?: "supabase" | "r2";
   storage_bucket: "site-media" | "caravan-images" | "blog-images";
   storage_path: string;
   file_name: string;
@@ -23,14 +23,10 @@ type MediaRow = {
   updated_at: string;
 };
 
-export async function signMediaPath(bucket: MediaRow["storage_bucket"], path: string, expiresIn = 3600) {
-  const { data } = await createAdminClient().storage.from(bucket).createSignedUrl(path, expiresIn);
-  return data?.signedUrl ?? "";
-}
-
 function mapAsset(row: MediaRow, signedUrl: string, usage: MediaUsage[] = []): MediaAsset {
   return {
     id: row.id,
+    storageProvider: row.storage_provider === "r2" ? "r2" : "supabase",
     storageBucket: row.storage_bucket,
     storagePath: row.storage_path,
     fileName: row.file_name,
@@ -111,5 +107,5 @@ export async function getMediaAssetById(id: string): Promise<MediaAsset | null> 
   const { data, error } = await supabase.from("media_assets").select("*").eq("id", id).maybeSingle();
   if (error || !data) return null;
   const row = data as MediaRow;
-  return mapAsset(row, await signMediaPath(row.storage_bucket, row.storage_path));
+  return mapAsset(row, `/api/media/${row.id}`);
 }

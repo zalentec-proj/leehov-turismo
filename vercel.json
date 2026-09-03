@@ -1,3 +1,0 @@
-{
-  "crons": [{ "path": "/api/cron/meta-conversions/retry", "schedule": "*/15 * * * *" }]
-}

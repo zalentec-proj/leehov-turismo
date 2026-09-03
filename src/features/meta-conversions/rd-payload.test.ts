@@ -10,6 +10,10 @@ describe("webhook do RD para conversões Meta", () => {
     expect(parseRdDealWebhook({ event_name: "crm_deal_updated", document: { id: "deal-2", status: "won", amount_total: 5400 } })).toMatchObject({ dealId: "deal-2", eventName: "crm_deal_updated", value: 5400 });
   });
 
+  it("lê total_price retornado pela API CRM v2 da negociação", () => {
+    expect(parseRdDealWebhook({ id: "deal-2-api", total_price: 5400 })).toMatchObject({ dealId: "deal-2-api", value: 5400 });
+  });
+
   it("preserva contact_ids quando a relação contacts vem vazia no CRM v2", () => {
     expect(parseRdDealWebhook({ event_name: "crm_deal_updated", document: { id: "deal-3", contacts: [], contact_ids: ["contact-3"] } })).toMatchObject({ dealId: "deal-3", contactIds: ["contact-3"] });
   });

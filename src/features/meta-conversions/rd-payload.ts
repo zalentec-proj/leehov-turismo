@@ -75,7 +75,17 @@ export function parseRdDealWebhook(payload: unknown): RdDealSnapshot | null {
     contactIds: allContactIds(deal.contacts, deal.contact_ids, deal.contact_id, deal.person),
     closedAt: text(first(deal.closed_at, deal.won_at, deal.close_date, deal.closed_date)),
     // amount_total is the documented field in the RD CRM deal webhook.
-    value: parseMoney(first(deal.amount_total, deal.amount_unique, deal.value, deal.amount, deal.deal_value, deal.total_value)),
+    value: parseMoney(first(
+      deal.amount_total,
+      deal.amount_unique,
+      deal.value,
+      deal.amount,
+      deal.deal_value,
+      deal.total_value,
+      // The CRM v2 deal endpoint uses these names, unlike the webhook.
+      deal.total_price,
+      deal.one_time_price,
+    )),
   };
 }
 

@@ -47,6 +47,10 @@ function contactIds(value: unknown): string[] {
   }).filter((item): item is string => Boolean(item)))];
 }
 
+function allContactIds(...values: unknown[]): string[] {
+  return [...new Set(values.flatMap((value) => contactIds(value)))];
+}
+
 /** Reads the official RD webhook envelope without persisting its raw payload. */
 export function parseRdDealWebhook(payload: unknown): RdDealSnapshot | null {
   const envelope = record(payload);
@@ -65,7 +69,10 @@ export function parseRdDealWebhook(payload: unknown): RdDealSnapshot | null {
     sourceName: text(first(deal.source_name, deal.deal_source_name, source.name, source.label)),
     campaignId: text(first(deal.campaign_id, deal.deal_campaign_id, campaign.id, campaign.uuid)),
     campaignName: text(first(deal.campaign_name, deal.deal_campaign_name, campaign.name, campaign.label)),
-    contactIds: contactIds(first(deal.contacts, deal.contact_ids, deal.contact_id, deal.person)),
+    // CRM v2 can emit an empty `contacts` relation together with populated
+    // `contact_ids`. Merge each supported shape instead of treating an empty
+    // relation as a definitive absence of a contact.
+    contactIds: allContactIds(deal.contacts, deal.contact_ids, deal.contact_id, deal.person),
     closedAt: text(first(deal.closed_at, deal.won_at, deal.close_date, deal.closed_date)),
     // amount_total is the documented field in the RD CRM deal webhook.
     value: parseMoney(first(deal.amount_total, deal.amount_unique, deal.value, deal.amount, deal.deal_value, deal.total_value)),

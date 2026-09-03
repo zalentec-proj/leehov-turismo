@@ -22,7 +22,8 @@ function apiBase() {
 }
 
 const ENCRYPTION_KEY = "WEBHOOK_SECRET_ENCRYPTION_KEY";
-const TOKEN_URL = "https://api.rd.services/auth/token";
+// Official RD Station CRM OAuth endpoint for authorization-code exchange and refresh.
+const TOKEN_URL = "https://api.rd.services/oauth2/token";
 
 type StoredTokens = { accessToken: string | null; refreshToken: string; expiresAt: string | null };
 

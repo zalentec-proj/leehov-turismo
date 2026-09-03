@@ -26,6 +26,7 @@ Registrar um único evento `Purchase` no Pixel Meta `1293414084833785` quando um
 - Os logs guardam somente IDs, metadados operacionais e estado do processamento. Não guardam e-mail, telefone, hashes de contato ou payload completo.
 - As tabelas de configuração, campanhas, tokens OAuth e eventos usam RLS sem políticas públicas e permissões apenas para `service_role`.
 - OAuth é preferencial no RD. Access e refresh tokens renovados ficam cifrados na tabela `meta_conversion_rd_oauth_tokens`, com `WEBHOOK_SECRET_ENCRYPTION_KEY`; `RD_CRM_API_TOKEN` existe apenas como contingência temporária.
+- A autorização inicial é iniciada por um administrador em `GET /api/integrations/rd/oauth/start`. O callback fixo é `https://leehovturismo.com.br/api/integrations/rd/oauth/callback`: ele valida `state` em cookie HTTP-only, troca o `code` uma única vez e armazena os tokens cifrados. O `RD_CRM_REFRESH_TOKEN` de ambiente é somente uma contingência de migração; o refresh ativo fica no banco protegido.
 - O cron `GET /api/cron/meta-conversions/retry` exige `Authorization: Bearer <META_CONVERSIONS_CRON_SECRET>`.
 - O agendamento roda no Supabase a cada 15 minutos (e n\u00e3o na Vercel Hobby). A URL de produ\u00e7\u00e3o e o token s\u00e3o mantidos cifrados no Supabase Vault como `leehov_meta_conversions_retry_url` e `leehov_meta_conversions_retry_token`; a migration n\u00e3o versiona nem revela seus valores.
 - Antes de habilitar o toggle, configurar as variáveis somente em Production e executar o evento técnico de teste no Gerenciador de Eventos.

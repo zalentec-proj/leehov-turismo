@@ -26,17 +26,22 @@ const TOKEN_URL = "https://api.rd.services/auth/token";
 
 type StoredTokens = { accessToken: string | null; refreshToken: string; expiresAt: string | null };
 
-function hasOauthConfiguration() {
+export function getRdOauthCallbackUrl() {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (!siteUrl) throw new Error("NEXT_PUBLIC_SITE_URL não está configurada para o OAuth do RD.");
+  return new URL("/api/integrations/rd/oauth/callback", siteUrl).toString();
+}
+
+export function hasRdOauthClientConfiguration() {
   return Boolean(
     process.env.RD_CRM_CLIENT_ID
     && process.env.RD_CRM_CLIENT_SECRET
-    && process.env.RD_CRM_REFRESH_TOKEN
     && hasEncryptionKey(ENCRYPTION_KEY),
   );
 }
 
 export function hasRdCredentials() {
-  return hasOauthConfiguration() || Boolean(process.env.RD_CRM_API_TOKEN);
+  return hasRdOauthClientConfiguration() || Boolean(process.env.RD_CRM_API_TOKEN);
 }
 
 function tokenIsUsable(expiresAt: string | null) {
@@ -69,6 +74,33 @@ async function saveTokens(accessToken: string, refreshToken: string, expiresIn: 
   return { accessToken, expiresAt };
 }
 
+export async function exchangeRdAuthorizationCode(code: string) {
+  if (!hasRdOauthClientConfiguration()) {
+    throw new Error("Configure RD_CRM_CLIENT_ID, RD_CRM_CLIENT_SECRET e WEBHOOK_SECRET_ENCRYPTION_KEY antes de autorizar o RD.");
+  }
+
+  const response = await fetch(TOKEN_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
+    body: new URLSearchParams({
+      grant_type: "authorization_code",
+      client_id: process.env.RD_CRM_CLIENT_ID ?? "",
+      client_secret: process.env.RD_CRM_CLIENT_SECRET ?? "",
+      code,
+      redirect_uri: getRdOauthCallbackUrl(),
+    }),
+    cache: "no-store",
+  });
+  const payload = object(await response.json().catch(() => null));
+  const accessToken = typeof payload.access_token === "string" ? payload.access_token : "";
+  const refreshToken = typeof payload.refresh_token === "string" ? payload.refresh_token : "";
+  const expiresIn = typeof payload.expires_in === "number" ? payload.expires_in : Number(payload.expires_in);
+  if (!response.ok || !accessToken || !refreshToken || !Number.isFinite(expiresIn)) {
+    throw new Error("O RD não concluiu a autorização OAuth.");
+  }
+  await saveTokens(accessToken, refreshToken, expiresIn);
+}
+
 async function refreshOauthToken(refreshToken: string) {
   const response = await fetch(TOKEN_URL, {
     method: "POST",
@@ -92,7 +124,7 @@ async function refreshOauthToken(refreshToken: string) {
 }
 
 async function accessToken(forceRefresh = false) {
-  if (!hasOauthConfiguration()) {
+  if (!hasRdOauthClientConfiguration()) {
     const fallback = process.env.RD_CRM_API_TOKEN;
     if (!fallback) throw new Error("A credencial do RD não está configurada no servidor.");
     return fallback;
@@ -106,7 +138,7 @@ async function accessToken(forceRefresh = false) {
 
 async function getRd(path: string, retried = false) {
   const response = await fetch(`${apiBase()}${path}`, { headers: { Authorization: `Bearer ${await accessToken(retried)}`, Accept: "application/json" }, cache: "no-store" });
-  if (response.status === 401 && hasOauthConfiguration() && !retried) return getRd(path, true);
+  if (response.status === 401 && hasRdOauthClientConfiguration() && !retried) return getRd(path, true);
   if (!response.ok) throw new Error(`RD não respondeu ao buscar o cadastro (HTTP ${response.status}).`);
   return response.json() as Promise<unknown>;
 }

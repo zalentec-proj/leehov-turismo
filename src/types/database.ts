@@ -1561,6 +1561,170 @@ export type Database = {
           },
         ]
       }
+      meta_conversion_campaigns: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          name: string
+          rd_campaign_id: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name: string
+          rd_campaign_id: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          name?: string
+          rd_campaign_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      meta_conversion_events: {
+        Row: {
+          attempts: number
+          closed_at: string | null
+          completed_at: string | null
+          created_at: string
+          event_key: string
+          id: string
+          last_error: string | null
+          meta_event_id: string | null
+          meta_response_status: number | null
+          next_retry_at: string | null
+          rd_campaign_id: string | null
+          rd_campaign_name: string | null
+          rd_contact_ids: string[]
+          rd_deal_id: string
+          rd_source_id: string | null
+          rd_source_name: string | null
+          rd_transaction_uuid: string | null
+          sale_value: number | null
+          status: Database["public"]["Enums"]["meta_conversion_event_status"]
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          closed_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          event_key: string
+          id?: string
+          last_error?: string | null
+          meta_event_id?: string | null
+          meta_response_status?: number | null
+          next_retry_at?: string | null
+          rd_campaign_id?: string | null
+          rd_campaign_name?: string | null
+          rd_contact_ids?: string[]
+          rd_deal_id: string
+          rd_source_id?: string | null
+          rd_source_name?: string | null
+          rd_transaction_uuid?: string | null
+          sale_value?: number | null
+          status?: Database["public"]["Enums"]["meta_conversion_event_status"]
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          closed_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          event_key?: string
+          id?: string
+          last_error?: string | null
+          meta_event_id?: string | null
+          meta_response_status?: number | null
+          next_retry_at?: string | null
+          rd_campaign_id?: string | null
+          rd_campaign_name?: string | null
+          rd_contact_ids?: string[]
+          rd_deal_id?: string
+          rd_source_id?: string | null
+          rd_source_name?: string | null
+          rd_transaction_uuid?: string | null
+          sale_value?: number | null
+          status?: Database["public"]["Enums"]["meta_conversion_event_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      meta_conversion_rd_oauth_tokens: {
+        Row: {
+          access_token_expires_at: string | null
+          created_at: string
+          encrypted_access_token: string | null
+          encrypted_refresh_token: string
+          id: boolean
+          updated_at: string
+        }
+        Insert: {
+          access_token_expires_at?: string | null
+          created_at?: string
+          encrypted_access_token?: string | null
+          encrypted_refresh_token: string
+          id?: boolean
+          updated_at?: string
+        }
+        Update: {
+          access_token_expires_at?: string | null
+          created_at?: string
+          encrypted_access_token?: string | null
+          encrypted_refresh_token?: string
+          id?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      meta_conversion_settings: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          id: boolean
+          meta_pixel_id: string
+          rd_source_id: string
+          test_event_code: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          id?: boolean
+          meta_pixel_id?: string
+          rd_source_id?: string
+          test_event_code?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          id?: boolean
+          meta_pixel_id?: string
+          rd_source_id?: string
+          test_event_code?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meta_conversion_settings_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       webhook_logs: {
         Row: {
           attempts: number
@@ -1724,6 +1888,7 @@ export type Database = {
         | "whatsapp"
         | "profile_update"
       lead_status: "new" | "in_progress" | "converted" | "archived"
+      meta_conversion_event_status: "pending" | "processing" | "sent" | "failed" | "ignored" | "review_required"
       invitation_status: "pending" | "accepted" | "revoked" | "expired" | "failed"
       newsletter_campaign_status:
         | "draft"
@@ -1924,6 +2089,7 @@ export const Constants = {
         "profile_update",
       ],
       lead_status: ["new", "in_progress", "converted", "archived"],
+      meta_conversion_event_status: ["pending", "processing", "sent", "failed", "ignored", "review_required"],
       invitation_status: ["pending", "accepted", "revoked", "expired", "failed"],
       newsletter_campaign_status: ["draft", "scheduled", "sending", "paused", "sent", "cancelled"],
       newsletter_recipient_status: ["pending", "processing", "sent", "failed", "skipped"],

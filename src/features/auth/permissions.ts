@@ -49,6 +49,9 @@ export const permissionGroups = [
   { module: "webhooks", label: "Webhooks", permissions: [
     { key: "webhooks.view", label: "Visualizar" }, { key: "webhooks.manage", label: "Administrar" },
   ] },
+  { module: "meta_conversions", label: "Conversões Meta", permissions: [
+    { key: "meta_conversions.view", label: "Visualizar" }, { key: "meta_conversions.manage", label: "Administrar" },
+  ] },
 ] as const;
 
 export type PermissionKey = (typeof permissionGroups)[number]["permissions"][number]["key"] |
@@ -61,6 +64,7 @@ export const routePermissions: Array<{ prefix: string; permission: PermissionKey
   { prefix: "/admin/usuarios", permission: "users.view" },
   { prefix: "/admin/configuracoes", permission: "settings.view" },
   { prefix: "/admin/webhooks", permission: "webhooks.view" },
+  { prefix: "/admin/conversoes-meta", permission: "meta_conversions.view" },
   { prefix: "/admin/caravanas", permission: "caravans.view" },
   { prefix: "/admin/blog", permission: "blog.view" },
   { prefix: "/admin/leads", permission: "leads.view" },

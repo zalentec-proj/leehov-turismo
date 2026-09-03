@@ -6,6 +6,7 @@ import {
   Bell,
   BookOpen,
   Cable,
+  ChartNoAxesCombined,
   Home,
   Image,
   Mail,
@@ -37,6 +38,7 @@ const navItems = [
   { href: "/admin/midia", label: "Mídia", icon: Image, permission: "media.view" },
   { href: "/admin/configuracoes", label: "Configurações", icon: Settings, permission: "settings.view" },
   { href: "/admin/webhooks", label: "Webhooks", icon: Cable, permission: "webhooks.view" },
+  { href: "/admin/conversoes-meta", label: "Conversões Meta", icon: ChartNoAxesCombined, permission: "meta_conversions.view" },
   { href: "/admin/usuarios", label: "Usuários", icon: Users, permission: "users.view" },
 ] satisfies Array<{ href: string; label: string; icon: typeof Home; permission: PermissionKey }>;
 

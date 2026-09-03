@@ -24,7 +24,6 @@ function apiBase() {
 const ENCRYPTION_KEY = "WEBHOOK_SECRET_ENCRYPTION_KEY";
 // Official RD Station CRM OAuth endpoint for authorization-code exchange and refresh.
 const TOKEN_URL = "https://api.rd.services/oauth2/token";
-const WEBHOOKS_URL = "https://api.rd.services/integrations/webhooks";
 
 type StoredTokens = { accessToken: string | null; refreshToken: string; expiresAt: string | null };
 
@@ -184,23 +183,27 @@ export async function configureRdMetaPurchaseWebhook() {
   if (!secret) throw new Error("RD_META_WEBHOOK_SECRET não está configurado no servidor.");
 
   const callbackUrl = metaPurchaseWebhookUrl();
-  const listResponse = await authenticatedRdRequest(WEBHOOKS_URL);
+  // The CRM v2 webhook API accepts the CRM OAuth token. The generic integrations
+  // endpoint belongs to a different product scope and rejects this token with 401.
+  const webhooksUrl = `${apiBase()}/webhooks`;
+  const listResponse = await authenticatedRdRequest(webhooksUrl);
   if (!listResponse.ok) throw new Error(`RD não respondeu ao listar webhooks (HTTP ${listResponse.status}).`);
   const existing = webhookList(await listResponse.json().catch(() => null));
-  if (existing.some((webhook) => pickText(webhook, ["event_type"]) === "crm_deal_updated" && pickText(webhook, ["url"]) === callbackUrl)) {
+  if (existing.some((webhook) => pickText(webhook, ["event_name", "event_type"]) === "crm_deal_updated" && pickText(webhook, ["url"]) === callbackUrl)) {
     return { created: false };
   }
 
-  const createResponse = await authenticatedRdRequest(WEBHOOKS_URL, {
+  const createResponse = await authenticatedRdRequest(webhooksUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      event_type: "crm_deal_updated",
-      entity_type: "CONTACT",
-      url: callbackUrl,
-      http_method: "POST",
-      auth_header: "x-leehov-rd-webhook-key",
-      auth_key: secret,
+      data: {
+        event_name: "crm_deal_updated",
+        url: callbackUrl,
+        http_method: "POST",
+        auth_header: "x-leehov-rd-webhook-key",
+        auth_key: secret,
+      },
     }),
   });
   if (!createResponse.ok) throw new Error(`RD não aceitou o webhook (HTTP ${createResponse.status}).`);

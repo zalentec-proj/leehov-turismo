@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 import { requirePermission } from "@/features/auth/permissions";
-import { exchangeRdAuthorizationCode } from "@/features/meta-conversions/rd-client";
+import { exchangeRdAuthorizationCode, RdOauthError } from "@/features/meta-conversions/rd-client";
 
 const STATE_COOKIE = "leehov_rd_oauth_state";
 
@@ -35,7 +35,10 @@ export async function GET(request: NextRequest) {
     const response = redirectToAdmin(request, "connected");
     response.cookies.delete(STATE_COOKIE);
     return response;
-  } catch {
+  } catch (error) {
+    console.error("rd_oauth_callback_failed", {
+      reason: error instanceof RdOauthError ? error.message : "rd_oauth_unexpected_failure",
+    });
     const response = redirectToAdmin(request, "failed");
     response.cookies.delete(STATE_COOKIE);
     return response;

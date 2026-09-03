@@ -26,6 +26,13 @@ const TOKEN_URL = "https://api.rd.services/auth/token";
 
 type StoredTokens = { accessToken: string | null; refreshToken: string; expiresAt: string | null };
 
+export class RdOauthError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "RdOauthError";
+  }
+}
+
 export function getRdOauthCallbackUrl() {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
   if (!siteUrl) throw new Error("NEXT_PUBLIC_SITE_URL não está configurada para o OAuth do RD.");
@@ -96,9 +103,13 @@ export async function exchangeRdAuthorizationCode(code: string) {
   const refreshToken = typeof payload.refresh_token === "string" ? payload.refresh_token : "";
   const expiresIn = typeof payload.expires_in === "number" ? payload.expires_in : Number(payload.expires_in);
   if (!response.ok || !accessToken || !refreshToken || !Number.isFinite(expiresIn)) {
-    throw new Error("O RD não concluiu a autorização OAuth.");
+    throw new RdOauthError(`rd_oauth_token_exchange_failed_http_${response.status}`);
   }
-  await saveTokens(accessToken, refreshToken, expiresIn);
+  try {
+    await saveTokens(accessToken, refreshToken, expiresIn);
+  } catch {
+    throw new RdOauthError("rd_oauth_token_storage_failed");
+  }
 }
 
 async function refreshOauthToken(refreshToken: string) {

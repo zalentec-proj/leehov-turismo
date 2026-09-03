@@ -24,6 +24,7 @@ function apiBase() {
 const ENCRYPTION_KEY = "WEBHOOK_SECRET_ENCRYPTION_KEY";
 // Official RD Station CRM OAuth endpoint for authorization-code exchange and refresh.
 const TOKEN_URL = "https://api.rd.services/oauth2/token";
+const WEBHOOKS_URL = "https://api.rd.services/integrations/webhooks";
 
 type StoredTokens = { accessToken: string | null; refreshToken: string; expiresAt: string | null };
 
@@ -148,11 +149,62 @@ async function accessToken(forceRefresh = false) {
   return (await refreshOauthToken(refreshToken)).accessToken;
 }
 
-async function getRd(path: string, retried = false) {
-  const response = await fetch(`${apiBase()}${path}`, { headers: { Authorization: `Bearer ${await accessToken(retried)}`, Accept: "application/json" }, cache: "no-store" });
-  if (response.status === 401 && hasRdOauthClientConfiguration() && !retried) return getRd(path, true);
+async function authenticatedRdRequest(url: string, init: RequestInit = {}, retried = false): Promise<Response> {
+  const headers = new Headers(init.headers);
+  headers.set("Authorization", `Bearer ${await accessToken(retried)}`);
+  headers.set("Accept", "application/json");
+  const response = await fetch(url, { ...init, headers, cache: "no-store" });
+  if (response.status === 401 && hasRdOauthClientConfiguration() && !retried) return authenticatedRdRequest(url, init, true);
+  return response;
+}
+
+async function getRd(path: string) {
+  const response = await authenticatedRdRequest(`${apiBase()}${path}`);
   if (!response.ok) throw new Error(`RD não respondeu ao buscar o cadastro (HTTP ${response.status}).`);
   return response.json() as Promise<unknown>;
+}
+
+function webhookList(payload: unknown): UnknownRecord[] {
+  if (Array.isArray(payload)) return payload.map(object);
+  const item = object(payload);
+  for (const key of ["webhooks", "subscriptions", "data"]) {
+    if (Array.isArray(item[key])) return item[key].map(object);
+  }
+  return [];
+}
+
+function metaPurchaseWebhookUrl() {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (!siteUrl) throw new Error("NEXT_PUBLIC_SITE_URL não está configurada para o webhook do RD.");
+  return new URL("/api/integrations/rd/meta-purchase", siteUrl).toString();
+}
+
+export async function configureRdMetaPurchaseWebhook() {
+  const secret = process.env.RD_META_WEBHOOK_SECRET;
+  if (!secret) throw new Error("RD_META_WEBHOOK_SECRET não está configurado no servidor.");
+
+  const callbackUrl = metaPurchaseWebhookUrl();
+  const listResponse = await authenticatedRdRequest(WEBHOOKS_URL);
+  if (!listResponse.ok) throw new Error(`RD não respondeu ao listar webhooks (HTTP ${listResponse.status}).`);
+  const existing = webhookList(await listResponse.json().catch(() => null));
+  if (existing.some((webhook) => pickText(webhook, ["event_type"]) === "crm_deal_updated" && pickText(webhook, ["url"]) === callbackUrl)) {
+    return { created: false };
+  }
+
+  const createResponse = await authenticatedRdRequest(WEBHOOKS_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      event_type: "crm_deal_updated",
+      entity_type: "CONTACT",
+      url: callbackUrl,
+      http_method: "POST",
+      auth_header: "x-leehov-rd-webhook-key",
+      auth_key: secret,
+    }),
+  });
+  if (!createResponse.ok) throw new Error(`RD não aceitou o webhook (HTTP ${createResponse.status}).`);
+  return { created: true };
 }
 
 export async function fetchRdContact(contactId: string) {

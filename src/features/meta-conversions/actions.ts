@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { requirePermission } from "@/features/auth/permissions";
-import { hasRdCredentials } from "@/features/meta-conversions/rd-client";
+import { configureRdMetaPurchaseWebhook, hasRdCredentials } from "@/features/meta-conversions/rd-client";
 import { retryMetaConversionEvent, sendMetaTestEvent } from "@/features/meta-conversions/processor";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -33,6 +33,16 @@ export async function testMetaConversionAction(): Promise<Result> {
     await sendMetaTestEvent((await createAdminClient().from("meta_conversion_settings").select("test_event_code").eq("id", true).single()).data?.test_event_code ?? null);
     return { success: true, message: "Evento técnico enviado. Confira-o no Gerenciador de Eventos." };
   } catch (error) { return { success: false, message: error instanceof Error ? error.message : "Não foi possível enviar o teste." }; }
+}
+
+export async function configureRdMetaPurchaseWebhookAction(): Promise<Result> {
+  await requirePermission("meta_conversions.manage");
+  try {
+    const result = await configureRdMetaPurchaseWebhook();
+    return { success: true, message: result.created ? "Webhook do RD criado e protegido." : "Webhook do RD já estava configurado." };
+  } catch (error) {
+    return { success: false, message: error instanceof Error ? error.message : "Não foi possível configurar o webhook do RD." };
+  }
 }
 
 export async function retryMetaConversionAction(input: unknown): Promise<Result> {

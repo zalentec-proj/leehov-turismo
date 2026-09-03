@@ -14,6 +14,18 @@ const eventSchema = z.object({ id: z.string().uuid() });
 
 function refresh() { revalidatePath("/admin/conversoes-meta"); }
 
+function rdWebhookConfigurationFailure(error: unknown) {
+  const message = error instanceof Error ? error.message : "";
+  const httpStatus = message.match(/HTTP\s+(\d{3})/)?.[1] ?? null;
+
+  if (message.startsWith("RD não respondeu ao listar webhooks")) return { category: "list_webhooks_rejected", httpStatus };
+  if (message.startsWith("RD não aceitou o webhook")) return { category: "create_webhook_rejected", httpStatus };
+  if (message.startsWith("RD_META_WEBHOOK_SECRET")) return { category: "webhook_secret_missing", httpStatus: null };
+  if (message.startsWith("NEXT_PUBLIC_SITE_URL")) return { category: "site_url_missing", httpStatus: null };
+  if (message.includes("OAuth")) return { category: "rd_oauth_unavailable", httpStatus };
+  return { category: "unexpected", httpStatus };
+}
+
 export async function saveMetaConversionSettingsAction(input: unknown): Promise<Result> {
   const { profile } = await requirePermission("meta_conversions.manage");
   const parsed = settingsSchema.safeParse(input);
@@ -41,7 +53,10 @@ export async function configureRdMetaPurchaseWebhookAction(): Promise<Result> {
     const result = await configureRdMetaPurchaseWebhook();
     return { success: true, message: result.created ? "Webhook do RD criado e protegido." : "Webhook do RD já estava configurado." };
   } catch (error) {
-    return { success: false, message: error instanceof Error ? error.message : "Não foi possível configurar o webhook do RD." };
+    const failure = rdWebhookConfigurationFailure(error);
+    // Deliberately log only a fixed category and an HTTP status. Tokens, URLs and response bodies stay out of logs.
+    console.error("rd_meta_webhook_configuration_failed", failure);
+    return { success: false, message: `Não foi possível configurar o webhook do RD. Código seguro: ${failure.category}${failure.httpStatus ? ` (HTTP ${failure.httpStatus})` : ""}.` };
   }
 }
 

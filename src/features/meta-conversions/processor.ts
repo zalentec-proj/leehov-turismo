@@ -33,6 +33,20 @@ function eligibilityReason(snapshot: RdDealSnapshot, settings: { enabled: boolea
   return { reason, campaignName: campaign?.name ?? null };
 }
 
+async function hydrateMissingContactIds(snapshot: RdDealSnapshot) {
+  if (snapshot.contactIds.length) return snapshot;
+  try {
+    const current = parseRdDealWebhook(await fetchRdDeal(snapshot.dealId));
+    if (current?.dealId === snapshot.dealId && current.contactIds.length) {
+      return { ...snapshot, contactIds: current.contactIds };
+    }
+  } catch {
+    // The original webhook remains the source of truth when RD cannot be read.
+    // No payload or credential details are logged.
+  }
+  return snapshot;
+}
+
 async function logIgnored(snapshot: RdDealSnapshot, reason: string) {
   await createAdminClient().from("meta_conversion_events").insert({
     event_key: ignoredKey(snapshot), rd_transaction_uuid: snapshot.transactionId, rd_deal_id: snapshot.dealId,
@@ -78,10 +92,14 @@ async function deliverEvent(eventId: string, snapshot: RdDealSnapshot, pixelId: 
 }
 
 export async function processRdDealWebhook(payload: unknown): Promise<ConversionResult> {
-  const snapshot = parseRdDealWebhook(payload);
+  let snapshot = parseRdDealWebhook(payload);
   if (!snapshot) return { accepted: false, status: "ignored", message: "Payload sem negociação identificável." };
   const { settings, campaigns } = await getSettings();
-  const { reason, campaignName } = eligibilityReason(snapshot, settings, campaigns);
+  let { reason, campaignName } = eligibilityReason(snapshot, settings, campaigns);
+  if (reason === "Negociação sem contato associado.") {
+    snapshot = await hydrateMissingContactIds(snapshot);
+    ({ reason, campaignName } = eligibilityReason(snapshot, settings, campaigns));
+  }
   if (reason) {
     await logIgnored(snapshot, reason);
     return { accepted: true, status: "ignored", message: reason };

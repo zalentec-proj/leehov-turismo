@@ -1,6 +1,12 @@
 import { hashMetaIdentifier, normalizeBrazilPhone, normalizeEmail } from "@/features/meta-conversions/rd-payload";
 
-export type MetaContact = { email?: string | null; phone?: string | null; externalId?: string | null };
+export type MetaContact = {
+  email?: string | null;
+  phone?: string | null;
+  externalId?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+};
 
 export type MetaPurchase = {
   eventId: string;
@@ -23,10 +29,14 @@ export function buildMetaPurchasePayload(purchase: MetaPurchase) {
   const email = normalizeEmail(purchase.contact.email);
   const phone = normalizeBrazilPhone(purchase.contact.phone);
   const externalId = String(purchase.contact.externalId ?? "").trim();
+  const firstName = String(purchase.contact.firstName ?? "").trim().replace(/\s+/g, " ");
+  const lastName = String(purchase.contact.lastName ?? "").trim().replace(/\s+/g, " ");
   const userData = {
     ...(email ? { em: [hashMetaIdentifier(email)] } : {}),
     ...(phone ? { ph: [hashMetaIdentifier(phone)] } : {}),
     ...(externalId ? { external_id: [hashMetaIdentifier(externalId)] } : {}),
+    ...(firstName ? { fn: [hashMetaIdentifier(firstName)] } : {}),
+    ...(lastName ? { ln: [hashMetaIdentifier(lastName)] } : {}),
   };
   if (!Object.keys(userData).length) throw new Error("O contato não possui e-mail, telefone ou identificador para correspondência.");
 

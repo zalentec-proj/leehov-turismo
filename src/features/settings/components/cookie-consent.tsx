@@ -1,6 +1,7 @@
 "use client";
 
 import Script from "next/script";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { CookieConsent, CookieConsentSettings, TrackingSettings } from "@/features/settings/types";
@@ -23,7 +24,7 @@ export function CookieConsentManager({ consent, tracking }: { consent: CookieCon
     setChoice(value);
   }
   const analytics = choice === "analytics";
-  return <>{analytics ? <TrackingScripts tracking={tracking} /> : null}{ready && consent.enabled && !choice ? <div className="fixed inset-x-4 bottom-[76px] z-50 mx-auto max-w-3xl rounded-[18px] border border-leehov-border bg-white p-5 shadow-[0_22px_70px_rgb(6_42_68_/_22%)] lg:bottom-4" role="dialog" aria-labelledby="cookie-title" aria-describedby="cookie-description"><div className="flex flex-col gap-5 md:flex-row md:items-center"><div className="flex-1"><h2 id="cookie-title" className="font-extrabold text-leehov-navy-950">Sua privacidade importa</h2><p id="cookie-description" className="mt-2 text-sm leading-6 text-leehov-muted">Usamos cookies essenciais para o site funcionar. Métricas e pixels só carregam com sua autorização.</p></div><div className="flex flex-col gap-2 sm:flex-row"><Button variant="outline" onClick={() => choose("essential")}>Somente essenciais</Button><Button className="bg-leehov-blue-600" onClick={() => choose("analytics")}>Aceitar analíticos</Button></div></div></div> : choice ? <button type="button" onClick={() => { localStorage.removeItem(storageKey(consent.version)); setChoice(null); }} className="fixed bottom-[84px] left-3 z-40 rounded-full border border-leehov-border bg-white px-3 py-2 text-xs font-bold text-leehov-navy-950 shadow-md lg:bottom-3">Rever cookies</button> : null}</>;
+  return <>{analytics ? <TrackingScripts tracking={tracking} /> : null}{ready && consent.enabled && !choice ? <div className="fixed inset-x-4 bottom-[76px] z-50 mx-auto max-w-3xl rounded-[18px] border border-leehov-border bg-white p-5 shadow-[0_22px_70px_rgb(6_42_68_/_22%)] lg:bottom-4" role="dialog" aria-labelledby="cookie-title" aria-describedby="cookie-description"><div className="flex flex-col gap-5 md:flex-row md:items-center"><div className="flex-1"><h2 id="cookie-title" className="font-extrabold text-leehov-navy-950">Sua privacidade importa</h2><p id="cookie-description" className="mt-2 text-sm leading-6 text-leehov-muted">Usamos cookies essenciais para o site funcionar. Ao aceitar, ativamos métricas e o Pixel Meta para medir campanhas, conforme a <Link href="/politica-de-privacidade" className="underline underline-offset-2">Política de Privacidade</Link>.</p></div><div className="flex flex-col gap-2 sm:flex-row"><Button variant="outline" onClick={() => choose("essential")}>Somente essenciais</Button><Button className="bg-leehov-blue-600" onClick={() => choose("analytics")}>Aceitar analíticos</Button></div></div></div> : choice ? <button type="button" onClick={() => { localStorage.removeItem(storageKey(consent.version)); setChoice(null); }} className="fixed bottom-[84px] left-3 z-40 rounded-full border border-leehov-border bg-white px-3 py-2 text-xs font-bold text-leehov-navy-950 shadow-md lg:bottom-3">Rever cookies</button> : null}</>;
 }
 
 function TrackingScripts({ tracking }: { tracking: TrackingSettings }) {

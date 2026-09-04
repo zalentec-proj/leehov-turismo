@@ -22,10 +22,10 @@ export default function PrivacyPage() {
             Avaliações do Google, quando a integração for ativada, serão exibidas com sua origem identificada. Credenciais de serviços e tokens nunca são enviados ao navegador.
           </p>
           <p>
-            A Leehov pode configurar destinos externos de automação por Webhooks. Nesses casos, enviamos apenas os identificadores e dados mínimos necessários ao evento, com assinatura de autenticidade, histórico de entrega e retenção limitada. O destino escolhido passa a tratar esses dados conforme sua própria política de privacidade.
+            Para medir campanhas, a Leehov pode enviar à Meta um evento de compra fechado no RD Station CRM. O evento contém valor, moeda, data, roteiro e identificadores de correspondência — como e-mail, telefone, ID do contato e, quando disponível, nome — transformados em hash SHA-256 antes do envio. Não enviamos nome, e-mail, telefone, mensagens, documentos ou o payload completo em texto aberto para essa finalidade.
           </p>
-          <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
-            Este texto precisa de revisão jurídica antes do deploy em produção.
+          <p>
+            Esse compartilhamento ocorre conforme o consentimento para tecnologias analíticas quando aplicável ou outra base legal adotada pela Leehov. A Meta trata os dados recebidos segundo os próprios termos e política de privacidade. A Leehov mantém controles de acesso, registros operacionais mínimos e não armazena o payload completo da conversão.
           </p>
         </div>
       </div></section>

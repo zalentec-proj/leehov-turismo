@@ -17,7 +17,7 @@ Registrar um único evento `Purchase` no Pixel Meta `1293414084833785` quando um
 1. O RD chama `POST /api/integrations/rd/meta-purchase` apenas para `crm_deal_updated`, com o header `x-leehov-rd-webhook-key`.
 2. A aplicação valida o segredo, tamanho e JSON do payload, sem gravar o payload bruto.
 3. A venda somente é elegível se estiver `won`, tiver valor positivo, data de fechamento válida, contato associado, fonte e roteiro autorizados.
-4. A aplicação busca o contato no RD e envia à Meta somente hashes SHA-256 de e-mail, telefone e/ou identificador externo.
+4. A aplicação busca o contato no RD e envia à Meta somente hashes SHA-256 de e-mail, telefone, identificador externo e, quando disponível, nome e sobrenome.
 5. O identificador Meta é determinístico por negócio (`rd_purchase_<deal_id>`); o banco também mantém uma chave única por venda.
 6. Caso uma venda já registrada mude de valor, ela recebe `review_required`; nunca é enviada uma nova compra automaticamente.
 
@@ -36,6 +36,7 @@ Registrar um único evento `Purchase` no Pixel Meta `1293414084833785` quando um
 - O cron `GET /api/cron/meta-conversions/retry` exige `Authorization: Bearer <META_CONVERSIONS_CRON_SECRET>`.
 - O agendamento roda no Supabase a cada 15 minutos (e n\u00e3o na Vercel Hobby). A URL de produ\u00e7\u00e3o e o token s\u00e3o mantidos cifrados no Supabase Vault como `leehov_meta_conversions_retry_url` e `leehov_meta_conversions_retry_token`; a migration n\u00e3o versiona nem revela seus valores.
 - Antes de habilitar o toggle, configurar as variáveis somente em Production e executar o evento técnico de teste no Gerenciador de Eventos.
+- A correspondência avançada usa somente campos padronizados do contato do RD. `fbp` e `fbc` não são gerados nem inferidos: eles são identificadores brutos do navegador e não estão disponíveis de forma confiável em uma venda originada no Instagram Direct. Caso o fluxo passe a capturá-los no site com consentimento, a inclusão deve ser desenhada e aprovada separadamente.
 
 ## Testes obrigatórios antes de ativar
 

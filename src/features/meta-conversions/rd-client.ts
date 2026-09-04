@@ -17,6 +17,18 @@ function pickText(value: unknown, keys: string[]) {
   return "";
 }
 
+function contactNameParts(contact: UnknownRecord) {
+  const explicitFirstName = pickText(contact, ["first_name", "firstname", "given_name"]);
+  const explicitLastName = pickText(contact, ["last_name", "lastname", "family_name"]);
+  const fullName = pickText(contact, ["name", "full_name", "display_name"]);
+  const words = fullName.split(/\s+/).filter(Boolean);
+
+  return {
+    firstName: explicitFirstName || words[0] || "",
+    lastName: explicitLastName || words.slice(1).join(" "),
+  };
+}
+
 function apiBase() {
   return (process.env.RD_CRM_API_BASE_URL || "https://api.rd.services/crm/v2").replace(/\/$/, "");
 }
@@ -217,10 +229,13 @@ export async function fetchRdContact(contactId: string) {
   const phones = Array.isArray(contact.phones) ? contact.phones : [];
   const firstEmail = typeof emails[0] === "string" ? emails[0] : pickText(emails[0], ["email", "value"]);
   const firstPhone = typeof phones[0] === "string" ? phones[0] : pickText(phones[0], ["phone", "value"]);
+  const name = contactNameParts(contact);
   return {
     email: normalizeEmail(pickText(contact, ["email", "email_address"]) || firstEmail),
     phone: normalizeBrazilPhone(pickText(contact, ["phone", "mobile_phone", "whatsapp"]) || firstPhone),
     externalId: pickText(contact, ["id", "uuid", "external_id"]) || contactId,
+    firstName: name.firstName,
+    lastName: name.lastName,
   };
 }
 

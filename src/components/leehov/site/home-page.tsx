@@ -19,7 +19,8 @@ import { HomeInstitutionalVideo } from "@/components/leehov/site/home-institutio
 import type { BlogPostSummary } from "@/features/blog/types";
 import type { CaravanDetail, CaravanSummary } from "@/features/caravans/types";
 import { NewsletterSignup } from "@/features/newsletter/components/newsletter-signup";
-import { EmbedSocialGoogleReviews } from "@/features/testimonials/components/embed-social-google-reviews";
+import { TestimonialsCarousel } from "@/features/testimonials/components/testimonials-carousel";
+import type { TestimonialSummary } from "@/features/testimonials/types";
 import type { HomeSettings } from "@/features/settings/types";
 
 type HomePageProps = {
@@ -27,6 +28,7 @@ type HomePageProps = {
   heroCaravans: CaravanDetail[];
   posts: BlogPostSummary[];
   homeSettings: HomeSettings;
+  testimonials: TestimonialSummary[];
 };
 
 const benefits = [
@@ -64,6 +66,7 @@ export function HomePage({
   heroCaravans,
   posts,
   homeSettings,
+  testimonials,
 }: HomePageProps) {
   return (
     <>
@@ -277,7 +280,11 @@ export function HomePage({
         </div>
       </section>
 
-      <EmbedSocialGoogleReviews />
+      <TestimonialsCarousel
+        testimonials={testimonials}
+        eyebrow="Avaliado por quem viaja conosco"
+        title="Depoimentos"
+      />
 
       <section className="bg-leehov-surface px-10 py-16 sm:px-8 sm:py-24 lg:px-12">
         <div className="mx-auto max-w-7xl">

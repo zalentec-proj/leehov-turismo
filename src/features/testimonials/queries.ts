@@ -16,6 +16,7 @@ import {
 } from "@/lib/google/business-profile";
 import { getGooglePlacesPublicConfiguration } from "@/lib/google/places";
 import { getGooglePlacesReviews } from "@/features/testimonials/google-places";
+import { normalizeGoogleReviewText } from "@/features/testimonials/review-text";
 
 const manualSelect = "*, image:media_assets(id, storage_bucket, storage_path)";
 
@@ -117,7 +118,7 @@ function mapGoogle(row: Record<string, unknown>): GoogleReview {
     roleTitle: "Avaliação do Google",
     city: "Google Reviews",
     rating: Number(row.star_rating),
-    text: String(row.comment ?? "Avaliação sem comentário."),
+    text: normalizeGoogleReviewText(row.comment),
     imageUrl: String(row.reviewer_profile_photo_url ?? ""),
     profileUrl: String(row.reviewer_profile_url ?? ""),
     sourceUrl: String(row.reviewer_profile_url ?? ""),

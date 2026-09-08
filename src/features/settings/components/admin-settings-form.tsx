@@ -424,8 +424,8 @@ export function AdminSettingsForm({
             </p>
             <p className="mt-3">
               Refresh tokens ficam criptografados no Supabase e access tokens
-              vivem somente em memória. O app permanece em Testing, portanto
-              pode exigir reconexão a cada sete dias.
+              vivem somente em memória. A autorização OAuth está publicada em
+              produção.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               {!google.connection ? (

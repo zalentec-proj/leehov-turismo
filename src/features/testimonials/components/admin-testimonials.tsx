@@ -551,7 +551,7 @@ function GooglePanel({
                   ? "API aprovada"
                   : "Basic API Access pendente"}
               </Badge>
-              <Badge variant="outline">OAuth em Testing</Badge>
+              <Badge variant="outline">OAuth em produção</Badge>
               {settings.placesConfigured ? (
                 <Badge variant="outline">Places API pronta</Badge>
               ) : null}
@@ -559,7 +559,7 @@ function GooglePanel({
             <p className="mt-2 max-w-3xl text-sm leading-6 text-leehov-muted">
               {settings.placesConfigured
                 ? "A Places API consulta avaliações públicas diretamente. Ela não permite responder, ocultar ou destacar avaliações pelo site."
-                : "Enquanto o app estiver em Testing, o refresh token pode expirar em sete dias. A conexão deve ser refeita quando o Google invalidar o acesso."}
+                : "A autorização OAuth está em produção e o token é renovado automaticamente pelo servidor."}
             </p>
           </div>
           {isAdmin ? (

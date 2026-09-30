@@ -16,6 +16,7 @@ import {
 } from "@/lib/google/business-profile";
 import { getGooglePlacesPublicConfiguration } from "@/lib/google/places";
 import { getGooglePlacesReviews } from "@/features/testimonials/google-places";
+import { resolveMediaUrl } from "@/features/media/resolve";
 import { normalizeGoogleReviewText } from "@/features/testimonials/review-text";
 
 const manualSelect = "*, image:media_assets(id, storage_bucket, storage_path)";
@@ -27,11 +28,7 @@ async function resolveTestimonialImage(
 ) {
   if (id) return `/api/media/${id}`;
   if (!path) return "";
-  const supabase = createAdminClient();
-  const { data } = await supabase.storage
-    .from(bucket)
-    .createSignedUrl(path, 3600);
-  return data?.signedUrl ?? "";
+  return resolveMediaUrl(path, bucket);
 }
 
 function credentialsConfigured() {

@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
+import { downloadMediaObjectWithFallback, getMediaUploadProvider, type MediaStorageProvider } from "@/features/media/object-storage";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const imageMimeTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
 type MediaBucket = "site-media" | "blog-images" | "caravan-images";
 
-type ResolvedAsset = { bucket: MediaBucket; path: string };
+type ResolvedAsset = { bucket: MediaBucket; path: string; provider: MediaStorageProvider };
 
 function fallbackBucket(scope: string): MediaBucket {
   if (scope === "blog") return "blog-images";
@@ -26,11 +27,15 @@ async function resolveAsset(scope: string, slug: string): Promise<ResolvedAsset 
     if (!data?.media_asset_id) return null;
     const { data: media } = await admin
       .from("media_assets")
-      .select("storage_bucket, storage_path")
+      .select("storage_bucket, storage_path, storage_provider")
       .eq("id", data.media_asset_id)
       .maybeSingle();
     if (!media || !["site-media", "blog-images", "caravan-images"].includes(media.storage_bucket)) return null;
-    return { bucket: media.storage_bucket as MediaBucket, path: media.storage_path };
+    return {
+      bucket: media.storage_bucket as MediaBucket,
+      path: media.storage_path,
+      provider: media.storage_provider === "r2" ? "r2" : "supabase",
+    };
   }
 
   if (scope === "blog") {
@@ -56,12 +61,18 @@ async function resolveAsset(scope: string, slug: string): Promise<ResolvedAsset 
   if (!path || path.startsWith("/") || /^https?:\/\//i.test(path)) return null;
   const { data: media } = await admin
     .from("media_assets")
-    .select("storage_bucket")
+    .select("storage_bucket, storage_provider")
     .eq("storage_path", path)
     .maybeSingle();
   const bucket = media?.storage_bucket ?? fallbackBucket(scope);
   if (!["site-media", "blog-images", "caravan-images"].includes(bucket)) return null;
-  return { bucket: bucket as MediaBucket, path };
+  return {
+    bucket: bucket as MediaBucket,
+    path,
+    provider: media
+      ? media.storage_provider === "r2" ? "r2" : "supabase"
+      : getMediaUploadProvider(),
+  };
 }
 
 /**
@@ -77,12 +88,12 @@ export async function GET(_request: Request, { params }: { params: Promise<{ sco
   const asset = await resolveAsset(scope, slug);
   if (!asset) return new NextResponse("Imagem não encontrada.", { status: 404 });
 
-  const { data, error } = await createAdminClient().storage.from(asset.bucket).download(asset.path);
-  if (error || !data || !imageMimeTypes.has(data.type)) return new NextResponse("Imagem não encontrada.", { status: 404 });
+  const mediaObject = await downloadMediaObjectWithFallback(asset);
+  if (!mediaObject || !imageMimeTypes.has(mediaObject.contentType)) return new NextResponse("Imagem não encontrada.", { status: 404 });
 
-  return new NextResponse(data, {
+  return new NextResponse(Uint8Array.from(mediaObject.bytes).buffer, {
     headers: {
-      "content-type": data.type,
+      "content-type": mediaObject.contentType,
       "cache-control": "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400",
       "x-content-type-options": "nosniff",
     },

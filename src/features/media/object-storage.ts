@@ -91,6 +91,16 @@ export async function downloadMediaObject(address: MediaObjectAddress): Promise<
   };
 }
 
+/**
+ * Keep the same transition fallback for public, email, and Open Graph images.
+ * The Supabase copy remains available while R2 delivery is being verified.
+ */
+export async function downloadMediaObjectWithFallback(address: MediaObjectAddress) {
+  const mediaObject = await downloadMediaObject(address);
+  if (mediaObject || normalizedProvider(address.provider) !== "r2") return mediaObject;
+  return downloadMediaObject({ ...address, provider: "supabase" });
+}
+
 export async function uploadMediaObject(
   address: MediaObjectAddress,
   bytes: Uint8Array,

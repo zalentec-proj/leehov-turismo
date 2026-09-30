@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { allowedMediaBuckets, deliverMediaImage } from "@/features/media/delivery";
+import { getMediaUploadProvider } from "@/features/media/object-storage";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function GET(
@@ -31,8 +32,10 @@ export async function GET(
     path: storagePath,
     mimeType: catalogAsset?.mime_type,
     provider:
-      catalogAsset && "storage_provider" in catalogAsset && catalogAsset.storage_provider === "r2"
-        ? "r2"
-        : "supabase",
+      catalogAsset
+        ? "storage_provider" in catalogAsset && catalogAsset.storage_provider === "r2"
+          ? "r2"
+          : "supabase"
+        : getMediaUploadProvider(),
   });
 }

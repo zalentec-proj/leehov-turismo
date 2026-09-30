@@ -1,6 +1,7 @@
 import "server-only";
 
 import { requirePermission } from "@/features/auth/permissions";
+import { resolveMediaUrl } from "@/features/media/resolve";
 import type { Popup } from "@/features/popups/types";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -14,8 +15,7 @@ async function mapPopup(row: Record<string, unknown>): Promise<Popup> {
   if (image?.id) {
     imageUrl = `/api/media/${image.id}`;
   } else if (image?.storage_path) {
-    const { data } = await createAdminClient().storage.from(image.storage_bucket ?? "site-media").createSignedUrl(image.storage_path, 3600);
-    imageUrl = data?.signedUrl ?? "";
+    imageUrl = await resolveMediaUrl(image.storage_path, image.storage_bucket ?? "site-media");
   }
   return {
     id: String(row.id), title: String(row.title), description: String(row.description ?? ""),

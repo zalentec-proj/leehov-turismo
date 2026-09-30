@@ -2,7 +2,7 @@ import "server-only";
 
 import { NextResponse } from "next/server";
 import { getCurrentProfile } from "@/features/auth/queries";
-import { downloadMediaObject, type MediaStorageProvider } from "@/features/media/object-storage";
+import { downloadMediaObjectWithFallback, type MediaStorageProvider } from "@/features/media/object-storage";
 import { isMediaPathPublic } from "@/features/media/public-access";
 
 export const allowedMediaBuckets = new Set(["site-media", "blog-images", "caravan-images"]);
@@ -65,18 +65,11 @@ export async function deliverMediaImage(
     if (!profile?.active) return new NextResponse("Imagem não encontrada.", { status: 404 });
   }
 
-  let mediaObject = await downloadMediaObject({
+  const mediaObject = await downloadMediaObjectWithFallback({
     provider: asset.provider,
     bucket: asset.bucket,
     path: asset.path,
   });
-  if (!mediaObject && asset.provider === "r2") {
-    mediaObject = await downloadMediaObject({
-      provider: "supabase",
-      bucket: asset.bucket,
-      path: asset.path,
-    });
-  }
   if (!mediaObject || !allowedImageMimeTypes.has(mediaObject.contentType)) {
     return new NextResponse("Imagem não encontrada.", { status: 404 });
   }

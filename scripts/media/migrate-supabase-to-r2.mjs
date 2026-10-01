@@ -83,63 +83,74 @@ const summary = {
   failed: [],
 };
 
-for (const [index, object] of objects.entries()) {
-  const { data, error } = await supabase.storage.from(object.bucket).download(object.path);
-  if (error || !data) {
-    summary.failed.push({ bucket: object.bucket, path: object.path, stage: "download" });
-    continue;
-  }
+let cursor = 0;
+let completed = 0;
+const concurrency = 4;
 
-  const bytes = Buffer.from(await data.arrayBuffer());
-  const sha256 = digest(bytes);
-  const contentType = data.type || object.metadata.mimetype || "application/octet-stream";
-  summary.bytes += bytes.byteLength;
+async function migrateObject(object) {
+  try {
+    const { data, error } = await supabase.storage.from(object.bucket).download(object.path);
+    if (error || !data) throw new Error("Falha ao baixar original do Supabase.");
 
-  if (execute) {
-    try {
-      const key = `${object.bucket}/${object.path}`;
-      await r2.send(new PutObjectCommand({
-        Bucket: r2Bucket,
-        Key: key,
-        Body: bytes,
-        ContentLength: bytes.byteLength,
-        ContentType: contentType,
-        CacheControl: "public, max-age=31536000, immutable",
-        Metadata: { sha256 },
-      }));
-      const copied = await readR2Body(new GetObjectCommand({ Bucket: r2Bucket, Key: key }));
-      if (copied.byteLength !== bytes.byteLength || digest(copied) !== sha256) {
-        throw new Error("Falha na verificação de integridade.");
-      }
+    const bytes = Buffer.from(await data.arrayBuffer());
+    const sha256 = digest(bytes);
+    const contentType = data.type || object.metadata.mimetype || "application/octet-stream";
+    summary.bytes += bytes.byteLength;
 
-      summary.copied += 1;
-      const { data: catalogRows, error: updateError } = await supabase
-        .from("media_assets")
-        .update({
-          storage_provider: "r2",
-          content_sha256: sha256,
-          storage_migrated_at: new Date().toISOString(),
-        })
-        .eq("storage_bucket", object.bucket)
-        .eq("storage_path", object.path)
-        .select("id");
-      if (updateError) throw updateError;
-      if (catalogRows?.length) summary.catalogUpdated += catalogRows.length;
-      else summary.uncatalogued += 1;
-    } catch (migrationError) {
-      summary.failed.push({
-        bucket: object.bucket,
-        path: object.path,
-        stage: "copy-or-verify",
-        error: migrationError instanceof Error ? migrationError.message : "Erro desconhecido",
-      });
+    if (!execute) return;
+
+    const key = `${object.bucket}/${object.path}`;
+    await r2.send(new PutObjectCommand({
+      Bucket: r2Bucket,
+      Key: key,
+      Body: bytes,
+      ContentLength: bytes.byteLength,
+      ContentType: contentType,
+      CacheControl: "public, max-age=31536000, immutable",
+      Metadata: { sha256 },
+    }));
+    const copied = await readR2Body(new GetObjectCommand({ Bucket: r2Bucket, Key: key }));
+    if (copied.byteLength !== bytes.byteLength || digest(copied) !== sha256) {
+      throw new Error("Falha na verificação de integridade.");
+    }
+
+    summary.copied += 1;
+    const { data: catalogRows, error: updateError } = await supabase
+      .from("media_assets")
+      .update({
+        storage_provider: "r2",
+        content_sha256: sha256,
+        storage_migrated_at: new Date().toISOString(),
+      })
+      .eq("storage_bucket", object.bucket)
+      .eq("storage_path", object.path)
+      .select("id");
+    if (updateError) throw updateError;
+    if (catalogRows?.length) summary.catalogUpdated += catalogRows.length;
+    else summary.uncatalogued += 1;
+  } catch (migrationError) {
+    summary.failed.push({
+      bucket: object.bucket,
+      path: object.path,
+      stage: "download-copy-or-verify",
+      error: migrationError instanceof Error ? migrationError.message : "Erro desconhecido",
+    });
+  } finally {
+    completed += 1;
+    if (completed % 25 === 0 || completed === objects.length) {
+      console.log(`[${completed}/${objects.length}] objetos processados`);
     }
   }
+}
 
-  if ((index + 1) % 25 === 0 || index + 1 === objects.length) {
-    console.log(`[${index + 1}/${objects.length}] ${object.bucket}/${object.path}`);
+async function worker() {
+  while (cursor < objects.length) {
+    const object = objects[cursor++];
+    await migrateObject(object);
   }
 }
+
+await Promise.all(Array.from({ length: Math.min(concurrency, objects.length) }, () => worker()));
 
 console.log(JSON.stringify(summary, null, 2));
 if (!execute) {

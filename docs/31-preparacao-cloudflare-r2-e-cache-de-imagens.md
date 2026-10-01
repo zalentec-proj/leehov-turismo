@@ -1,12 +1,12 @@
 # Preparação do Cloudflare R2 e cache de imagens
 
-Data da preparação local: 29 de agosto de 2026. Atualizado em 30 de setembro de 2026.
+Data da preparação local: 29 de agosto de 2026. Atualizado em 1 de outubro de 2026.
 
 ## Objetivo
 
 Reduzir a saída de dados do Supabase causada por imagens sem alterar as URLs públicas do site ou mover o DNS da Leehov.
 
-O inventário remoto confirmou 302 objetos, aproximadamente 681 MB, distribuídos entre `site-media`, `caravan-images` e `blog-images`.
+O inventário remoto de 1 de outubro confirmou 317 objetos, 760.314.958 bytes, distribuídos entre `site-media`, `caravan-images` e `blog-images`.
 
 ## Arquitetura preparada
 
@@ -37,6 +37,10 @@ Após a virada, acompanhar o Cached Egress da **organização**, separado por pr
 
 As rotas de Open Graph, imagens de e-mail, pop-ups, depoimentos e caminhos legados devem usar a mesma camada de entrega de mídia. Assim, depois da promoção para R2, nenhuma delas gera URL assinada direta do Supabase. Caminhos legados primeiro procuram R2 e só usam Supabase como fallback temporário durante a transição.
 
+As ações de remoção de imagens legadas do blog e das caravanas também usam o provider de upload configurado. A exclusão de uma imagem antiga no R2 não apaga automaticamente a cópia de segurança no Supabase durante a janela de validação.
+
+Em 30 de setembro, o endpoint de Storage do Supabase respondeu HTTP 402 com `exceed_cached_egress_quota`, apesar de o projeto constar como `ACTIVE_HEALTHY`. No ciclo iniciado em 30 de setembro, a restrição foi removida: em 1 de outubro, uma URL pública de imagem respondeu HTTP 200 e o dry-run leu os 317 originais sem falhas. A organização continua no plano Free e pode voltar a ser restringida se atingir a franquia.
+
 ## Migração segura
 
 A migration `media_storage_provider_and_integrity` adiciona provider, SHA-256 e data da migração ao catálogo. O script `npm run media:r2:migrate` opera em dry-run por padrão. A gravação exige simultaneamente:
@@ -45,7 +49,7 @@ A migration `media_storage_provider_and_integrity` adiciona provider, SHA-256 e 
 npm run media:r2:migrate -- --execute --confirm-project=awfcyrpuzhovxixzpqzv
 ```
 
-O script copia, relê, compara tamanho e SHA-256 e somente então promove o registro para `r2`. Objetos sem catálogo também são copiados, mas permanecem identificados no relatório.
+O script usa quatro workers, copia, relê, compara tamanho e SHA-256 e somente então promove o registro para `r2`. Objetos sem catálogo também são copiados, mas permanecem identificados no relatório. A execução pode ser repetida após falhas; a virada da produção requer zero falhas e a confirmação de todos os registros catalogados.
 
 ## Variáveis server-side
 
@@ -59,14 +63,15 @@ R2_BUCKET=leehov-media-production
 
 Nenhuma variável R2 pode usar `NEXT_PUBLIC_`.
 
-## Gates remotos pendentes
+## Gates remotos e ordem da virada
 
-Estas ações não fazem parte da preparação local e exigem autorização operacional própria:
+Estado das ações remotas:
 
-1. ativar a assinatura do R2;
-2. criar bucket e credencial limitada;
-3. aplicar a migration no Supabase remoto — concluído em 30 de setembro de 2026;
-4. executar a cópia com `--execute`;
-5. configurar as variáveis na Vercel;
-6. alterar `MEDIA_STORAGE_PROVIDER` para `r2`;
-7. remover os objetos do Supabase somente após 30 dias de validação.
+1. Assinatura do R2: ativa desde 30 de setembro, com cobrança somente se superar o limite gratuito.
+2. Bucket privado `leehov-media-production` e credencial de leitura/gravação restrita a ele: criados em 1 de outubro.
+3. Migration no Supabase remoto: concluída em 30 de setembro de 2026.
+4. Dry-run: 317 objetos, 760.314.958 bytes, zero falhas em 1 de outubro.
+5. `R2_ACCOUNT_ID`, `R2_BUCKET`, `R2_ACCESS_KEY_ID` e `R2_SECRET_ACCESS_KEY`: adicionadas somente ao ambiente Production da Vercel, sem ativar o provider.
+6. Cópia com `--execute`: verificar resultado completo e contagem do catálogo antes da virada.
+7. Publicação e alteração de `MEDIA_STORAGE_PROVIDER` para `r2`: somente após a verificação dos objetos; validar URLs públicas e uploads novos depois.
+8. Remoção dos originais do Supabase: somente após 30 dias de validação e autorização específica.

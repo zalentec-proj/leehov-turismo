@@ -3,6 +3,7 @@ import "server-only";
 import {
   DeleteObjectCommand,
   GetObjectCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
@@ -141,4 +142,29 @@ export async function removeMediaObject(address: MediaObjectAddress) {
     .from(address.bucket)
     .remove([address.path]);
   if (error) throw error;
+}
+
+export async function listMediaObjectPaths(bucket: string, prefix: string): Promise<string[]> {
+  if (configuredUploadProvider() === "r2") {
+    const { client, bucket: r2Bucket } = getR2Client();
+    const keyPrefix = r2ObjectKey(bucket, `${prefix}/`);
+    const paths: string[] = [];
+    let continuationToken: string | undefined;
+    do {
+      const page = await client.send(new ListObjectsV2Command({
+        Bucket: r2Bucket,
+        Prefix: keyPrefix,
+        ContinuationToken: continuationToken,
+      }));
+      for (const object of page.Contents ?? []) {
+        if (object.Key?.startsWith(`${bucket}/`)) paths.push(object.Key.slice(bucket.length + 1));
+      }
+      continuationToken = page.NextContinuationToken;
+    } while (continuationToken);
+    return paths;
+  }
+
+  const { data, error } = await createAdminClient().storage.from(bucket).list(prefix, { limit: 1000 });
+  if (error) throw error;
+  return (data ?? []).filter((file) => file.id).map((file) => `${prefix}/${file.name}`);
 }

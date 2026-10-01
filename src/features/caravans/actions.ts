@@ -17,6 +17,7 @@ import type { TablesUpdate } from "@/types/database";
 import { emitWebhookEvent } from "@/lib/webhooks/events";
 import { validateCaravanImage } from "@/features/caravans/image-validation";
 import { createMediaAsset } from "@/features/media/service";
+import { getMediaUploadProvider, listMediaObjectPaths, removeMediaObject } from "@/features/media/object-storage";
 import { formatDepartureLabel } from "@/features/caravans/utils";
 import { resolveStableCollectionIds } from "@/features/caravans/collection-sync";
 
@@ -110,15 +111,23 @@ export async function deleteDraftCaravanAction(id: string): Promise<CaravanActio
     return { success: false, message: "Remova primeiro o vínculo deste pacote nos pop-ups." };
   }
 
-  const { data: files, error: listError } = await supabase.storage.from("caravan-images").list(id, { limit: 1000 });
-  if (listError) return { success: false, message: listError.message };
-  const paths = (files ?? []).filter((file) => file.name).map((file) => `${id}/${file.name}`);
+  let paths: string[];
+  try {
+    paths = await listMediaObjectPaths("caravan-images", id);
+  } catch (listError) {
+    return { success: false, message: listError instanceof Error ? listError.message : "Não foi possível listar as imagens." };
+  }
   if (paths.length) {
     const { data: catalogued } = await supabase.from("media_assets").select("storage_path").eq("storage_bucket", "caravan-images").in("storage_path", paths);
     const preserved = new Set((catalogued ?? []).map((asset) => asset.storage_path));
     const removablePaths = paths.filter((path) => !preserved.has(path));
-    const { error: storageError } = removablePaths.length ? await supabase.storage.from("caravan-images").remove(removablePaths) : { error: null };
-    if (storageError) return { success: false, message: `Não foi possível limpar as imagens: ${storageError.message}` };
+    try {
+      for (const path of removablePaths) {
+        await removeMediaObject({ bucket: "caravan-images", path, provider: getMediaUploadProvider() });
+      }
+    } catch (storageError) {
+      return { success: false, message: `Não foi possível limpar as imagens: ${storageError instanceof Error ? storageError.message : "erro desconhecido"}` };
+    }
   }
 
   const { error: deleteError } = await supabase.from("caravans").delete().eq("id", id);
@@ -422,8 +431,11 @@ export async function removeCaravanImageAction(caravanId: string, path: string):
   const { data: caravan } = await supabase.from("caravans").select("slug, card_image_url, hero_image_url, video_thumbnail_url, leader_image_url").eq("id", caravanId).single();
   if (!caravan) return { success: false, message: "Pacote não encontrado." };
   if (!catalogued) {
-    const { error: storageError } = await supabase.storage.from("caravan-images").remove([path]);
-    if (storageError) return { success: false, message: storageError.message };
+    try {
+      await removeMediaObject({ bucket: "caravan-images", path, provider: getMediaUploadProvider() });
+    } catch (storageError) {
+      return { success: false, message: storageError instanceof Error ? storageError.message : "Não foi possível remover a imagem." };
+    }
   }
   await supabase.from("caravan_images").delete().eq("caravan_id", caravanId).eq("image_url", path);
   const updates: TablesUpdate<"caravans"> = { updated_by: profile.id };

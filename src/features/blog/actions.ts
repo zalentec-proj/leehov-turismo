@@ -9,6 +9,7 @@ import { parseBlogDateTimeInput } from "@/features/blog/date";
 import { normalizeBlogGalleryOrder } from "@/features/blog/gallery";
 import { validateBlogImage, validateBlogImageDimensions } from "@/features/blog/image-validation";
 import { createMediaAsset } from "@/features/media/service";
+import { getMediaUploadProvider, removeMediaObject } from "@/features/media/object-storage";
 import type { BlogActionResult } from "@/features/blog/types";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -139,8 +140,13 @@ export async function deleteDraftBlogPostAction(id: string): Promise<BlogActionR
     const { data: catalogued } = await createAdminClient().from("media_assets").select("storage_path").eq("storage_bucket", "blog-images").in("storage_path", paths);
     const preserved = new Set((catalogued ?? []).map((asset) => asset.storage_path));
     const removablePaths = paths.filter((path) => !preserved.has(path));
-    const { error: storageError } = removablePaths.length ? await supabase.storage.from("blog-images").remove(removablePaths) : { error: null };
-    if (storageError) return { success: false, message: storageError.message };
+    try {
+      for (const path of removablePaths) {
+        await removeMediaObject({ bucket: "blog-images", path, provider: getMediaUploadProvider() });
+      }
+    } catch (storageError) {
+      return { success: false, message: storageError instanceof Error ? storageError.message : "Não foi possível limpar as imagens." };
+    }
   }
   const { error: deleteError } = await supabase.from("blog_posts").delete().eq("id", id).eq("published", false);
   if (deleteError) return { success: false, message: deleteError.message };
@@ -212,8 +218,11 @@ export async function removeBlogImageAction(postId: string, path: string): Promi
   const { data: post } = await supabase.from("blog_posts").select("slug, cover_image_url").eq("id", postId).maybeSingle();
   if (!post) return { success: false, message: "Post não encontrado." };
   if (!catalogued) {
-    const { error } = await supabase.storage.from("blog-images").remove([path]);
-    if (error) return { success: false, message: error.message };
+    try {
+      await removeMediaObject({ bucket: "blog-images", path, provider: getMediaUploadProvider() });
+    } catch (error) {
+      return { success: false, message: error instanceof Error ? error.message : "Não foi possível remover a imagem." };
+    }
   }
   await supabase.from("blog_post_images").delete().eq("blog_post_id", postId).eq("image_url", path);
   if (post.cover_image_url === path) await supabase.from("blog_posts").update({ cover_image_url: null, cover_alt_text: null, updated_by: profile.id }).eq("id", postId);

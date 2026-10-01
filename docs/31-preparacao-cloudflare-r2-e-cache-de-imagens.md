@@ -6,7 +6,7 @@ Data da preparação local: 29 de agosto de 2026. Atualizado em 1 de outubro de 
 
 Reduzir a saída de dados do Supabase causada por imagens sem alterar as URLs públicas do site ou mover o DNS da Leehov.
 
-O inventário remoto de 1 de outubro confirmou 317 objetos, 760.314.958 bytes, distribuídos entre `site-media`, `caravan-images` e `blog-images`.
+O inventário remoto inicial de 1 de outubro confirmou 317 objetos, 760.314.958 bytes, distribuídos entre `site-media`, `caravan-images` e `blog-images`. A execução posterior encontrou 320 objetos, pois novos arquivos entraram durante o dia.
 
 ## Arquitetura preparada
 
@@ -71,7 +71,7 @@ Estado das ações remotas:
 2. Bucket privado `leehov-media-production` e credencial de leitura/gravação restrita a ele: criados em 1 de outubro.
 3. Migration no Supabase remoto: concluída em 30 de setembro de 2026.
 4. Dry-run: 317 objetos, 760.314.958 bytes, zero falhas em 1 de outubro.
-5. `R2_ACCOUNT_ID`, `R2_BUCKET`, `R2_ACCESS_KEY_ID` e `R2_SECRET_ACCESS_KEY`: adicionadas somente ao ambiente Production da Vercel, sem ativar o provider.
-6. Cópia com `--execute`: verificar resultado completo e contagem do catálogo antes da virada.
+5. `R2_ACCOUNT_ID`, `R2_BUCKET`, `R2_ACCESS_KEY_ID` e `R2_SECRET_ACCESS_KEY`: atualizadas somente no ambiente Production da Vercel após rotação da credencial, sem ativar o provider.
+6. Cópia com `--execute`: concluída em 1 de outubro de 2026. Foram 320 objetos, 771.410.323 bytes, 320 cópias relidas e verificadas, zero falhas, 270 registros do catálogo atualizados e 50 objetos sem catálogo. Logo após a execução, o banco tinha 270 registros com `storage_provider = 'r2'` e nenhum em `supabase`. Antes da virada, mais sete imagens (20.861.680 bytes) foram enviadas ao Supabase; elas permanecem como legado acessível pelo provider individual. Os originais permanecem no Supabase para rollback.
 7. Publicação e alteração de `MEDIA_STORAGE_PROVIDER` para `r2`: somente após a verificação dos objetos; validar URLs públicas e uploads novos depois.
 8. Remoção dos originais do Supabase: somente após 30 dias de validação e autorização específica.

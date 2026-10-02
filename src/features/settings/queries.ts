@@ -14,7 +14,7 @@ import { createClient } from "@/lib/supabase/server";
 const contactFallback = {
   phone: "",
   contactEmail: "contato@leehovturismo.com.br",
-  address: "Rua Ipê Roxo, 1879 — Padovani, Corbélia, PR — 85420-000",
+  address: "Rua Pernambuco 800 - Centro, Cascavel/PR - 85810-020",
 };
 const whatsappFallback = {
   number: LEEHOV_WHATSAPP_NUMBER,

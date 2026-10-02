@@ -541,6 +541,7 @@ export function CaravanForm({ caravan, categories, mediaAssets }: { caravan?: Ad
           {itinerary.fields.map((field, index) => {
             const imagePath = watchedItinerary?.[index]?.imagePath ?? "";
             const preview = itineraryPreviews[imagePath];
+            const accommodationIsLong = (watchedItinerary?.[index]?.accommodation ?? "").trim().length > 180;
             return (
               <div key={field.id} className="overflow-hidden rounded-[18px] border border-leehov-border bg-leehov-surface">
                 <div className="grid gap-5 p-5 lg:grid-cols-[220px_minmax(0,1fr)]">
@@ -564,8 +565,14 @@ export function CaravanForm({ caravan, categories, mediaAssets }: { caravan?: Ad
                     <div className="flex items-end"><Button type="button" variant="outline" size="icon" aria-label={`Remover dia ${index + 1}`} onClick={() => itinerary.remove(index)}><Trash2 className="size-4" /></Button></div>
                     <div className="md:col-span-4"><Field label="Descrição"><Textarea rows={4} {...form.register(`itinerary.${index}.description`)} /></Field></div>
                     <Input type="hidden" {...form.register(`itinerary.${index}.imagePath`)} />
-                    <Field label="Hospedagem"><Input {...form.register(`itinerary.${index}.accommodation`)} /></Field>
-                    <Field label="Refeições"><Controller control={form.control} name={`itinerary.${index}.meals`} render={({ field: mealsField }) => <Input value={mealsField.value.join(", ")} onChange={(event) => mealsField.onChange(event.target.value.split(",").map((item) => item.trim()).filter(Boolean))} placeholder="Café da manhã, jantar" />} /></Field>
+                    <div className="grid gap-4 md:col-span-4 sm:grid-cols-2">
+                      <Field label="Hospedagem" error={errors.itinerary?.[index]?.accommodation?.message}>
+                        <Textarea rows={2} aria-label={`Hospedagem do dia ${index + 1}`} aria-describedby={`accommodation-help-${field.id}`} placeholder="Hospedagem em Zhangjiajie" {...form.register(`itinerary.${index}.accommodation`)} />
+                        <p id={`accommodation-help-${field.id}`} className="text-xs text-leehov-muted">Informe apenas o hotel ou a cidade do pernoite. As atividades do dia ficam em Descrição.</p>
+                        {accommodationIsLong ? <p role="status" className="text-xs text-amber-700">O texto de hospedagem está longo. Confira se a descrição do roteiro foi colada aqui por engano.</p> : null}
+                      </Field>
+                      <Field label="Refeições"><Controller control={form.control} name={`itinerary.${index}.meals`} render={({ field: mealsField }) => <Input value={mealsField.value.join(", ")} onChange={(event) => mealsField.onChange(event.target.value.split(",").map((item) => item.trim()).filter(Boolean))} placeholder="Café da manhã, jantar" />} /></Field>
+                    </div>
                   </div>
                 </div>
               </div>

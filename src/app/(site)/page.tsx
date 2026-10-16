@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import { HomePage } from "@/components/leehov/site/home-page";
 import { getFeaturedCaravans, getHeroCaravans } from "@/features/caravans/queries";
 import { getFeaturedPosts } from "@/features/blog/queries";
 import { getPublicSiteSettings } from "@/features/settings/queries";
 import { getFeaturedTestimonials } from "@/features/testimonials/queries";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export default async function Page() {
   const [caravans, heroCaravans, posts, settings, testimonials] = await Promise.all([

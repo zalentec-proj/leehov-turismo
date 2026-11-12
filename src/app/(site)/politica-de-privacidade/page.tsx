@@ -19,6 +19,9 @@ export default function PrivacyPage() {
             Cookies essenciais mantêm preferências e segurança. Google Analytics, Google Tag Manager e Meta Pixel somente são carregados após a escolha “Aceitar analíticos”. A preferência pode ser revista a qualquer momento e expira em até 180 dias.
           </p>
           <p>
+            Após um aceite que inclua a OpenAI, registramos cliques em links de WhatsApp para avaliar campanhas. O evento não representa uma venda nem um contato recebido e não inclui dados de formulário. Quando disponível, a referência do anúncio é mantida apenas na sessão da aba e pode acompanhar o evento. Você pode retirar a permissão em “Rever cookies”.
+          </p>
+          <p>
             Avaliações do Google, quando a integração for ativada, serão exibidas com sua origem identificada. Credenciais de serviços e tokens nunca são enviados ao navegador.
           </p>
           <p>

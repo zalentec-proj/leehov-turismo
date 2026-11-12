@@ -52,7 +52,7 @@ const nextConfig: NextConfig = {
               "object-src 'none'",
               "frame-ancestors 'none'",
               "form-action 'self'",
-              "img-src 'self' data: blob: https://awfcyrpuzhovxixzpqzv.supabase.co https://i.ytimg.com https://www.facebook.com https://lh3.googleusercontent.com",
+              "img-src 'self' data: blob: https://awfcyrpuzhovxixzpqzv.supabase.co https://i.ytimg.com https://www.facebook.com https://lh3.googleusercontent.com https://bzr.openai.com",
               "font-src 'self' data:",
               "style-src 'self' 'unsafe-inline'",
               "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://www.googletagmanager.com https://connect.facebook.net",

@@ -84,7 +84,7 @@ export function AdminLeadsTable({ data, owners, caravans, whatsappTemplate, cons
 
   const columns = useMemo(() => [
     columnHelper.accessor("name", { header: "Lead", cell: ({ row }) => <Link href={`/admin/leads/${row.original.id}`} className="block min-w-[210px]"><p className="font-bold text-leehov-navy-950 hover:text-leehov-blue-600">{row.original.name}</p><p className="text-xs text-leehov-muted">{row.original.email || "Sem e-mail"}</p><p className="text-xs text-leehov-muted">{row.original.phone}</p></Link> }),
-    columnHelper.accessor("source", { header: "Origem", cell: ({ getValue }) => <Badge variant="outline">{sourceLabels[getValue()]}</Badge> }),
+    columnHelper.accessor("source", { header: "Canal de atendimento", cell: ({ getValue }) => <Badge variant="outline">{sourceLabels[getValue()]}</Badge> }),
     columnHelper.display({ id: "owner", header: "Responsável", cell: ({ row }) => row.original.assignee?.name || "Não atribuído" }),
     columnHelper.display({ id: "followup", header: "Próximo contato", cell: ({ row }) => row.original.nextFollowUpAt ? <span className={new Date(row.original.nextFollowUpAt).getTime() < Date.now() ? "font-bold text-red-600" : ""}>{dateFormatter.format(new Date(row.original.nextFollowUpAt))}</span> : "—" }),
     columnHelper.accessor("status", { header: "Status", cell: ({ row }) => <Select value={row.original.status} disabled={pendingId === row.original.id} onValueChange={(value) => changeStatus(row.original, value as LeadStatus)}><SelectTrigger className="w-[165px]"><SelectValue />{pendingId === row.original.id ? <Loader2 className="size-3 animate-spin" /> : null}</SelectTrigger><SelectContent>{Object.entries(statusLabels).map(([value, label]) => <SelectItem key={value} value={value}>{label}</SelectItem>)}</SelectContent></Select> }),
@@ -103,7 +103,7 @@ export function AdminLeadsTable({ data, owners, caravans, whatsappTemplate, cons
       <div className="grid gap-3 lg:grid-cols-3 xl:grid-cols-6">
         <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar lead" className="xl:col-span-2" />
         <Filter value={status} onChange={setStatus} all="Todos os status" items={Object.entries(statusLabels)} />
-        <Filter value={source} onChange={setSource} all="Todas as origens" items={Object.entries(sourceLabels)} />
+        <Filter value={source} onChange={setSource} all="Todos os canais de atendimento" items={Object.entries(sourceLabels)} />
         <Filter value={caravan} onChange={setCaravan} all="Todos os pacotes" items={caravans.map((item) => [item.id, item.title])} />
         <Filter value={owner} onChange={setOwner} all="Todos responsáveis" items={[["unassigned", "Não atribuído"], ...owners.map((item) => [item.id, item.name])]} />
       </div>

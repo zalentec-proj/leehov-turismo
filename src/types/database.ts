@@ -14,6 +14,147 @@ export type Database = {
   }
   public: {
     Tables: {
+      site_measurement_events: {
+        Row: {
+          id: string
+          kind: string
+          occurred_at: string
+          visitor_id: string
+          session_id: string
+          page_path: string
+          caravan_id: string | null
+          attribution: Json
+          reference: string | null
+          linked_lead_id: string | null
+          is_test: boolean
+        }
+        Insert: {
+          id: string
+          kind: string
+          occurred_at?: string
+          visitor_id: string
+          session_id: string
+          page_path: string
+          caravan_id?: string | null
+          attribution: Json
+          reference?: string | null
+          linked_lead_id?: string | null
+          is_test?: boolean
+        }
+        Update: {
+          id?: string
+          kind?: string
+          occurred_at?: string
+          visitor_id?: string
+          session_id?: string
+          page_path?: string
+          caravan_id?: string | null
+          attribution?: Json
+          reference?: string | null
+          linked_lead_id?: string | null
+          is_test?: boolean
+        }
+        Relationships: []
+      }
+      lead_conversion_events: {
+        Row: {
+          id: string
+          lead_id: string
+          kind: string
+          occurred_at: string
+          recorded_at: string
+          actor_id: string | null
+          caravan_id: string | null
+          amount_minor: number | null
+          currency: string | null
+          metadata: Json
+          attribution: Json
+          attribution_basis: string | null
+          attribution_visitor_id: string | null
+        }
+        Insert: {
+          id?: string
+          lead_id: string
+          kind: string
+          occurred_at?: string
+          recorded_at?: string
+          actor_id?: string | null
+          caravan_id?: string | null
+          amount_minor?: number | null
+          currency?: string | null
+          metadata?: Json
+          attribution?: Json
+          attribution_basis?: string | null
+          attribution_visitor_id?: string | null
+        }
+        Update: {
+          id?: string
+          lead_id?: string
+          kind?: string
+          occurred_at?: string
+          recorded_at?: string
+          actor_id?: string | null
+          caravan_id?: string | null
+          amount_minor?: number | null
+          currency?: string | null
+          metadata?: Json
+          attribution?: Json
+          attribution_basis?: string | null
+          attribution_visitor_id?: string | null
+        }
+        Relationships: []
+      }
+      lead_caravan_interests: {
+        Row: {
+          lead_id: string
+          caravan_id: string
+          created_at: string
+        }
+        Insert: {
+          lead_id: string
+          caravan_id: string
+          created_at?: string
+        }
+        Update: {
+          lead_id?: string
+          caravan_id?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      campaign_spend: {
+        Row: {
+          day: string
+          channel: string
+          medium: string
+          campaign: string
+          currency: string
+          amount_minor: number
+          updated_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          day: string
+          channel: string
+          medium?: string
+          campaign?: string
+          currency: string
+          amount_minor: number
+          updated_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          day?: string
+          channel?: string
+          medium?: string
+          campaign?: string
+          currency?: string
+          amount_minor?: number
+          updated_by?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       blog_categories: {
         Row: {
           created_at: string
@@ -915,6 +1056,22 @@ export type Database = {
       }
       leads: {
         Row: {
+          normalized_phone: string | null
+          commercial_stage: string | null
+          marketing_attribution: Json
+          attribution_basis: string | null
+          attribution_visitor_id: string | null
+          is_test: boolean
+          contact_received_at: string | null
+          quote_requested_at: string | null
+          proposal_sent_at: string | null
+          closed_at: string | null
+          loss_reason: string | null
+          next_action: string | null
+          proposal_minor: number | null
+          proposal_currency: string | null
+          sale_minor: number | null
+          sale_currency: string | null
           assigned_to: string | null
           caravan_id: string | null
           city: string | null
@@ -933,6 +1090,22 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          normalized_phone?: never
+          commercial_stage?: string | null
+          marketing_attribution?: Json
+          attribution_basis?: string | null
+          attribution_visitor_id?: string | null
+          is_test?: boolean
+          contact_received_at?: string | null
+          quote_requested_at?: string | null
+          proposal_sent_at?: string | null
+          closed_at?: string | null
+          loss_reason?: string | null
+          next_action?: string | null
+          proposal_minor?: number | null
+          proposal_currency?: string | null
+          sale_minor?: number | null
+          sale_currency?: string | null
           assigned_to?: string | null
           caravan_id?: string | null
           city?: string | null
@@ -951,6 +1124,22 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          normalized_phone?: never
+          commercial_stage?: string | null
+          marketing_attribution?: Json
+          attribution_basis?: string | null
+          attribution_visitor_id?: string | null
+          is_test?: boolean
+          contact_received_at?: string | null
+          quote_requested_at?: string | null
+          proposal_sent_at?: string | null
+          closed_at?: string | null
+          loss_reason?: string | null
+          next_action?: string | null
+          proposal_minor?: number | null
+          proposal_currency?: string | null
+          sale_minor?: number | null
+          sale_currency?: string | null
           assigned_to?: string | null
           caravan_id?: string | null
           city?: string | null
@@ -1846,6 +2035,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      capture_conversion_lead: { Args: { p_data: Json }; Returns: Json }
+      update_commercial_lead: { Args: { p_data: Json }; Returns: Json }
+      erase_site_measurement: { Args: { p_visitor_id: string }; Returns: undefined }
+      consume_measurement_rate_limit: { Args: { p_hash: string }; Returns: boolean }
       consume_form_rate_limit: {
         Args: {
           p_identifier_hash: string

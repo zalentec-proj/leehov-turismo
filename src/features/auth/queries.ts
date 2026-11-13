@@ -1,11 +1,12 @@
 import "server-only";
 
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { AdminProfile, AdminUser } from "@/features/auth/types";
 
-export async function getCurrentProfile(): Promise<AdminProfile | null> {
+export const getCurrentProfile = cache(async function (): Promise<AdminProfile | null> {
   const supabase = await createClient();
   const { data: claimsData, error: claimsError } = await supabase.auth.getClaims();
   const userId = claimsData?.claims?.sub;
@@ -25,7 +26,7 @@ export async function getCurrentProfile(): Promise<AdminProfile | null> {
   }
 
   return data;
-}
+});
 
 export async function requireActiveProfile(): Promise<AdminProfile> {
   const profile = await getCurrentProfile();
@@ -43,10 +44,21 @@ export async function requireActiveProfile(): Promise<AdminProfile> {
   return profile;
 }
 
-export async function requireMfaAssurance() {
+export const getVerifiedMfaAssurance = cache(async function () {
   const supabase = await createClient();
-  const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-  if (data?.nextLevel === "aal2" && data.currentLevel !== "aal2") redirect("/admin/mfa/verificar");
+  const { data: session, error: sessionError } = await supabase.auth.getSession();
+  const jwt = session?.session?.access_token;
+  if (sessionError || !jwt) return null;
+  // Passing the JWT checks the current factors against Auth rather than the
+  // user object embedded in the browser cookie.
+  const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel(jwt);
+  return error || !data?.currentLevel ? null : data;
+});
+
+export async function requireMfaAssurance() {
+  const data = await getVerifiedMfaAssurance();
+  if (!data) redirect("/admin/login?error=session");
+  if (data.nextLevel === "aal2" && data.currentLevel !== "aal2") redirect("/admin/mfa/verificar");
 }
 
 export async function requireAdminProfile(): Promise<AdminProfile> {

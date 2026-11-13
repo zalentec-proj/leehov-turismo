@@ -98,13 +98,14 @@ export async function updateSession(request: NextRequest) {
     ["/admin/webhooks", "webhooks.view"],
     ["/admin/caravanas", "caravans.view"],
     ["/admin/blog", "blog.view"],
+    ["/admin/conversoes", "conversions.view"],
     ["/admin/leads", "leads.view"],
     ["/admin/newsletter", "newsletter.view"],
     ["/admin/depoimentos", "testimonials.view"],
     ["/admin/popups", "popups.view"],
     ["/admin/midia", "media.view"],
   ] as const;
-  const routePermission = routePermissions.find(([prefix]) => pathname.startsWith(prefix))?.[1]
+  const routePermission = routePermissions.find(([prefix]) => pathname === prefix || pathname.startsWith(prefix + "/"))?.[1]
     ?? (pathname === "/admin" ? "dashboard.view" : null);
   if (routePermission) {
     const { data: allowed } = await supabase.rpc("has_permission", { permission_name: routePermission });

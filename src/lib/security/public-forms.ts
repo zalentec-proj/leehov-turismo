@@ -4,6 +4,7 @@ import { createHmac } from "node:crypto";
 import { headers } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyTurnstileToken } from "@/lib/turnstile/verify";
+import { cleanCampaignTag, publicPath } from "@/features/conversions/attribution";
 import type { AttributionInput } from "@/features/shared/attribution";
 import type { Json } from "@/types/database";
 
@@ -20,26 +21,6 @@ function requireFormSecuritySecret() {
     throw new Error("FORM_SECURITY_SECRET is missing or too short.");
   }
   return secret;
-}
-
-function cleanReferrer(value: string | null) {
-  if (!value) return undefined;
-  try {
-    const url = new URL(value);
-    return `${url.origin}${url.pathname}`.slice(0, 500);
-  } catch {
-    return undefined;
-  }
-}
-
-function cleanPath(value?: string) {
-  if (!value?.startsWith("/")) return undefined;
-  return value.split("?")[0]?.slice(0, 500);
-}
-
-function cleanUtm(value?: string) {
-  const trimmed = value?.trim();
-  return trimmed ? trimmed.slice(0, 100) : undefined;
 }
 
 export async function protectPublicForm(input: {
@@ -82,13 +63,12 @@ export async function protectPublicForm(input: {
   return {
     allowed: true,
     metadata: {
-      pagePath: cleanPath(input.attribution?.pagePath),
-      referrer: cleanReferrer(requestHeaders.get("referer")),
-      utmSource: cleanUtm(input.attribution?.utmSource),
-      utmMedium: cleanUtm(input.attribution?.utmMedium),
-      utmCampaign: cleanUtm(input.attribution?.utmCampaign),
-      utmContent: cleanUtm(input.attribution?.utmContent),
-      utmTerm: cleanUtm(input.attribution?.utmTerm),
+      pagePath: publicPath(input.attribution?.pagePath),
+      utmSource: cleanCampaignTag(input.attribution?.utmSource),
+      utmMedium: cleanCampaignTag(input.attribution?.utmMedium),
+      utmCampaign: cleanCampaignTag(input.attribution?.utmCampaign),
+      utmContent: cleanCampaignTag(input.attribution?.utmContent),
+      utmTerm: cleanCampaignTag(input.attribution?.utmTerm),
     },
   };
 }

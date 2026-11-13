@@ -27,7 +27,7 @@ function whatsappLink(page: Page) {
 
 async function clickWhatsApp(page: Page) {
   const [popup] = await Promise.all([page.waitForEvent("popup"), whatsappLink(page).click()]);
-  await expect(popup).toHaveURL(whatsapp);
+  await expect(popup).toHaveURL((url) => url.origin + url.pathname === whatsapp);
   await popup.close();
 }
 

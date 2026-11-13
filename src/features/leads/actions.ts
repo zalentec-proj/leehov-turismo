@@ -17,6 +17,9 @@ import {
   type CaravanInterestLeadInput,
   type ContactLeadInput,
 } from "@/features/leads/schema";
+import { captureLead, formMeasurement, hasMeasurementConsent, isInternalTraffic } from "@/features/conversions/server";
+import { randomUUID } from "node:crypto";
+import { z } from "zod";
 import type { LeadActionResult, LeadInteractionType, LeadStatus } from "@/features/leads/types";
 import { parseEmailRecipients, sendTransactionalEmail } from "@/lib/email/send-email";
 import { protectPublicForm } from "@/lib/security/public-forms";
@@ -126,7 +129,7 @@ async function sendCaravanInterestEmails(input: {
   ]);
 }
 
-export async function createContactLeadAction(rawInput: ContactLeadInput): Promise<LeadActionResult> {
+export async function createContactLeadAction(rawInput: ContactLeadInput, measurement?: unknown, requestId?: string): Promise<LeadActionResult> {
   const parsed = contactLeadSchema.safeParse(rawInput);
   if (!parsed.success) {
     return { success: false, message: parsed.error.issues[0]?.message ?? "Revise os dados informados." };
@@ -138,35 +141,27 @@ export async function createContactLeadAction(rawInput: ContactLeadInput): Promi
       scope: "contact",
       honeypot: input.company,
       turnstileToken: input.turnstileToken,
-      attribution: attribution(input),
+      attribution: await hasMeasurementConsent() ? attribution(input) : { pagePath: input.pagePath },
     });
     if (!security.allowed) return { success: security.silent, message: security.message };
 
-    const admin = createAdminClient();
-    const { data: lead, error } = await admin
-      .from("leads")
-      .insert({
-        name: input.name,
-        email: input.email.toLocaleLowerCase("pt-BR"),
-        phone: input.phone,
-        message: input.message,
-        source: "contact",
-        metadata: security.metadata,
-      })
-      .select("id")
-      .single();
-    if (error) throw error;
-
-    await emitWebhookEvent("lead.created", { leadId: lead.id, source: "contact" });
-    await emitWebhookEvent("contact.created", { leadId: lead.id });
-
-    await sendContactEmails({ leadId: lead.id, name: input.name, email: input.email, phone: input.phone, message: input.message });
+    const lead = await captureLead({
+      eventId: z.uuidv4().safeParse(requestId).data ?? randomUUID(),
+      name: input.name, email: input.email.toLowerCase(), phone: input.phone, message: input.message,
+      source: "contact", metadata: security.metadata, isTest: await isInternalTraffic(),
+      ...await formMeasurement(measurement),
+    });
+    if (!lead.id) throw new Error("Lead sem identificador.");
+    if (lead.result !== "replay") {
+      if (lead.result === "created") await emitWebhookEvent("lead.created", { leadId: lead.id, source: "contact" });
+      await emitWebhookEvent("contact.created", { leadId: lead.id });
+      await sendContactEmails({ leadId: lead.id, name: input.name, email: input.email, phone: input.phone, message: input.message });
+    }
     revalidatePath("/admin");
     revalidatePath("/admin/leads");
     return {
       success: true,
       message: "Mensagem enviada. Nossa equipe entrará em contato em breve.",
-      id: lead.id,
       whatsappUrl: await whatsappUrl("Olá, enviei uma mensagem pelo site da Leehov Turismo."),
     };
   } catch {
@@ -174,7 +169,7 @@ export async function createContactLeadAction(rawInput: ContactLeadInput): Promi
   }
 }
 
-export async function createCaravanInterestAction(rawInput: CaravanInterestLeadInput): Promise<LeadActionResult> {
+export async function createCaravanInterestAction(rawInput: CaravanInterestLeadInput, measurement?: unknown, requestId?: string): Promise<LeadActionResult> {
   const parsed = caravanInterestLeadSchema.safeParse(rawInput);
   if (!parsed.success) {
     return { success: false, message: parsed.error.issues[0]?.message ?? "Revise os dados informados." };
@@ -186,7 +181,7 @@ export async function createCaravanInterestAction(rawInput: CaravanInterestLeadI
       scope: "caravan_interest",
       honeypot: input.company,
       turnstileToken: input.turnstileToken,
-      attribution: attribution(input),
+      attribution: await hasMeasurementConsent() ? attribution(input) : { pagePath: input.pagePath },
     });
     if (!security.allowed) return { success: security.silent, message: security.message };
 
@@ -200,43 +195,26 @@ export async function createCaravanInterestAction(rawInput: CaravanInterestLeadI
     if (caravanError) throw caravanError;
     if (!caravan) return { success: false, message: "Este pacote não está disponível para receber interesses." };
 
-    const { data: lead, error } = await admin
-      .from("leads")
-      .insert({
-        name: input.name,
-        email: input.email.toLocaleLowerCase("pt-BR"),
-        phone: input.phone,
-        city: input.city,
-        state: input.state,
-        message: input.message,
-        source: "caravan_interest",
-        caravan_id: caravan.id,
-        metadata: security.metadata,
-      })
-      .select("id")
-      .single();
-    if (error) throw error;
-
-    await emitWebhookEvent("lead.created", { leadId: lead.id, source: "caravan_interest", caravanId: caravan.id });
-    await emitWebhookEvent("caravan_interest.created", { leadId: lead.id, caravanId: caravan.id });
-
-    await sendCaravanInterestEmails({
-      leadId: lead.id,
-      name: input.name,
-      email: input.email,
-      phone: input.phone,
-      city: input.city,
-      state: input.state,
-      message: input.message,
-      caravanTitle: caravan.title,
-      caravanSlug: caravan.slug,
+    const lead = await captureLead({
+      eventId: z.uuidv4().safeParse(requestId).data ?? randomUUID(),
+      name: input.name, email: input.email.toLowerCase(), phone: input.phone, message: input.message,
+      city: input.city, state: input.state, source: "caravan_interest", caravanId: caravan.id,
+      metadata: security.metadata, isTest: await isInternalTraffic(), ...await formMeasurement(measurement),
     });
+    if (!lead.id) throw new Error("Lead sem identificador.");
+    if (lead.result !== "replay") {
+      if (lead.result === "created") await emitWebhookEvent("lead.created", { leadId: lead.id, source: "caravan_interest", caravanId: caravan.id });
+      await emitWebhookEvent("caravan_interest.created", { leadId: lead.id, caravanId: caravan.id });
+      await sendCaravanInterestEmails({
+        leadId: lead.id, name: input.name, email: input.email, phone: input.phone, city: input.city,
+        state: input.state, message: input.message, caravanTitle: caravan.title, caravanSlug: caravan.slug,
+      });
+    }
     revalidatePath("/admin");
     revalidatePath("/admin/leads");
     return {
       success: true,
       message: "Interesse enviado. A equipe Leehov falará com você em breve.",
-      id: lead.id,
       whatsappUrl: await whatsappUrl(`Olá, gostaria de mais informações sobre o pacote ${caravan.title}.`),
     };
   } catch {
@@ -256,6 +234,7 @@ export async function updateLeadStatusAction(id: string, rawStatus: LeadStatus):
 
 function refreshLeadPaths(id?: string) {
   revalidatePath("/admin");
+  revalidatePath("/admin/conversoes");
   revalidatePath("/admin/leads");
   if (id) revalidatePath(`/admin/leads/${id}`);
 }
@@ -303,27 +282,22 @@ export async function createManualLeadAction(input: unknown): Promise<LeadAction
   const parsed = manualLeadSchema.safeParse(input);
   if (!parsed.success) return { success: false, message: parsed.error.issues[0]?.message ?? "Revise os dados do lead." };
   const value = parsed.data;
-  const admin = createAdminClient();
-  const { data, error } = await admin.from("leads").insert({
-    name: value.name,
-    phone: value.phone,
-    email: value.email ? value.email.toLocaleLowerCase("pt-BR") : null,
-    message: value.message || null,
-    city: value.city || null,
-    state: value.state || null,
-    source: value.source,
-    caravan_id: value.caravanId || null,
-    assigned_to: value.assignedTo || null,
-    next_follow_up_at: value.nextFollowUpAt || null,
-    status: "new",
-    metadata: { createdFrom: "admin" },
-    updated_by: profile.id,
-  }).select("id").single();
-  if (error || !data) return { success: false, message: "Não foi possível cadastrar o lead." };
-  await insertInteraction({ leadId: data.id, type: "profile_update", title: "Lead cadastrado manualmente", profileId: profile.id });
-  await emitLeadOperationalEvent("lead.created", data.id);
-  refreshLeadPaths(data.id);
-  return { success: true, message: "Lead cadastrado.", id: data.id };
+  if (value.assignedTo) await requirePermission("leads.assign");
+  try {
+    const result = await captureLead({
+      ...value, email: value.email.toLowerCase(), eventId: randomUUID(), actorId: profile.id,
+      metadata: { createdFrom: "admin" }, isTest: profile.role === "admin" && value.isTest === true,
+    });
+    if (result.result === "duplicate") {
+      return { success: false, id: result.id, message: "Já existe um lead com este telefone. Abra o cadastro existente." };
+    }
+    if (!result.id) return { success: false, message: "Não foi possível cadastrar o lead." };
+    await emitLeadOperationalEvent("lead.created", result.id);
+    refreshLeadPaths(result.id);
+    return { success: true, message: "Lead cadastrado.", id: result.id };
+  } catch {
+    return { success: false, message: "Não foi possível cadastrar o lead." };
+  }
 }
 
 export async function updateLeadPipelineAction(input: unknown): Promise<LeadActionResult> {
@@ -377,7 +351,7 @@ export async function addLeadInteractionAction(input: unknown): Promise<LeadActi
 export async function recordLeadWhatsAppInteractionAction(leadId: string): Promise<void> {
   try {
     const { profile } = await requirePermission("leads.interact");
-    const id = await insertInteraction({ leadId, type: "whatsapp", title: "Conversa iniciada pelo WhatsApp", profileId: profile.id });
+    const id = await insertInteraction({ leadId, type: "whatsapp", title: "WhatsApp aberto pelo consultor", profileId: profile.id });
     await emitLeadOperationalEvent("lead.interaction.created", leadId, { id, type: "whatsapp" });
     refreshLeadPaths(leadId);
   } catch {

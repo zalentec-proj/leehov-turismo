@@ -3,8 +3,7 @@ import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
-import { getCurrentProfile, requireMfaAssurance } from "@/features/auth/queries";
+import { getCurrentProfile, getVerifiedMfaAssurance, requireMfaAssurance } from "@/features/auth/queries";
 import { resolveEffectivePermissions } from "@/features/auth/permission-policy";
 
 export const permissionGroups = [
@@ -24,6 +23,10 @@ export const permissionGroups = [
     { key: "leads.view", label: "Visualizar" }, { key: "leads.create", label: "Criar" },
     { key: "leads.update", label: "Editar pipeline" }, { key: "leads.assign", label: "Atribuir" },
     { key: "leads.interact", label: "Registrar interações" },
+  ] },
+  { module: "conversions", label: "Conversões e Leads", permissions: [
+    { key: "conversions.view", label: "Visualizar" }, { key: "conversions.export", label: "Exportar CSV" },
+    { key: "conversions.manage_costs", label: "Registrar investimento" },
   ] },
   { module: "newsletter", label: "Newsletter", permissions: [
     { key: "newsletter.view", label: "Visualizar" }, { key: "newsletter.manage_drafts", label: "Gerenciar rascunhos" },
@@ -64,6 +67,7 @@ export const routePermissions: Array<{ prefix: string; permission: PermissionKey
   { prefix: "/admin/usuarios", permission: "users.view" },
   { prefix: "/admin/configuracoes", permission: "settings.view" },
   { prefix: "/admin/webhooks", permission: "webhooks.view" },
+  { prefix: "/admin/conversoes", permission: "conversions.view" },
   { prefix: "/admin/conversoes-meta", permission: "meta_conversions.view" },
   { prefix: "/admin/caravanas", permission: "caravans.view" },
   { prefix: "/admin/blog", permission: "blog.view" },
@@ -111,9 +115,8 @@ export async function requireAnyPermission(permissionsToCheck: PermissionKey[]) 
 export async function getPermissionAccess(permission: PermissionKey) {
   const profile = await getCurrentProfile();
   if (!profile?.active) return null;
-  const supabase = await createClient();
-  const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-  if (aal?.nextLevel === "aal2" && aal.currentLevel !== "aal2") return null;
+  const aal = await getVerifiedMfaAssurance();
+  if (!aal || (aal.nextLevel === "aal2" && aal.currentLevel !== "aal2")) return null;
   const permissions = await getEffectivePermissions(profile.id, profile.role, profile.active);
   return permissions.includes(permission) ? { profile, permissions } : null;
 }

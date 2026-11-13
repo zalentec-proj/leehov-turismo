@@ -8,6 +8,7 @@ import { NewsletterWelcomeEmail } from "@/emails/templates/newsletter-welcome-em
 import { newsletterSignupSchema, newsletterTokenSchema, type NewsletterSignupInput } from "@/features/newsletter/schema";
 import type { NewsletterActionResult } from "@/features/newsletter/types";
 import { sendTransactionalEmail } from "@/lib/email/send-email";
+import { hasMeasurementConsent } from "@/features/conversions/server";
 import { protectPublicForm } from "@/lib/security/public-forms";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { emitWebhookEvent } from "@/lib/webhooks/events";
@@ -45,7 +46,7 @@ export async function subscribeNewsletterAction(rawInput: NewsletterSignupInput)
       scope: "newsletter",
       honeypot: input.company,
       turnstileToken: input.turnstileToken,
-      attribution: input,
+      attribution: await hasMeasurementConsent() ? input : { pagePath: input.pagePath },
     });
     if (!security.allowed) {
       return { success: security.silent, message: security.silent ? genericSubscriptionMessage : security.message };

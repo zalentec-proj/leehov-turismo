@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, MessageCircle } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { TurnstileField } from "@/components/leehov/shared/turnstile-field";
@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { createCaravanInterestAction } from "@/features/leads/actions";
 import { caravanInterestLeadSchema, type CaravanInterestLeadInput } from "@/features/leads/schema";
+import { getMeasurementContext } from "@/features/conversions/client";
 import { collectAttribution } from "@/features/shared/attribution";
 
 export function CaravanInterestForm({ caravanId, caravanTitle }: { caravanId: string; caravanTitle: string }) {
@@ -34,17 +35,24 @@ export function CaravanInterestForm({ caravanId, caravanTitle }: { caravanId: st
     turnstileToken: "",
   };
   const [result, setResult] = useState<{ message: string; whatsappUrl?: string } | null>(null);
+  const submissionId = useRef<string | undefined>(undefined);
   const [turnstileKey, setTurnstileKey] = useState(0);
   const form = useForm<CaravanInterestLeadInput>({ resolver: zodResolver(caravanInterestLeadSchema), defaultValues: defaults });
   const setTurnstileToken = useCallback((token: string) => form.setValue("turnstileToken", token), [form]);
 
   async function onSubmit(values: CaravanInterestLeadInput) {
     setResult(null);
-    const response = await createCaravanInterestAction({ ...values, ...collectAttribution(), caravanId });
+    submissionId.current ??= globalThis.crypto?.randomUUID?.();
+    const context = getMeasurementContext();
+    const attribution = context ? collectAttribution() : { pagePath: window.location.pathname };
+    const response = await createCaravanInterestAction({ ...values, ...attribution, caravanId }, context, submissionId.current);
     if (!response.success) {
+      form.setValue("turnstileToken", "");
+      setTurnstileKey((value) => value + 1);
       toast.error(response.message);
       return;
     }
+    submissionId.current = undefined;
     form.reset(defaults);
     setTurnstileKey((value) => value + 1);
     setResult({ message: response.message, whatsappUrl: response.whatsappUrl });
@@ -54,7 +62,7 @@ export function CaravanInterestForm({ caravanId, caravanTitle }: { caravanId: st
   const error = (name: keyof CaravanInterestLeadInput) => form.formState.errors[name]?.message;
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="grid min-w-0 gap-3 sm:gap-4" noValidate>
+    <form onSubmit={(event) => void form.handleSubmit(onSubmit)(event)} className="grid min-w-0 gap-3 sm:gap-4" noValidate>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2"><Label htmlFor={`interest-name-${caravanId}`}>Nome</Label><Input id={`interest-name-${caravanId}`} autoComplete="name" {...form.register("name")} />{error("name") ? <p className="text-sm text-destructive">{error("name")}</p> : null}</div>
         <div className="space-y-2"><Label htmlFor={`interest-phone-${caravanId}`}>WhatsApp</Label><Input id={`interest-phone-${caravanId}`} type="tel" autoComplete="tel" {...form.register("phone")} />{error("phone") ? <p className="text-sm text-destructive">{error("phone")}</p> : null}</div>

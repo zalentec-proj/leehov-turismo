@@ -31,6 +31,7 @@ const navItems = [
   { href: "/admin", label: "Dashboard", icon: Home, permission: "dashboard.view" },
   { href: "/admin/caravanas", label: "Pacotes", icon: Plane, permission: "caravans.view" },
   { href: "/admin/blog", label: "Blog", icon: BookOpen, permission: "blog.view" },
+  { href: "/admin/conversoes", label: "Conversões e Leads", icon: ChartNoAxesCombined, permission: "conversions.view" },
   { href: "/admin/leads", label: "Leads", icon: MessageSquare, permission: "leads.view" },
   { href: "/admin/newsletter", label: "Newsletter", icon: Mail, permission: "newsletter.view" },
   { href: "/admin/depoimentos", label: "Depoimentos", icon: Star, permission: "testimonials.view" },

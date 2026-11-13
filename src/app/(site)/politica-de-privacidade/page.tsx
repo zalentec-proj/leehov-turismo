@@ -1,3 +1,5 @@
+import { EraseMeasurement } from "@/features/conversions/components/erase-measurement";
+
 export const metadata = {
   title: "Política de Privacidade",
   alternates: { canonical: "/politica-de-privacidade" },
@@ -18,6 +20,10 @@ export default function PrivacyPage() {
           <p>
             Cookies essenciais mantêm preferências e segurança. Google Analytics, Google Tag Manager e Meta Pixel somente são carregados após a escolha “Aceitar analíticos”. A preferência pode ser revista a qualquer momento e expira em até 180 dias.
           </p>
+          <p>
+            Com sua autorização, a Leehov mede visitas, interesse em caravanas e cliques no WhatsApp no próprio site. Identificadores aleatórios ajudam a reconhecer a origem da visita por até 30 dias. Uma referência sem dados pessoais pode ser adicionada ao WhatsApp para a equipe associar a conversa, caso você envie a mensagem. O site não lê suas conversas. Você pode rever o aceite; os eventos de navegação são mantidos por até 180 dias.
+          </p>
+          <EraseMeasurement />
           <p>
             Após um aceite que inclua a OpenAI, registramos cliques em links de WhatsApp para avaliar campanhas. O evento não representa uma venda nem um contato recebido e não inclui dados de formulário. Quando disponível, a referência do anúncio é mantida apenas na sessão da aba e pode acompanhar o evento. Você pode retirar a permissão em “Rever cookies”.
           </p>

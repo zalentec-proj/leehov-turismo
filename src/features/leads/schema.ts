@@ -47,6 +47,7 @@ export const manualLeadSchema = z.object({
   city: z.string().trim().max(100),
   state: z.string().trim().max(50),
   source: leadSourceSchema,
+  isTest: z.boolean().optional(),
   caravanId: z.string().uuid().or(z.literal("")),
   assignedTo: z.string().uuid().or(z.literal("")),
   nextFollowUpAt: z.string().datetime({ offset: true }).or(z.literal("")),

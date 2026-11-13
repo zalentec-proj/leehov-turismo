@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, MessageCircle } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { TurnstileField } from "@/components/leehov/shared/turnstile-field";
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { getMeasurementContext } from "@/features/conversions/client";
 import { collectAttribution } from "@/features/shared/attribution";
 import { createContactLeadAction } from "@/features/leads/actions";
 import { contactLeadSchema, type ContactLeadInput } from "@/features/leads/schema";
@@ -32,17 +33,24 @@ const defaults: ContactLeadInput = {
 
 export function ContactForm() {
   const [result, setResult] = useState<{ message: string; whatsappUrl?: string } | null>(null);
+  const submissionId = useRef<string | undefined>(undefined);
   const [turnstileKey, setTurnstileKey] = useState(0);
   const form = useForm<ContactLeadInput>({ resolver: zodResolver(contactLeadSchema), defaultValues: defaults });
   const setTurnstileToken = useCallback((token: string) => form.setValue("turnstileToken", token), [form]);
 
   async function onSubmit(values: ContactLeadInput) {
     setResult(null);
-    const response = await createContactLeadAction({ ...values, ...collectAttribution() });
+    submissionId.current ??= globalThis.crypto?.randomUUID?.();
+    const context = getMeasurementContext();
+    const attribution = context ? collectAttribution() : { pagePath: window.location.pathname };
+    const response = await createContactLeadAction({ ...values, ...attribution }, context, submissionId.current);
     if (!response.success) {
+      form.setValue("turnstileToken", "");
+      setTurnstileKey((value) => value + 1);
       toast.error(response.message);
       return;
     }
+    submissionId.current = undefined;
     form.reset(defaults);
     setTurnstileKey((value) => value + 1);
     setResult({ message: response.message, whatsappUrl: response.whatsappUrl });
@@ -52,7 +60,7 @@ export function ContactForm() {
   const error = (name: keyof ContactLeadInput) => form.formState.errors[name]?.message;
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="grid min-w-0 gap-3 sm:gap-4" noValidate>
+    <form onSubmit={(event) => void form.handleSubmit(onSubmit)(event)} className="grid min-w-0 gap-3 sm:gap-4" noValidate>
       <div className="space-y-2">
         <Label htmlFor="contact-name">Nome</Label>
         <Input id="contact-name" autoComplete="name" {...form.register("name")} aria-invalid={Boolean(error("name"))} />

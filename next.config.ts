@@ -9,6 +9,22 @@ const sharpLinuxRuntimeFiles = [
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1"],
+  // Keep canonical links and previews in the document head for every crawler.
+  htmlLimitedBots: /.*/,
+  async redirects() {
+    // These WordPress articles were migrated under /blog with the same slugs.
+    return [
+      "descobrindo-a-tailandia",
+      "egito-fabuloso-cruzeiro-rio-nilo-2",
+      "subida-ao-monte-sinai-no-egito",
+      "viagens-biblicas",
+      "beneficios-de-viajar-em-grupo",
+      "jaffa-e-sua-antiga-historia",
+      "travessia-fronteira-egito-e-israel",
+      "israel-moeda-idiomas-climas",
+      "oquefazeremtelaviv",
+    ].map((slug) => ({ source: `/${slug}`, destination: `/blog/${slug}`, permanent: true }));
+  },
   outputFileTracingIncludes: {
     "/api/media/**": sharpLinuxRuntimeFiles,
     // Turbopack matches the route group in the admin Blog entry name.

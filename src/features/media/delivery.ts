@@ -32,7 +32,7 @@ function mediaResponse(
       "cdn-cache-control": cacheControl,
       "x-content-type-options": "nosniff",
       "x-leehov-image-optimized": optimized ? "1" : "0",
-      "x-robots-tag": "noindex, nofollow",
+      ...(!publicAsset && { "x-robots-tag": "noindex, nofollow" }),
     },
   });
 }

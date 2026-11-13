@@ -7,10 +7,18 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CaravanItineraryCarousel } from "@/features/caravans/components/caravan-itinerary-carousel";
+import { CaravanItineraryText } from "@/features/caravans/components/caravan-itinerary-text";
 import { getCaravanBySlug } from "@/features/caravans/queries";
+import type { CaravanDetail } from "@/features/caravans/types";
 import { CaravanInterestForm } from "@/features/leads/components/caravan-interest-form";
 
 type CaravanPageProps = { params: Promise<{ slug: string }> };
+
+function previewImagePath(caravan: CaravanDetail) {
+  return caravan.heroImagePath || caravan.imagePath
+    ? `/api/open-graph/caravana/${encodeURIComponent(caravan.slug)}`
+    : undefined;
+}
 
 export async function generateMetadata({ params }: CaravanPageProps): Promise<Metadata> {
   const { slug } = await params;
@@ -18,12 +26,7 @@ export async function generateMetadata({ params }: CaravanPageProps): Promise<Me
   if (!caravan) return { title: "Pacote não encontrado" };
   const title = caravan.seoTitle || caravan.title;
   const description = caravan.seoDescription || caravan.summary;
-  // `heroImageUrl` always has a visual fallback for the page hero. Metadata must
-  // only use a resolved hero URL; otherwise the package card image is the
-  // canonical social preview instead of a generic fallback.
-  const image = caravan.heroImagePath || caravan.imagePath
-    ? `/api/open-graph/caravana/${encodeURIComponent(caravan.slug)}`
-    : "";
+  const image = previewImagePath(caravan);
   return {
     title: caravan.seoTitle ? { absolute: caravan.seoTitle } : caravan.title,
     description,
@@ -45,16 +48,27 @@ export default async function CaravanPage({ params }: CaravanPageProps) {
     : heroImage
       ? [{ id: "hero", imageUrl: heroImage, altText: caravan.title, caption: "" }]
       : [];
+  const siteUrl = new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000");
+  const previewImage = previewImagePath(caravan);
+  const stops = caravan.itinerary.map((day) => day.location.trim()).filter(Boolean);
   const tripSchema = {
     "@context": "https://schema.org",
     "@type": "TouristTrip",
     name: caravan.title,
     description: caravan.summary,
-    touristType: "Viagem em grupo acompanhada",
-    itinerary: caravan.destination,
-    image: caravan.heroImagePath || caravan.imagePath
-      ? `/api/open-graph/caravana/${encodeURIComponent(caravan.slug)}`
-      : undefined,
+    url: new URL(`/caravanas/${caravan.slug}`, siteUrl).href,
+    provider: { "@type": "TravelAgency", name: "Leehov Turismo", url: siteUrl.href },
+    itinerary: stops.length
+      ? {
+          "@type": "ItemList",
+          itemListElement: stops.map((name, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            item: { "@type": "Place", name },
+          })),
+        }
+      : { "@type": "Place", name: caravan.destination },
+    image: previewImage ? new URL(previewImage, siteUrl).href : undefined,
   };
 
   return (
@@ -126,6 +140,7 @@ export default async function CaravanPage({ params }: CaravanPageProps) {
           <p className="text-xs font-extrabold uppercase tracking-[0.11em] text-leehov-blue-500">Roteiro dia a dia</p>
           <h2 className="mb-8 mt-3 text-[32px] font-extrabold leading-[1.1] tracking-[-0.03em] text-leehov-text sm:mb-11 sm:text-[clamp(36px,4vw,48px)]">Uma história a cada parada.</h2>
           <CaravanItineraryCarousel days={caravan.itinerary} />
+          <CaravanItineraryText days={caravan.itinerary} />
         </div>
       </section>
 

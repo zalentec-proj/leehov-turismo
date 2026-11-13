@@ -1,14 +1,18 @@
 import type { NextConfig } from "next";
 
 const isProduction = process.env.NODE_ENV === "production";
+// Sharp loads libvips at runtime, so the tracer needs these native files explicitly.
+const sharpLinuxRuntimeFiles = [
+  "./node_modules/@img/sharp-linux-x64/**/*",
+  "./node_modules/@img/sharp-libvips-linux-x64/**/*",
+];
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1"],
   outputFileTracingIncludes: {
-    "/api/media/**": [
-      "./node_modules/@img/sharp-linux-x64/**/*",
-      "./node_modules/@img/sharp-libvips-linux-x64/**/*",
-    ],
+    "/api/media/**": sharpLinuxRuntimeFiles,
+    // Turbopack matches the route group in the admin Blog entry name.
+    "/admin/**/blog/**": sharpLinuxRuntimeFiles,
   },
   experimental: {
     serverActions: {

@@ -22,7 +22,7 @@ function mapLead(row: LeadRow): AdminLead {
   };
 }
 
-const leadSelect = "id, name, email, phone, city, state, message, source, caravan_id, status, metadata, assigned_to, next_follow_up_at, created_at, updated_at, caravan:caravans(id, title, slug), assignee:profiles!leads_assigned_to_fkey(id, name, email)";
+const leadSelect = "id, name, email, phone, city, state, message, source, caravan_id, status, metadata, assigned_to, next_follow_up_at, created_at, updated_at, caravan:caravans!leads_caravan_id_fkey(id, title, slug), assignee:profiles!leads_assigned_to_fkey(id, name, email)";
 
 export async function getAdminLeads(): Promise<AdminLead[]> {
   await requirePermission("leads.view");

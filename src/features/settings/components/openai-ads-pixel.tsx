@@ -2,13 +2,14 @@
 
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { publicPath } from "@/features/conversions/attribution";
+import { openAIAdsPixelId, openAIAdsWhatsAppEvent, openAIClickReferencePattern } from "@/features/conversions/openai-ads";
 import { rememberCampaignUtms } from "@/features/shared/attribution";
 
 const opprefKey = "leehov-openai-oppref";
 
 function validOppref(value: string | null): value is string {
-  // Accept opaque token-shaped references, not phone numbers, emails, or names.
-  return value !== null && /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z0-9_-]{20,1024}={0,2}$/.test(value);
+  return value !== null && openAIClickReferencePattern.test(value);
 }
 
 function hasConsent(key: string, expiry: number) {
@@ -37,13 +38,35 @@ function readOppref() {
   }
 }
 
-function measureWhatsApp(oppref: string) {
+async function measureWhatsApp(oppref: string, consentStorageKey: string, expiresAt: number) {
+  const eventId = crypto.randomUUID();
+  const path = publicPath(location.pathname);
+  if (path) {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 3_500);
+    try {
+      // Let the server submit first while the WhatsApp link opens normally.
+      await fetch("/api/medicao", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "openai_whatsapp", id: eventId, path, oppref: oppref || undefined }),
+        keepalive: true,
+        signal: controller.signal,
+      });
+    } catch {
+      // The browser can still deliver the same event when the server is unavailable.
+    } finally {
+      window.clearTimeout(timeout);
+    }
+  }
+
+  if (!hasConsent(consentStorageKey, expiresAt)) return;
   const url = new URL("https://bzr.openai.com/v1/sdk/events");
   url.search = new URLSearchParams({
-    pid: "AAy1gfaoDcQhWDighRrZqq",
+    pid: openAIAdsPixelId,
     event: "custom",
-    custom_event_name: "whatsapp_click",
-    event_id: crypto.randomUUID(),
+    custom_event_name: openAIAdsWhatsAppEvent,
+    event_id: eventId,
     "data[type]": "custom",
   }).toString();
   if (oppref) url.searchParams.set("oppref", oppref);
@@ -101,7 +124,7 @@ export function OpenAIAdsPixel({ consentExpiresAt, consentStorageKey }: {
         || ((link.hostname === "api.whatsapp.com" || link.hostname === "web.whatsapp.com") && link.pathname === "/send");
       if (!isWhatsApp) return;
       if (!hasConsent(consentStorageKey, expiresAt)) { clearReferral(); return; }
-      measureWhatsApp(landing.current || readOppref());
+      void measureWhatsApp(landing.current || readOppref(), consentStorageKey, expiresAt);
     }
 
     document.addEventListener("click", onClick, { capture: true, passive: true });

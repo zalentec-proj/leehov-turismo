@@ -9,6 +9,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getPublicSiteSettings } from "@/features/settings/queries";
 import { cleanTouch, getAttribution, publicPath, type AttributionSnapshot } from "./attribution";
 import { measurementCookie, measurementExpiry } from "./client";
+import { openAIClickReferencePattern } from "./openai-ads";
 import { referencePattern } from "./whatsapp";
 
 const opaqueId = z.uuidv4();
@@ -22,6 +23,7 @@ export const contextSchema = z.object({
 export const measurementSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("page"), id: opaqueId, path: z.string().max(180), context: contextSchema }),
   z.object({ type: z.literal("whatsapp"), id: opaqueId, path: z.string().max(180), context: contextSchema, reference: z.string().regex(referencePattern) }),
+  z.strictObject({ type: z.literal("openai_whatsapp"), id: opaqueId, path: z.string().max(180), oppref: z.string().regex(openAIClickReferencePattern).optional() }),
   z.object({ type: z.literal("erase"), visitorId: opaqueId }),
 ]);
 

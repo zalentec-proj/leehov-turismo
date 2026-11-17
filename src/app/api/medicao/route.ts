@@ -1,5 +1,6 @@
 import { createHmac } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { sendOpenAIWhatsAppClick } from "@/features/conversions/openai-ads-server";
 import { hasMeasurementConsent, isInternalTraffic, measurementSchema, measurementVisitorId, snapshotFromClient, validateEventPath } from "@/features/conversions/server";
 import type { Json } from "@/types/database";
 
@@ -43,21 +44,33 @@ export async function POST(request: Request) {
     const secret = process.env.FORM_SECURITY_SECRET;
     if (!secret || secret.length < 32) return new Response(null, { status: 503 });
     const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip")?.trim() || "unknown";
-    const hash = createHmac("sha256", secret).update("site_measurement:" + ip).digest("hex");
+    const scope = input.type === "openai_whatsapp" ? "openai_whatsapp" : "site_measurement";
+    const hash = createHmac("sha256", secret).update(`${scope}:${ip}`).digest("hex");
     const admin = createAdminClient();
     const limit = await admin.rpc("consume_measurement_rate_limit", { p_hash: hash });
     if (limit.error) return new Response(null, { status: 503 });
     if (!limit.data) return new Response(null, { status: 429 });
 
-    const visitorId = measurementVisitorId(input.type === "erase" ? input.visitorId : input.context.visitorId);
-    if (!visitorId) return new Response(null, { status: 503 });
     if (input.type === "erase") {
+      const visitorId = measurementVisitorId(input.visitorId);
+      if (!visitorId) return new Response(null, { status: 503 });
       const { error } = await admin.rpc("erase_site_measurement", { p_visitor_id: visitorId });
       return new Response(null, { status: error ? 503 : 204 });
     }
 
     const path = validateEventPath(input.path);
     if (!path) return new Response(null, { status: 400 });
+    if (input.type === "openai_whatsapp") {
+      const apiKey = process.env.OPENAI_CONVERSIONS_API_KEY?.trim();
+      if (!apiKey) return new Response(null, { status: 204 });
+      const sourceUrl = new URL(path, process.env.NEXT_PUBLIC_SITE_URL);
+      if (sourceUrl.protocol !== "https:") return new Response(null, { status: 503 });
+      const sent = await sendOpenAIWhatsAppClick(apiKey, input.id, sourceUrl.href, input.oppref);
+      return new Response(null, { status: sent ? 204 : 502 });
+    }
+
+    const visitorId = measurementVisitorId(input.context.visitorId);
+    if (!visitorId) return new Response(null, { status: 503 });
     const slug = path.startsWith("/caravanas/") ? path.split("/")[2] : null;
     let caravanId: string | undefined;
     if (slug) {

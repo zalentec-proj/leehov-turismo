@@ -1,3 +1,5 @@
+import { openAIClickReferencePattern } from "./openai-ads";
+
 export const attributionWindow = 30 * 86400_000;
 
 export const channelLabels = {
@@ -78,10 +80,8 @@ export function cleanTouch(value: unknown): Touch {
   return out;
 }
 
-function hasOpaqueId(value: string | null, openAI = false) {
-  return value !== null && (openAI
-    ? /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z0-9_-]{20,1024}={0,2}$/
-    : /^(?=.*[A-Za-z])[A-Za-z0-9_-]{10,256}$/).test(value);
+function hasOpaqueId(value: string | null) {
+  return value !== null && /^(?=.*[A-Za-z])[A-Za-z0-9_-]{10,256}$/.test(value);
 }
 
 export function signalsFromUrl(params: URLSearchParams, referrer: string, host: string, path: string): Touch {
@@ -99,7 +99,7 @@ export function signalsFromUrl(params: URLSearchParams, referrer: string, host: 
     campaignId: params.get("utm_id"), content: params.get("utm_content"), term: params.get("utm_term"),
     google: ["gclid", "gbraid", "wbraid"].some((key) => hasOpaqueId(params.get(key))),
     meta: hasOpaqueId(params.get("fbclid")),
-    openai: hasOpaqueId(params.get("oppref"), true),
+    openai: openAIClickReferencePattern.test(params.get("oppref") ?? ""),
     referrerDomain, landingPath: path,
   });
 }

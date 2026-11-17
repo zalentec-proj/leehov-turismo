@@ -20,3 +20,10 @@ Medir um clique real em um link público de WhatsApp no Pixel `AAy1gfaoDcQhWDigh
 - Verificações locais em 12/11/2026: 80 testes unitários, 10 verificações de navegador (desktop e mobile), TypeScript, ESLint dos arquivos alterados e build de produção aprovados. O bloco de scripts de Meta, GA4 e GTM foi comparado com a main e está idêntico.
 - Após deploy, abrir **Conversões → Fluxo de eventos** na conta Leehov; aceitar medição no site e clicar uma vez no WhatsApp. Conferir `whatsapp_click` para a fonte **Leehov | Site | Produção**. A etiqueta de sessão de teste do SDK não é exigida para o Image Tag. Não enviar mensagem no WhatsApp nem vincular evento a campanhas.
 - Publicação: commit `feat(tracking): adiciona Pixel da OpenAI Ads`, push na main e deploy Git automático na Vercel, autorizados para a integração da OpenAI.
+
+## Envio pelo servidor
+
+- Use uma chave da API de Conversões da conta Leehov no segredo de produção `OPENAI_CONVERSIONS_API_KEY` da Vercel. A API recebe o evento na mesma fonte de dados do Image Tag.
+- O site gera um UUID por clique e o usa como `id` no servidor e `event_id` no navegador. O Image Tag envia após a tentativa pelo servidor, inclusive quando a API está indisponível. A OpenAI usa o primeiro envio com o mesmo evento, Pixel e UUID. [Deduplicação da OpenAI](https://developers.openai.com/ads/conversions-api#deduplicate-browser-and-server-events)
+- A rota de medição exige origem válida, aceite atual de cookies analíticos e limite de requisições. O servidor recebe a página do clique sem query, o horário, o identificador do clique e `oppref` quando disponível. Não encaminha dados de formulário, conversa, IP ou agente do navegador. Para aceites anteriores à medição própria, o Image Tag continua disponível.
+- Em **Conversões → Fluxo de eventos**, inicie a consulta e teste um clique direto no WhatsApp com o aceite atual. Procure `whatsapp_click` na fonte **Leehov | Site | Produção**, com canal `server_to_server`. A lista exibe chegadas recentes, e as métricas atribuídas são calculadas separadamente. Os avisos de atividade consideram a janela de 24 horas completas em UTC.

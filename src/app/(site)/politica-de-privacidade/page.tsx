@@ -25,7 +25,7 @@ export default function PrivacyPage() {
           </p>
           <EraseMeasurement />
           <p>
-            Após um aceite que inclua a OpenAI, registramos cliques em links de WhatsApp para avaliar campanhas. O evento não representa uma venda nem um contato recebido e não inclui dados de formulário. Quando disponível, a referência do anúncio é mantida apenas na sessão da aba e pode acompanhar o evento. Você pode retirar a permissão em “Rever cookies”.
+            Após um aceite que inclua a OpenAI, enviamos o evento de clique em links de WhatsApp pelo navegador e pelo servidor para medir campanhas. O mesmo identificador de evento permite contar cada clique uma vez. Quando disponível, a referência do anúncio é mantida na sessão da aba e pode acompanhar o evento. O envio contém o horário e a página do clique, sem conteúdo de formulários ou mensagens. Você pode retirar a permissão em “Rever cookies”.
           </p>
           <p>
             Avaliações do Google, quando a integração for ativada, serão exibidas com sua origem identificada. Credenciais de serviços e tokens nunca são enviados ao navegador.
